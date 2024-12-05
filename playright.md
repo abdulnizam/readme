@@ -69,3 +69,14 @@ test.describe('File Upload Test with EICAR', () => {
 "scripts": {
   "test": "npx playwright test"
 }
+
+
+ await page.click('[data-testid="radio-option-1"]'); // Replace with your radio button's data-testid
+    await page.click('[data-testid="next-button"]'); // Proceed to the next page
+    await page.waitForSelector('[data-testid="text-field-page"]'); // Wait for the next page to load
+
+    // Step 2: Fill out text fields
+    await page.fill('[data-testid="text-field-1"]', 'Test User'); // Replace with your text field's data-testid
+    await page.fill('[data-testid="text-field-2"]', 'test@example.com'); // Replace with another text field's data-testid
+    await page.click('[data-testid="next-button"]'); // Proceed to the next page
+    await page.waitForSelector('[data-testid="file-upload-page"]'); // Wait for the next page to load
