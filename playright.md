@@ -80,3 +80,34 @@ test.describe('File Upload Test with EICAR', () => {
     await page.fill('[data-testid="text-field-2"]', 'test@example.com'); // Replace with another text field's data-testid
     await page.click('[data-testid="next-button"]'); // Proceed to the next page
     await page.waitForSelector('[data-testid="file-upload-page"]'); // Wait for the next page to load
+
+
+
+const { test, expect } = require('@playwright/test');
+
+test.describe('Multi-Step Form Test with On-the-Fly Upload', () => {
+  test('Should upload EICAR test file and detect malware', async ({ page }) => {
+    // Create the EICAR test file content as a buffer
+    const eicarContent = `
+      X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+    `;
+    const fileName = 'eicar.txt';
+
+    // Navigate to the upload page
+    await page.goto('/upload'); // Replace with your upload page URL
+
+    // Upload the file directly from memory
+    const fileInput = await page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: fileName,
+      mimeType: 'text/plain',
+      buffer: Buffer.from(eicarContent.trim()),
+    });
+
+    // Click the submit button
+    await page.click('[data-testid="next-button"]'); // Replace with your button's data-testid
+
+    // Verify the response or final page
+    await expect(page.locator('text=Malware detected!')).toBeVisible(); // Verify malware detection message
+  });
+});
