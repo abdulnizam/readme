@@ -22,4 +22,9 @@ export default function TestMalwareUpload() {
   );
 }
 
-const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
+ const eicarContent = `
+    X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+    `;
+const eicarFile = new File([eicarContent.trim()], 'eicar.txt', {
+    type: 'text/plain',
+});
