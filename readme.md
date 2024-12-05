@@ -205,3 +205,59 @@ async function uploadDocxFile() {
 }
 
 uploadDocxFile();
+
+
+const { Document, Packer, Paragraph, TextRun } = require("docx");
+const axios = require("axios");
+const FormData = require("form-data");
+
+async function uploadDocxFile() {
+  const eicarString = `
+    X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+  `;
+
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: eicarString.trim(), // Embed EICAR string as plain text
+                bold: true,
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+
+  const formData = new FormData();
+  formData.append("file", buffer, {
+    filename: "eicar.docx",
+    contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+
+  try {
+    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+    });
+
+    console.log("Response:", response.data);
+
+    if (response.data.infected) {
+      console.log("Malware detected!");
+    } else {
+      console.log("File is clean.");
+    }
+  } catch (error) {
+    console.error("Error:", error.response ? error.response.data : error.message);
+  }
+}
+
+uploadDocxFile();
