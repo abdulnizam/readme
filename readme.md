@@ -21,3 +21,5 @@ export default function TestMalwareUpload() {
     </div>
   );
 }
+
+const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
