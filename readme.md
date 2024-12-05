@@ -28,3 +28,26 @@ export default function TestMalwareUpload() {
 const eicarFile = new File([eicarContent.trim()], 'eicar.txt', {
     type: 'text/plain',
 });
+
+
+const axios = require("axios");
+const fs = require("fs");
+
+async function scanFile() {
+  const fileContent = Buffer.from("X5O!P%@AP[4\\PZX54(P^)7CC)...");
+
+  const response = await axios.post(
+    "https://www.virustotal.com/api/v3/files",
+    fileContent,
+    {
+      headers: {
+        "x-apikey": "your_virustotal_api_key",
+        "Content-Type": "application/octet-stream",
+      },
+    }
+  );
+
+  console.log(response.data);
+}
+
+scanFile();
