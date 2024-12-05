@@ -140,3 +140,68 @@ async function uploadDocxFile() {
 }
 
 uploadDocxFile();
+
+
+
+
+
+const axios = require("axios");
+const { Document, Packer, Paragraph, TextRun } = require("docx");
+const FormData = require("form-data");
+
+async function uploadDocxFile() {
+  // Step 1: Create a `.docx` file and embed the EICAR string
+  const eicarString = `
+    X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+  `;
+
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Malware Test File:",
+                bold: true,
+              }),
+              new TextRun({
+                text: eicarString.trim(),
+                color: "FF0000", // Highlight in red to simulate suspicious content
+              }),
+            ],
+          }),
+        ],
+      },
+    ],
+  });
+
+  // Convert the `.docx` content to a binary buffer
+  const buffer = await Packer.toBuffer(doc);
+
+  // Step 2: Create a FormData object and append the `.docx` file
+  const formData = new FormData();
+  formData.append("file", buffer, {
+    filename: "eicar.docx",
+    contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+
+  // Step 3: Send the `.docx` file to the server using Axios
+  try {
+    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
+      headers: {
+        ...formData.getHeaders(),
+        "learning-id": "67517845e9a539224809d12b",
+        "x-origin": "content-creation-front-end",
+        Referer: "http://localhost:8080/",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+      },
+    });
+
+    console.log("File uploaded successfully:", response.data);
+  } catch (error) {
+    console.error("Error uploading file:", error.response ? error.response.data : error.message);
+  }
+}
+
+uploadDocxFile();
