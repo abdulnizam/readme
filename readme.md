@@ -207,48 +207,80 @@ async function uploadDocxFile() {
 uploadDocxFile();
 
 
+
 const JSZip = require("jszip");
-const { Document, Packer, Paragraph, TextRun } = require("docx");
 const fs = require("fs");
 
-async function createDocxWithEicar() {
+async function createInfectedDocx() {
   const eicarString = `
     X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
   `;
 
-  // Step 1: Generate a simple .docx file
-  const doc = new Document({
-    sections: [
-      {
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun("This is a test document."),
-            ],
-          }),
-        ],
-      },
-    ],
-  });
+  // Load an existing .docx template file or create one dynamically
+  const templatePath = "template.docx"; // Replace with your .docx template
+  const outputPath = "infected.docx";
 
-  const buffer = await Packer.toBuffer(doc);
+  const zip = await JSZip.loadAsync(fs.readFileSync(templatePath));
 
-  // Step 2: Load the .docx file as a ZIP archive
-  const zip = await JSZip.loadAsync(buffer);
-
-  // Step 3: Inject the EICAR string into the `document.xml`
+  // Access the `document.xml` file in the .docx structure
   const documentXml = await zip.file("word/document.xml").async("string");
+
+  // Inject the EICAR string directly into the XML content
   const modifiedXml = documentXml.replace(
     "</w:body>",
     `<w:p><w:r><w:t>${eicarString.trim()}</w:t></w:r></w:p></w:body>`
   );
   zip.file("word/document.xml", modifiedXml);
 
-  // Step 4: Repackage the .docx file
-  const modifiedBuffer = await zip.generateAsync({ type: "nodebuffer" });
-  fs.writeFileSync("eicar.docx", modifiedBuffer);
+  // Repack the modified .docx file
+  const buffer = await zip.generateAsync({ type: "nodebuffer" });
+  fs.writeFileSync(outputPath, buffer);
 
-  console.log("Modified .docx file created: eicar.docx");
+  console.log(`Infected .docx file created: ${outputPath}`);
 }
 
-createDocxWithEicar();
+createInfectedDocx();
+
+const archiver = require("archiver");
+
+async function createZipWithDocx() {
+  const output = fs.createWriteStream("infected.zip");
+  const archive = archiver("zip");
+
+  archive.pipe(output);
+  archive.append(fs.createReadStream("infected.docx"), { name: "infected.docx" });
+  await archive.finalize();
+
+  console.log("ZIP file created: infected.zip");
+}
+
+createZipWithDocx();
+
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+
+async function testFileScan() {
+  const formData = new FormData();
+  formData.append("file", fs.createReadStream("infected.docx"), "infected.docx");
+
+  try {
+    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
+    });
+
+    console.log("API Response:", response.data);
+
+    if (response.data.infected) {
+      console.log("Malware detected!");
+    } else {
+      console.log("File is clean.");
+    }
+  } catch (error) {
+    console.error("Error scanning file:", error.response ? error.response.data : error.message);
+  }
+}
+
+testFileScan();
