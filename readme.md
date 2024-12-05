@@ -90,197 +90,34 @@ async function uploadFile() {
 uploadFile();
 
 
+describe("File Upload Test with EICAR", () => {
+  it("Should upload the EICAR test file and verify the response", () => {
+    // Create the EICAR test file content
+    const eicarContent = `
+      X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+    `;
 
-const axios = require("axios");
-const { Document, Packer } = require("docx");
-const FormData = require("form-data");
+    // Write the EICAR content to a file in memory
+    const fileName = "eicar.txt";
+    cy.writeFile(fileName, eicarContent.trim());
 
-async function uploadDocxFile() {
-  // Step 1: Create a `.docx` file dynamically
-  const doc = new Document({
-    sections: [
-      {
-        children: [
-          {
-            text: `
-              X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-            `,
-          },
-        ],
-      },
-    ],
-  });
+    // Visit the upload page
+    cy.visit("http://localhost:8080/upload"); // Replace with your UI's upload page
 
-  // Convert the `.docx` content to a binary buffer
-  const buffer = await Packer.toBuffer(doc);
+    // Interact with the file input
+    cy.get('input[type="file"]').selectFile(fileName, { force: true });
 
-  // Step 2: Create a FormData object and append the `.docx` file
-  const formData = new FormData();
-  formData.append("file", buffer, {
-    filename: "eicar.docx",
-    contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  });
+    // Submit the form or trigger upload
+    cy.get("#uploadButton").click(); // Replace with the actual button ID
 
-  // Step 3: Send the `.docx` file to the server using Axios
-  try {
-    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
-      headers: {
-        ...formData.getHeaders(),
-        "learning-id": "67517845e9a539224809d12b",
-        "x-origin": "content-creation-front-end",
-        Referer: "http://localhost:8080/",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-      },
+    // Verify the response (Mock or Actual API)
+    cy.intercept("POST", "http://localhost:8081/v1/uploadfile/").as("fileUpload");
+    cy.wait("@fileUpload").then((interception) => {
+      expect(interception.response.statusCode).to.eq(200); // Ensure successful upload
+      expect(interception.response.body.infected).to.be.true; // Ensure file is flagged as malware
     });
 
-    console.log("File uploaded successfully:", response.data);
-  } catch (error) {
-    console.error("Error uploading file:", error.response ? error.response.data : error.message);
-  }
-}
-
-uploadDocxFile();
-
-
-
-
-
-const axios = require("axios");
-const { Document, Packer, Paragraph, TextRun } = require("docx");
-const FormData = require("form-data");
-
-async function uploadDocxFile() {
-  // Step 1: Create a `.docx` file and embed the EICAR string
-  const eicarString = `
-    X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-  `;
-
-  const doc = new Document({
-    sections: [
-      {
-        children: [
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "Malware Test File:",
-                bold: true,
-              }),
-              new TextRun({
-                text: eicarString.trim(),
-                color: "FF0000", // Highlight in red to simulate suspicious content
-              }),
-            ],
-          }),
-        ],
-      },
-    ],
+    // Optional: Verify UI updates after upload
+    cy.contains("Malware detected!").should("be.visible");
   });
-
-  // Convert the `.docx` content to a binary buffer
-  const buffer = await Packer.toBuffer(doc);
-
-  // Step 2: Create a FormData object and append the `.docx` file
-  const formData = new FormData();
-  formData.append("file", buffer, {
-    filename: "eicar.docx",
-    contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  });
-
-  // Step 3: Send the `.docx` file to the server using Axios
-  try {
-    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
-      headers: {
-        ...formData.getHeaders(),
-        "learning-id": "67517845e9a539224809d12b",
-        "x-origin": "content-creation-front-end",
-        Referer: "http://localhost:8080/",
-        "Referrer-Policy": "strict-origin-when-cross-origin",
-      },
-    });
-
-    console.log("File uploaded successfully:", response.data);
-  } catch (error) {
-    console.error("Error uploading file:", error.response ? error.response.data : error.message);
-  }
-}
-
-uploadDocxFile();
-
-
-
-const JSZip = require("jszip");
-const fs = require("fs");
-
-async function createInfectedDocx() {
-  const eicarString = `
-    X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
-  `;
-
-  // Load an existing .docx template file or create one dynamically
-  const templatePath = "template.docx"; // Replace with your .docx template
-  const outputPath = "infected.docx";
-
-  const zip = await JSZip.loadAsync(fs.readFileSync(templatePath));
-
-  // Access the `document.xml` file in the .docx structure
-  const documentXml = await zip.file("word/document.xml").async("string");
-
-  // Inject the EICAR string directly into the XML content
-  const modifiedXml = documentXml.replace(
-    "</w:body>",
-    `<w:p><w:r><w:t>${eicarString.trim()}</w:t></w:r></w:p></w:body>`
-  );
-  zip.file("word/document.xml", modifiedXml);
-
-  // Repack the modified .docx file
-  const buffer = await zip.generateAsync({ type: "nodebuffer" });
-  fs.writeFileSync(outputPath, buffer);
-
-  console.log(`Infected .docx file created: ${outputPath}`);
-}
-
-createInfectedDocx();
-
-const archiver = require("archiver");
-
-async function createZipWithDocx() {
-  const output = fs.createWriteStream("infected.zip");
-  const archive = archiver("zip");
-
-  archive.pipe(output);
-  archive.append(fs.createReadStream("infected.docx"), { name: "infected.docx" });
-  await archive.finalize();
-
-  console.log("ZIP file created: infected.zip");
-}
-
-createZipWithDocx();
-
-const axios = require("axios");
-const FormData = require("form-data");
-const fs = require("fs");
-
-async function testFileScan() {
-  const formData = new FormData();
-  formData.append("file", fs.createReadStream("infected.docx"), "infected.docx");
-
-  try {
-    const response = await axios.post("http://localhost:8081/v1/uploadfile/", formData, {
-      headers: {
-        ...formData.getHeaders(),
-      },
-    });
-
-    console.log("API Response:", response.data);
-
-    if (response.data.infected) {
-      console.log("Malware detected!");
-    } else {
-      console.log("File is clean.");
-    }
-  } catch (error) {
-    console.error("Error scanning file:", error.response ? error.response.data : error.message);
-  }
-}
-
-testFileScan();
+});
