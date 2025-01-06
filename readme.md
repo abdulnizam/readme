@@ -15,3 +15,6 @@ context/LoaderContext/LoaderContext.tsx (20:32) @ LoaderContext
   21 |     if (!context) {
   22 |       throw new Error('useLoader must be used within an App Provider');
   23 |     }
+
+
+TypeError: Cannot destructure property 'createTopicObjectives' of '(0 , _helpers_content_creation_service__WEBPACK_IMPORTED_MODULE_4__.useApi)(...)' as it is undefined.
