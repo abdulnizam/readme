@@ -1,20 +1,30 @@
-Error: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
-1. You might have mismatching versions of React and the renderer (such as React DOM)
-2. You might be breaking the Rules of Hooks
-3. You might have more than one copy of React in the same app
-See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+│ Error: creating/updating "Resource: (ResourceId \"/subscriptions/7ef85eaf-ac4b-4dd0-89fc-d645056092a8/resourceGroups/rg-uks-devt1-sd-sib-dwpask/providers/Microsoft.CognitiveServices/accounts/openai-uks-devt1-sd-sib-dwpask/providers/Microsoft.CognitiveServices/accounts/openai-uks-devt1-sd-sib-dwpask\" / Api Version \"2023-10-01-preview\")": PUT https://management.azure.com/subscriptions/7ef85eaf-ac4b-4dd0-89fc-d645056092a8/resourceGroups/rg-uks-devt1-sd-sib-dwpask/providers/Microsoft.CognitiveServices/accounts/openai-uks-devt1-sd-sib-dwpask/providers/Microsoft.CognitiveServices/accounts/openai-uks-devt1-sd-sib-dwpask
+│ --------------------------------------------------------------------------------
+│ RESPONSE 404: 404 Not Found
+│ ERROR CODE: ResourceTypeNotFound
+│ --------------------------------------------------------------------------------
+│ {
+│   "error": {
+│     "code": "ResourceTypeNotFound",
+│     "message": "The resource type 'Microsoft.CognitiveServices/accounts' is not found."
+│   }
+│ }
 
 
-
-context/LoaderContext/LoaderContext.tsx (20:32) @ LoaderContext
-
-  18 |
-  19 | export function useLoader(): LoaderContextProps {
-> 20 |     const context = useContext(LoaderContext);
-     |                                ^
-  21 |     if (!context) {
-  22 |       throw new Error('useLoader must be used within an App Provider');
-  23 |     }
-
-
-TypeError: Cannot destructure property 'createTopicObjectives' of '(0 , _helpers_content_creation_service__WEBPACK_IMPORTED_MODULE_4__.useApi)(...)' as it is undefined.
+resource "azapi_resource" "network_acls" {
+  type      = "Microsoft.CognitiveServices/accounts@2023-10-01-preview"
+  parent_id = azurerm_cognitive_account.openai.id
+  schema_validation_enabled = false
+  name = azurerm_cognitive_account.openai.name
+  location = azurerm_resource_group.dwpask_rg.location
+  body = jsonencode({
+    properties = {
+      networkAcls = {
+        bypass = "AzureServices"
+      }
+    }
+  })
+  depends_on = [azurerm_cognitive_account.openai]
+}
+  
