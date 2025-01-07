@@ -1,41 +1,43 @@
-resource "azurerm_cognitive_account" "openai" { 
-  name                = var.openai_name 
-  location            = azurerm_resource_group.dwpask_rg.location
-  custom_subdomain_name = var.openai_name 
-  resource_group_name = azurerm_resource_group.dwpask_rg.name 
-  kind                = "OpenAI" 
-  sku_name            = "S0"
-  tags     =  { 
-    Name = "azure.dwpask.openai_cognitive_account.${var.environment-tag-name}"
-    Application = "${var.application}"
-    Environment = "${var.environment-tag-name}"
-  }
- network_acls   {
-    default_action             = "Deny"
-    ip_rules = [var.gitlab_runner_ip]
-    virtual_network_rules {
-      subnet_id  = data.azurerm_subnet.privateendpoint_subnet.id
-    }
-    virtual_network_rules {
-      subnet_id  = data.azurerm_subnet.appgw_subnet.id
-    }
- }
-}
+resource "azapi_resource" "openai" {
+  type = "Microsoft.CognitiveServices/accounts@2024-10-01"
 
-resource "azapi_resource" "this" {
-  type      = "Microsoft.CognitiveServices/accounts@2024-10-01"
-  name      = local.network_acls
-  location  = azurerm_resource_group.dwpask_rg.location
-  parent_id = azurerm_cognitive_account.openai.id
+  name     = var.openai_name
+  location = azurerm_resource_group.dwpask_rg.location
+  parent_id = "/subscriptions/${var.subscription_id}/resourceGroups/${azurerm_resource_group.dwpask_rg.name}"
+
   schema_validation_enabled = false
-  
+
   body = jsonencode({
     properties = {
-      networkAcls = {
-        bypass        = "AzureServices"    # Add the bypass option
+      customSubDomainName = var.openai_name
+      kind                = "OpenAI"
+      sku = {
+        name = "S0"
       }
+      networkAcls = {
+        bypass        = "AzureServices"
+        defaultAction = "Deny"
+        ipRules = [
+          {
+            value = var.gitlab_runner_ip
+          }
+        ]
+        virtualNetworkRules = [
+          {
+            id = data.azurerm_subnet.privateendpoint_subnet.id
+          },
+          {
+            id = data.azurerm_subnet.appgw_subnet.id
+          }
+        ]
+      }
+    }
+    tags = {
+      Name         = "azure.dwpask.openai_cognitive_account.${var.environment_tag_name}"
+      Application  = var.application
+      Environment  = var.environment_tag_name
     }
   })
 
-  depends_on = [azurerm_cognitive_account.openai]
+  depends_on = [azurerm_resource_group.dwpask_rg]
 }
