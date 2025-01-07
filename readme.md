@@ -27,4 +27,29 @@ resource "azapi_resource" "network_acls" {
   })
   depends_on = [azurerm_cognitive_account.openai]
 }
+
+
+resource "azurerm_cognitive_account" "openai" { 
+  name                = var.openai_name 
+  location            = azurerm_resource_group.dwpask_rg.location
+  custom_subdomain_name = var.openai_name 
+  resource_group_name = azurerm_resource_group.dwpask_rg.name 
+  kind                = "OpenAI" 
+  sku_name            = "S0"
+  tags     =  { 
+    Name = "azure.dwpask.openai_cognitive_account.${var.environment-tag-name}"
+    Application = "${var.application}"
+    Environment = "${var.environment-tag-name}"
+  }
+ network_acls   {
+    default_action             = "Deny"
+    ip_rules = [var.gitlab_runner_ip]
+    virtual_network_rules {
+      subnet_id  = data.azurerm_subnet.privateendpoint_subnet.id
+    }
+    virtual_network_rules {
+      subnet_id  = data.azurerm_subnet.appgw_subnet.id
+    }
+ }
+}
   
