@@ -53,3 +53,33 @@ resource "azurerm_cognitive_account" "openai" {
  }
 }
   
+resource "azapi_resource" "update_network_acls" {
+  type      = "Microsoft.CognitiveServices/accounts@2024-10-01"
+  name      = azurerm_cognitive_account.openai.name
+  parent_id = azurerm_cognitive_account.openai.id
+  location  = azurerm_cognitive_account.openai.location
+
+  body = jsonencode({
+    properties = {
+      networkAcls = {
+        bypass        = "AzureServices"    # Add the bypass option
+        defaultAction = "Deny"            # Keep the existing default action
+        ipRules = [                       # Keep the existing IP rules
+          {
+            value = var.gitlab_runner_ip
+          }
+        ]
+        virtualNetworkRules = [           # Keep the existing virtual network rules
+          {
+            id = data.azurerm_subnet.privateendpoint_subnet.id
+          },
+          {
+            id = data.azurerm_subnet.appgw_subnet.id
+          }
+        ]
+      }
+    }
+  })
+
+  depends_on = [azurerm_cognitive_account.openai]
+}
