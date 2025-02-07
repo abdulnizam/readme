@@ -1,56 +1,125 @@
 import pytest
+import boto3
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+from botocore.exceptions import ClientError, NoCredentialsError, ParamValidationError
 
-# ✅ Set Environment Variables
-required_env_vars = {
-    "BEDROCK_PII_GUARDRAIL_ID": "spidt98ibszt",
-    "BEDROCK_PII_GUARDRAIL_VERSION": "3",
-    "BEDROCK_EMBEDDING_MODEL_ID": "mock_model_id",
-    "BEDROCK_HARMS_GUARDRAIL_ID": "6qz78hvz3kfl",
-    "BEDROCK_HARMS_GUARDRAIL_VERSION": "1",
-    "BEDROCK_LLAMA3_8B_MODEL_ID": "test_model",
-    "BEDROCK_LLAMA3_70B_MODEL_ID": "test_model",
-    "BLOCKED_GUARDRAIL_MESSAGE": "Blocked",
-    "SERVICES_DOC_MANAGER_HOST": "http://localhost",
-    "CONTAINER_AWS_ROLE": "arn:aws:iam::123456789012:role/TestRole",
-}
-os.environ.update(required_env_vars)
+# Import after setting environment variables
+from model.aws.aws_helpers import get_credentials, get_client, retry_if_invalid_settings
+from config import refresh_settings, Settings
 
-@pytest.fixture(scope="module")
-def mock_get_settings_and_boto3():
-    """Mock `config.get_settings` and `boto3.client` before importing `ai_models_config`."""
-    
-    with patch("config.get_settings") as mock_get_settings, patch("boto3.client") as mock_boto_client:
-        
-        # ✅ Mock `config.get_settings`
-        mock_instance = MagicMock()
-        mock_instance.bedrock_llama3_8b_model_id = "test_model"
-        mock_instance.bedrock_llama3_70b_model_id = "test_model"
-        mock_instance.bedrock_embedding_model_id = "mock_model_id"
-        mock_instance.bedrock_harms_guardrail_id = "6qz78hvz3kfl"
-        mock_instance.bedrock_harms_guardrail_version = "1"
-        mock_instance.blocked_guardrail_message = "Blocked"
-        mock_instance.services_doc_manager_host = "http://localhost"
-        mock_get_settings.return_value = mock_instance
-
-        # ✅ Mock `boto3.client`
-        mock_sts_client = MagicMock()
-        mock_sts_client.assume_role.return_value = {
-            "Credentials": {
-                "AccessKeyId": "mock-access-key",
-                "SecretAccessKey": "mock-secret-key",
-                "SessionToken": "mock-session-token",
-            }
+@pytest.fixture
+def mock_sts_client(mocker):
+    """Mocks boto3 STS client for assume_role."""
+    mock_client = mocker.patch("boto3.client")
+    mock_sts = MagicMock()
+    mock_sts.assume_role.return_value = {
+        "Credentials": {
+            "AccessKeyId": "mock_access_key",
+            "SecretAccessKey": "mock_secret_key",
+            "SessionToken": "mock_session_token"
         }
+    }
+    mock_client.return_value = mock_sts
+    return mock_sts
 
-        mock_bedrock_client = MagicMock()
 
-        def mock_boto_service(service_name, *args, **kwargs):
-            if service_name == "sts":
-                return mock_sts_client
-            return mock_bedrock_client
+@pytest.fixture
+def mock_boto_client(mocker):
+    """Mocks boto3 client creation to return the correct mock client instance."""
+    mock_service_client = MagicMock()
+    mocker.patch("boto3.client", return_value=mock_service_client)  # Ensure boto3.client calls return the same object
+    return mock_service_client
 
-        mock_boto_client.side_effect = mock_boto_service
 
-        yield mock_get_settings, mock_boto_client  # ✅ Yield mocks for module-scoped use
+@pytest.fixture
+def mock_settings(mocker):
+    """Mocks the Settings class to avoid missing environment variables error."""
+    mock_settings = mocker.patch("src.config.Settings", autospec=True)
+    mock_settings.return_value = Settings(
+        services_malware_host="mock_host",
+        services_malware_port=8000,
+        app_log_level="INFO",
+        bedrock_pii_guardrail_id="mock_guardrail_id",
+        bedrock_pii_guardrail_version="mock_version",
+        bedrock_embedding_model_id="mock_model_id",
+        db_hostname="mock_db_host",
+        db_port="5432",
+        db_name="mock_db"
+    )
+    return mock_settings
+
+def test_get_client(mock_boto_client):
+    """Tests get_client function."""
+    client = get_client("s3")
+    assert client == mock_boto_client, "Expected mock_boto_client to be returned."
+
+
+def test_get_client_failure(mocker):
+    """Tests get_client when credentials retrieval fails."""
+    mocker.patch("model.aws.aws_helpers.get_credentials", side_effect=Exception("Credential error"))
+
+    with pytest.raises(Exception, match="Credential error"):
+        get_client("s3")
+
+
+def test_retry_if_invalid_settings(mocker):
+    """Tests retry_if_invalid_settings when encountering a validation error."""
+    mock_refresh_settings = mocker.patch("src.config.refresh_settings")
+
+    @retry_if_invalid_settings
+    def failing_function():
+        raise ClientError(
+            {"Error": {"Code": "ValidationException"}},
+            "TestOperation"
+        )
+
+    with pytest.raises(ClientError):
+        failing_function()
+
+    assert mock_refresh_settings.called, "refresh_settings() was not called!"
+
+
+def test_retry_if_invalid_settings_non_validation_error(mocker):
+    """Tests retry_if_invalid_settings when encountering a non-validation error."""
+    mock_refresh_settings = mocker.patch("src.config.refresh_settings")
+
+    @retry_if_invalid_settings
+    def failing_function():
+        raise ClientError(
+            {"Error": {"Code": "SomeOtherError"}},
+            "TestOperation"
+        )
+
+    with pytest.raises(ClientError, match="SomeOtherError"):
+        failing_function()
+
+    assert not mock_refresh_settings.called, "refresh_settings() should NOT be called for non-validation errors!"
+
+
+def test_get_credentials_no_credentials(mocker):
+    """Test get_credentials when AWS credentials are missing."""
+    mock_sts = mocker.patch("boto3.client")
+    mock_sts.return_value.assume_role.side_effect = NoCredentialsError()
+
+    with pytest.raises(NoCredentialsError):
+        get_credentials()
+
+
+def test_get_credentials_invalid_params(mocker):
+    """Test get_credentials when assume_role is called with invalid parameters."""
+    mock_sts = mocker.patch("boto3.client")
+    mock_sts.return_value.assume_role.side_effect = ParamValidationError(report="Invalid parameter")
+
+    with pytest.raises(ParamValidationError):
+        get_credentials()
+
+
+def test_get_credentials_client_error(mocker):
+    """Test get_credentials when STS returns a ClientError."""
+    error_response = {"Error": {"Code": "AccessDenied", "Message": "User is not authorized"}}
+    mock_sts = mocker.patch("boto3.client")
+    mock_sts.return_value.assume_role.side_effect = ClientError(error_response, "AssumeRole")
+
+    with pytest.raises(ClientError):
+        get_credentials()
