@@ -17,8 +17,7 @@ required_env_vars = {
 }
 os.environ.update(required_env_vars)
 
-
-@pytest.fixture(scope="module")  # ✅ Change scope to `module`
+@pytest.fixture(scope="module")
 def mock_get_settings_and_boto3():
     """Mock `config.get_settings` and `boto3.client` before importing `ai_models_config`."""
     
