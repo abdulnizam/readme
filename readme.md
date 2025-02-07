@@ -1,3 +1,17 @@
-[nltk_data] Error loading punkt_tab: <urlopen error [SSL:
-[nltk_data]     CERTIFICATE_VERIFY_FAILED] certificate verify failed:
-[nltk_data]     unable to get local issuer certificate (_ssl.c:1020)>
+pip install --upgrade certifi
+
+
+
+import ssl
+import certifi
+ssl._create_default_https_context = ssl._create_unverified_context
+
+import nltk
+nltk.download('punkt_tab')
+
+
+python -m nltk.downloader punkt
+
+
+import nltk
+nltk.data.find('tokenizers/punkt')
