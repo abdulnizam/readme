@@ -2,7 +2,7 @@ import pytest
 import os
 from unittest.mock import patch, MagicMock
 
-# ✅ Define Environment Variables
+# ✅ Set Environment Variables
 required_env_vars = {
     "BEDROCK_PII_GUARDRAIL_ID": "spidt98ibszt",
     "BEDROCK_PII_GUARDRAIL_VERSION": "3",
@@ -17,9 +17,10 @@ required_env_vars = {
 }
 os.environ.update(required_env_vars)
 
-@pytest.fixture(autouse=True)
+
+@pytest.fixture
 def mock_get_settings_and_boto3():
-    """Mock config.get_settings and boto3.client"""
+    """Mock `config.get_settings` and `boto3.client` only when needed in tests."""
     
     with patch("config.get_settings") as mock_get_settings, patch("boto3.client") as mock_boto_client:
         
@@ -53,4 +54,4 @@ def mock_get_settings_and_boto3():
 
         mock_boto_client.side_effect = mock_boto_service
 
-        yield  # ✅ Ensures the mocks persist during tests
+        yield mock_get_settings, mock_boto_client  # ✅ Yield mocks for use in tests
