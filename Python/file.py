@@ -1,8 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from fastapi.middleware.cors import CORSMiddleware
 
-client = TestClient(app)
+@pytest.fixture(scope="module", autouse=True)
+def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
+    global client, app
+    from main import app
+    client = TestClient(app)
 
 def test_app_initialization():
     """Test that the FastAPI app initializes correctly."""
