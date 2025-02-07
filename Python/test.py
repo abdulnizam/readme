@@ -18,9 +18,9 @@ required_env_vars = {
 os.environ.update(required_env_vars)
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")  # ✅ Change scope to `module`
 def mock_get_settings_and_boto3():
-    """Mock `config.get_settings` and `boto3.client` only when needed in tests."""
+    """Mock `config.get_settings` and `boto3.client` before importing `ai_models_config`."""
     
     with patch("config.get_settings") as mock_get_settings, patch("boto3.client") as mock_boto_client:
         
@@ -54,4 +54,4 @@ def mock_get_settings_and_boto3():
 
         mock_boto_client.side_effect = mock_boto_service
 
-        yield mock_get_settings, mock_boto_client  # ✅ Yield mocks for use in tests
+        yield mock_get_settings, mock_boto_client  # ✅ Yield mocks for module-scoped use
