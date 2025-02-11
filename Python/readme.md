@@ -1,81 +1,243 @@
-
-tests/test_main.py FFF                                                                                                      [100%]
-
-============================================================ FAILURES =============================================================
-_____________________________________________________ test_app_initialization _____________________________________________________
-
-    def test_app_initialization():
-        """Test that the FastAPI app initializes correctly."""
-        response = client.get("/v1/liveness")  # Assuming `/v1/liveness` is a health check endpoint
->       assert response.status_code == 200
-E       assert 404 == 200
-E        +  where 404 = <Response [404 Not Found]>.status_code
-
-tests/test_main.py:14: AssertionError
------------------------------------------------------- Captured stderr setup ------------------------------------------------------
-2025-02-07 16:43:49,733 - config - ERROR - config.py:79 - Unable to locate credentials
-2025-02-07 16:43:49,736 - config - ERROR - config.py:79 - Unable to locate credentials
-2025-02-07 16:43:49,739 - config - ERROR - config.py:79 - Unable to locate credentials
-2025-02-07 16:43:49,741 - config - ERROR - config.py:79 - Unable to locate credentials
-------------------------------------------------------- Captured log setup --------------------------------------------------------
-ERROR    config:config.py:79 Unable to locate credentials
-ERROR    config:config.py:79 Unable to locate credentials
-ERROR    config:config.py:79 Unable to locate credentials
-ERROR    config:config.py:79 Unable to locate credentials
------------------------------------------------------- Captured stderr call -------------------------------------------------------
-2025-02-07 16:43:50,380 - httpx - INFO - _client.py:1025 - HTTP Request: GET http://testserver/v1/liveness "HTTP/1.1 404 Not Found"
--------------------------------------------------------- Captured log call --------------------------------------------------------
-INFO     httpx:_client.py:1025 HTTP Request: GET http://testserver/v1/liveness "HTTP/1.1 404 Not Found"
-______________________________________________________ test_cors_middleware _______________________________________________________
-
-    def test_cors_middleware():
-        """Test that CORS middleware is configured correctly."""
-        assert app.middleware_stack is not None
-    
-        cors_config = None
-        for middleware in app.user_middleware:
-            if isinstance(middleware.cls, CORSMiddleware):
-                cors_config = middleware
-                break
-    
->       assert cors_config is not None, "CORS middleware is missing"
-E       AssertionError: CORS middleware is missing
-E       assert None is not None
-
-tests/test_main.py:27: AssertionError
-______________________________________________________ test_router_inclusion ______________________________________________________
-
-    def test_router_inclusion():
-        """Test that `generate_content_router_v1` is included in the app."""
-        routes = [route.path for route in app.router.routes]
->       assert "/v1/topicoutlines" in routes  # Adjust based on actual endpoints
-E       AssertionError: assert '/v1/topicoutlines' in ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/v1/generate/topicoutlines', '/v1/generate/regeneratetopicoutlines', ...]
-
-tests/test_main.py:36: AssertionError
-======================================================== warnings summary =========================================================
-../venv3/lib/python3.13/site-packages/pydantic/fields.py:1032
-../venv3/lib/python3.13/site-packages/pydantic/fields.py:1032
-../venv3/lib/python3.13/site-packages/pydantic/fields.py:1032
-../venv3/lib/python3.13/site-packages/pydantic/fields.py:1032
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-  /Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv3/lib/python3.13/site-packages/pydantic/fields.py:1032: PydanticDeprecatedSince20: Using extra keyword arguments on `Field` is deprecated and will be removed. Use `json_schema_extra` instead. (Extra keys: 'metadata'). Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
-    warn(
-
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-tests/test_main.py::test_app_initialization
-  /Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv3/lib/python3.13/site-packages/pydantic/v1/typing.py:68: DeprecationWarning: Failing to pass a value to the 'type_params' parameter of 'typing.ForwardRef._evaluate' is deprecated, as it leads to incorrect behaviour when calling typing.ForwardRef._evaluate on a stringified annotation that references a PEP 695 type parameter. It will be disallowed in Python 3.15.
-    return cast(Any, type_)._evaluate(globalns, localns, recursive_guard=set())
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-===================================================== short test summary info =====================================================
-FAILED tests/test_main.py::test_app_initialization - assert 404 == 200
-FAILED tests/test_main.py::test_cors_middleware - AssertionError: CORS middleware is missing
-FAILED tests/test_main.py::test_router_inclusion - AssertionError: assert '/v1/topicoutlines' in ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/v1/generate/topi...
+$ if [[ -n "$FLAKE8_IGNORE_CODES" ]]; then IGNORE_OPTION="--ignore=${FLAKE8_IGNORE_CODES}"; fi
+$ if [[ -n "$FLAKE8_SELECT_CODES" ]]; then SELECT_OPTION="--select=${FLAKE8_SELECT_CODES}"; fi
+$ flake8 ${IGNORE_OPTION} ${SELECT_OPTION} ${FLAKE8_ADDITIONAL_OPTS} ${SOURCE_DIR}
+./src/config.py:4:80: E501 line too long (90 > 79 characters)
+./src/config.py:5:1: F401 'typing.Callable' imported but unused
+./src/config.py:15:80: E501 line too long (91 > 79 characters)
+./src/config.py:19:1: W293 blank line contains whitespace
+./src/config.py:20:1: E302 expected 2 blank lines, found 1
+./src/config.py:24:80: E501 line too long (121 > 79 characters)
+./src/config.py:25:80: E501 line too long (131 > 79 characters)
+./src/config.py:30:5: E265 block comment should start with '# '
+./src/config.py:38:1: W293 blank line contains whitespace
+./src/config.py:48:1: W293 blank line contains whitespace
+./src/config.py:53:80: E501 line too long (99 > 79 characters)
+./src/config.py:54:80: E501 line too long (98 > 79 characters)
+./src/config.py:56:80: E501 line too long (102 > 79 characters)
+./src/config.py:68:59: W291 trailing whitespace
+./src/config.py:69:29: E128 continuation line under-indented for visual indent
+./src/config.py:70:29: E128 continuation line under-indented for visual indent
+./src/config.py:71:29: E128 continuation line under-indented for visual indent
+./src/config.py:72:29: E128 continuation line under-indented for visual indent
+./src/config.py:72:80: E501 line too long (81 > 79 characters)
+./src/config.py:73:29: E128 continuation line under-indented for visual indent
+./src/config.py:82:1: W293 blank line contains whitespace
+./src/config.py:87:23: W291 trailing whitespace
+./src/config.py:89:1: W293 blank line contains whitespace
+./src/config.py:94:1: E302 expected 2 blank lines, found 1
+./src/config.py:98:1: E302 expected 2 blank lines, found 1
+./src/config.py:100:26: W292 no newline at end of file
+./src/controller/routes.py:7:80: E501 line too long (82 > 79 characters)
+./src/controller/routes.py:14:1: F401 'config.settings' imported but unused
+./src/controller/routes.py:145:1: W293 blank line contains whitespace
+./src/controller/routes.py:160:5: F841 local variable 'error' is assigned to but never used
+./src/controller/routes.py:219:9: W291 trailing whitespace
+./src/controller/routes.py:224:1: W293 blank line contains whitespace
+./src/controller/routes.py:225:80: E501 line too long (88 > 79 characters)
+./src/controller/routes.py:233:80: E501 line too long (83 > 79 characters)
+./src/controller/routes.py:255:80: E501 line too long (83 > 79 characters)
+./src/controller/routes.py:266:80: E501 line too long (84 > 79 characters)
+./src/controller/routes.py:267:80: E501 line too long (81 > 79 characters)
+./src/controller/routes.py:294:80: E501 line too long (86 > 79 characters)
+./src/controller/routes.py:364:80: E501 line too long (83 > 79 characters)
+./src/controller/routes.py:375:80: E501 line too long (88 > 79 characters)
+./src/controller/routes.py:397:80: E501 line too long (97 > 79 characters)
+./src/controller/routes.py:446:80: E501 line too long (119 > 79 characters)
+./src/controller/routes.py:476:80: E501 line too long (102 > 79 characters)
+./src/controller/routes.py:483:80: E501 line too long (99 > 79 characters)
+./src/controller/routes.py:487:80: E501 line too long (81 > 79 characters)
+./src/model/aws/aws_helpers.py:9:1: E302 expected 2 blank lines, found 1
+./src/model/aws/aws_helpers.py:27:1: E302 expected 2 blank lines, found 1
+./src/model/aws/aws_helpers.py:48:1: E302 expected 2 blank lines, found 1
+./src/model/aws/aws_helpers.py:58:80: E501 line too long (106 > 79 characters)
+./src/model/aws/aws_helpers.py:63:19: W292 no newline at end of file
+./src/model/chunk_and_vectorise.py:5:1: F401 'os' imported but unused
+./src/model/chunk_and_vectorise.py:6:1: F401 'boto3' imported but unused
+./src/model/chunk_and_vectorise.py:14:1: E302 expected 2 blank lines, found 1
+./src/model/chunk_and_vectorise.py:14:80: E501 line too long (86 > 79 characters)
+./src/model/chunk_and_vectorise.py:28:31: E203 whitespace before ':'
+./src/model/chunk_and_vectorise.py:38:1: E302 expected 2 blank lines, found 1
+./src/model/chunk_and_vectorise.py:45:80: E501 line too long (95 > 79 characters)
+./src/model/chunk_and_vectorise.py:48:80: E501 line too long (100 > 79 characters)
+./src/model/chunk_and_vectorise.py:52:80: E501 line too long (99 > 79 characters)
+./src/model/chunk_and_vectorise.py:55:80: E501 line too long (96 > 79 characters)
+./src/model/chunk_and_vectorise.py:72:1: W293 blank line contains whitespace
+./src/model/chunk_and_vectorise.py:74:1: W293 blank line contains whitespace
+./src/model/chunk_and_vectorise.py:77:80: E501 line too long (83 > 79 characters)
+./src/model/chunk_and_vectorise.py:88:1: W293 blank line contains whitespace
+./src/model/chunk_and_vectorise.py:89:1: W293 blank line contains whitespace
+./src/model/chunk_and_vectorise.py:90:5: E303 too many blank lines (2)
+./src/model/content_creation/content_creation_funcs.py:11:80: E501 line too long (87 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:12:80: E501 line too long (81 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:18:80: E501 line too long (105 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:21:80: E501 line too long (123 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:25:80: E501 line too long (86 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:26:80: E501 line too long (90 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:29:80: E501 line too long (157 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:30:80: E501 line too long (102 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:31:80: E501 line too long (142 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:66:80: E501 line too long (85 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:66:83: E203 whitespace before ':'
+./src/model/content_creation/content_creation_funcs.py:85:39: E203 whitespace before ':'
+./src/model/content_creation/content_creation_funcs.py:89:80: E501 line too long (86 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:99:80: E501 line too long (90 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:118:80: E501 line too long (93 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:119:80: E501 line too long (99 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:125:80: E501 line too long (103 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:130:80: E501 line too long (108 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:133:80: E501 line too long (84 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:142:80: E501 line too long (84 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:154:80: E501 line too long (97 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:160:80: E501 line too long (82 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:175:80: E501 line too long (87 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:176:80: E501 line too long (96 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:178:80: E501 line too long (98 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:182:80: E501 line too long (91 > 79 characters)
+./src/model/content_creation/content_creation_funcs.py:189:80: E501 line too long (82 > 79 characters)
+./src/model/content_creation/llama3handler.py:2:80: E501 line too long (89 > 79 characters)
+./src/model/content_creation/llama3handler.py:7:80: E501 line too long (92 > 79 characters)
+./src/model/content_creation/llama3handler.py:13:80: E501 line too long (80 > 79 characters)
+./src/model/content_creation/llama3handler.py:19:80: E501 line too long (85 > 79 characters)
+./src/model/content_creation/llama3handler.py:61:80: E501 line too long (98 > 79 characters)
+./src/model/content_creation/llama3handler.py:70:80: E501 line too long (98 > 79 characters)
+./src/model/content_creation/llama3handler.py:84:80: E501 line too long (100 > 79 characters)
+./src/model/content_creation/llama3handler.py:90:80: E501 line too long (100 > 79 characters)
+./src/model/content_creation/llama3handler.py:103:80: E501 line too long (99 > 79 characters)
+./src/model/content_creation/llama3handler.py:110:80: E501 line too long (97 > 79 characters)
+./src/model/content_creation/llama3handler.py:116:80: E501 line too long (86 > 79 characters)
+./src/model/content_creation/llama3handler.py:128:80: E501 line too long (83 > 79 characters)
+./src/model/content_creation/llama3handler.py:133:80: E501 line too long (83 > 79 characters)
+./src/model/content_creation/llama3handler.py:137:80: E501 line too long (90 > 79 characters)
+./src/model/content_creation/llama3handler.py:138:80: E501 line too long (87 > 79 characters)
+./src/model/content_creation/llama3handler.py:167:80: E501 line too long (97 > 79 characters)
+./src/model/content_creation/llama3handler.py:170:80: E501 line too long (93 > 79 characters)
+./src/model/content_creation/prompt_builder.py:36:80: E501 line too long (99 > 79 characters)
+./src/model/content_creation/prompt_builder.py:45:80: E501 line too long (91 > 79 characters)
+./src/model/content_creation/prompt_builder.py:50:80: E501 line too long (80 > 79 characters)
+./src/model/content_creation/prompt_builder.py:52:80: E501 line too long (99 > 79 characters)
+./src/model/content_creation/prompt_builder.py:55:80: E501 line too long (92 > 79 characters)
+./src/model/content_creation/prompt_builder.py:57:80: E501 line too long (96 > 79 characters)
+./src/model/content_creation/prompt_builder.py:76:80: E501 line too long (80 > 79 characters)
+./src/model/content_creation/prompt_builder.py:83:80: E501 line too long (83 > 79 characters)
+./src/model/content_creation/prompt_builder.py:93:80: E501 line too long (83 > 79 characters)
+./src/model/content_creation/prompt_builder.py:94:80: E501 line too long (81 > 79 characters)
+./src/model/content_creation/prompt_builder.py:95:80: E501 line too long (83 > 79 characters)
+./src/model/content_creation/prompt_builder.py:126:80: E501 line too long (92 > 79 characters)
+./src/model/content_creation/prompt_builder.py:127:80: E501 line too long (100 > 79 characters)
+./src/model/content_creation/prompt_builder.py:128:80: E501 line too long (95 > 79 characters)
+./src/model/content_creation/prompt_builder.py:142:80: E501 line too long (124 > 79 characters)
+./src/model/content_creation/prompt_builder.py:171:80: E501 line too long (88 > 79 characters)
+./src/model/content_creation/prompt_builder.py:175:80: E501 line too long (84 > 79 characters)
+./src/model/content_creation/prompt_builder.py:176:80: E501 line too long (90 > 79 characters)
+./src/model/content_creation/prompt_builder.py:178:80: E501 line too long (94 > 79 characters)
+./src/model/content_creation/prompt_builder.py:180:80: E501 line too long (92 > 79 characters)
+./src/model/content_creation/prompt_builder.py:194:80: E501 line too long (80 > 79 characters)
+./src/model/csi/secrets_loader.py:6:1: E302 expected 2 blank lines, found 1
+./src/model/csi/secrets_loader.py:19:5: E722 do not use bare 'except'
+./src/model/csi/secrets_loader.py:26:5: E722 do not use bare 'except'
+./src/model/csi/secrets_loader.py:29:36: W292 no newline at end of file
+./src/model/dao.py:8:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:13:1: E305 expected 2 blank lines after class or function definition, found 1
+./src/model/dao.py:15:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:20:1: W293 blank line contains whitespace
+./src/model/dao.py:21:31: W291 trailing whitespace
+./src/model/dao.py:23:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:27:42: E203 whitespace before ':'
+./src/model/dao.py:27:43: E231 missing whitespace after ':'
+./src/model/dao.py:33:1: W293 blank line contains whitespace
+./src/model/dao.py:34:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:40:42: E202 whitespace before '}'
+./src/model/dao.py:44:9: E265 block comment should start with '# '
+./src/model/dao.py:48:9: E265 block comment should start with '# '
+./src/model/dao.py:48:34: W291 trailing whitespace
+./src/model/dao.py:53:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:54:1: W293 blank line contains whitespace
+./src/model/dao.py:60:1: W293 blank line contains whitespace
+./src/model/dao.py:69:80: E501 line too long (88 > 79 characters)
+./src/model/dao.py:70:1: W293 blank line contains whitespace
+./src/model/dao.py:71:80: E501 line too long (94 > 79 characters)
+./src/model/dao.py:76:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:77:1: W293 blank line contains whitespace
+./src/model/dao.py:78:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:80:9: W291 trailing whitespace
+./src/model/dao.py:84:62: E202 whitespace before '}'
+./src/model/dao.py:84:80: E501 line too long (99 > 79 characters)
+./src/model/dao.py:85:1: W293 blank line contains whitespace
+./src/model/dao.py:92:1: W293 blank line contains whitespace
+./src/model/dao.py:93:21: E711 comparison to None should be 'if cond is None:'
+./src/model/dao.py:94:80: E501 line too long (102 > 79 characters)
+./src/model/dao.py:95:80: E501 line too long (104 > 79 characters)
+./src/model/dao.py:96:1: W293 blank line contains whitespace
+./src/model/dao.py:99:1: W293 blank line contains whitespace
+./src/model/dao.py:101:1: W293 blank line contains whitespace
+./src/model/dao.py:104:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:105:1: W293 blank line contains whitespace
+./src/model/dao.py:106:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:108:9: W291 trailing whitespace
+./src/model/dao.py:113:39: E231 missing whitespace after ':'
+./src/model/dao.py:113:80: E501 line too long (87 > 79 characters)
+./src/model/dao.py:114:1: W293 blank line contains whitespace
+./src/model/dao.py:121:1: W293 blank line contains whitespace
+./src/model/dao.py:122:21: E711 comparison to None should be 'if cond is None:'
+./src/model/dao.py:123:80: E501 line too long (102 > 79 characters)
+./src/model/dao.py:124:80: E501 line too long (87 > 79 characters)
+./src/model/dao.py:125:1: W293 blank line contains whitespace
+./src/model/dao.py:128:1: W293 blank line contains whitespace
+./src/model/dao.py:130:1: W293 blank line contains whitespace
+./src/model/dao.py:133:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:135:1: E302 expected 2 blank lines, found 1
+./src/model/dao.py:137:9: W291 trailing whitespace
+./src/model/dao.py:142:39: E231 missing whitespace after ':'
+./src/model/dao.py:142:80: E501 line too long (85 > 79 characters)
+./src/model/dao.py:143:1: W293 blank line contains whitespace
+./src/model/dao.py:148:21: E711 comparison to None should be 'if cond is None:'
+./src/model/dao.py:149:80: E501 line too long (102 > 79 characters)
+./src/model/dao.py:150:80: E501 line too long (111 > 79 characters)
+./src/model/dao.py:151:26: E711 comparison to None should be 'if cond is None:'
+./src/model/dao.py:153:80: E501 line too long (100 > 79 characters)
+./src/model/dao.py:156:80: E501 line too long (86 > 79 characters)
+./src/model/dao.py:160:80: E501 line too long (83 > 79 characters)
+./src/model/dao.py:164:41: E203 whitespace before ':'
+./src/model/dao.py:167:80: E501 line too long (81 > 79 characters)
+./src/model/dao.py:169:1: W293 blank line contains whitespace
+./src/model/dao.py:170:80: E501 line too long (86 > 79 characters)
+./src/model/dao.py:175:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:176:1: W293 blank line contains whitespace
+./src/model/dao.py:178:80: E501 line too long (84 > 79 characters)
+./src/model/dao.py:186:1: W293 blank line contains whitespace
+./src/model/dao.py:188:80: E501 line too long (137 > 79 characters)
+./src/model/dao.py:189:80: E501 line too long (104 > 79 characters)
+./src/model/dao.py:190:1: W293 blank line contains whitespace
+./src/model/dao.py:191:80: E501 line too long (106 > 79 characters)
+./src/model/dao.py:195:80: E501 line too long (90 > 79 characters)
+./src/model/dao.py:196:80: E501 line too long (82 > 79 characters)
+./src/model/dao.py:197:1: W391 blank line at end of file
+./src/model/db_connection.py:2:1: F401 'bson.binary.UuidRepresentation' imported but unused
+./src/model/db_connection.py:4:1: F401 'os' imported but unused
+./src/model/db_connection.py:10:1: E302 expected 2 blank lines, found 1
+./src/model/db_connection.py:20:1: W293 blank line contains whitespace
+./src/model/db_connection.py:23:80: E501 line too long (122 > 79 characters)
+./src/model/db_connection.py:24:80: E501 line too long (176 > 79 characters)
+./src/model/db_connection.py:32:1: W293 blank line contains whitespace
+./src/model/db_connection.py:35:21: W292 no newline at end of file
+./src/model/gail_util_funcs.py:55:80: E501 line too long (95 > 79 characters)
+./src/model/gail_util_funcs.py:56:80: E501 line too long (85 > 79 characters)
+./src/model/gail_util_funcs.py:74:80: E501 line too long (104 > 79 characters)
+./src/model/gail_util_funcs.py:86:80: E501 line too long (122 > 79 characters)
+./src/model/generate_powerpoint/combine_script_and_bullets.py:3:80: E501 line too long (95 > 79 characters)
+./src/model/generate_powerpoint/combine_script_and_bullets.py:4:80: E501 line too long (85 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:44:1: E302 expected 2 blank lines, found 1
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:59:1: E302 expected 2 blank lines, found 1
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:68:32: E203 whitespace before ':'
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:81:80: E501 line too long (89 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:83:80: E501 line too long (94 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:178:80: E501 line too long (92 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:209:80: E501 line too long (80 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:269:80: E501 line too long (99 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:322:80: E501 line too long (91 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:462:80: E501 line too long (91 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:530:80: E501 line too long (89 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:750:80: E501 line too long (89 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:764:80: E501 line too long (80 > 79 characters)
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:822:1: E402 module level import not at top of file
+./src/model/generate_powerpoint/generate_powerpoint_presentation.py:824:1: E402 module level import not at top of file
