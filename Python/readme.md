@@ -39,3 +39,12 @@ autoflake --in-place --remove-unused-variables --remove-all-unused-imports -r .
 ignore = E501, W293, W391  # Ignore long lines and blank line issues
 max-line-length = 120  # Increase allowed line length
 exclude = .git,__pycache__,venv,tests/*
+
+
+
+pre-commit==3.6.0
+black==24.2.0
+autopep8==2.1.0
+autoflake==2.2.1
+flake8==7.0.0
+coverage==7.4.1
