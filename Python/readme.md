@@ -22,7 +22,7 @@ repos:
     hooks:
       - id: autopep8
         args: ["--in-place", "--aggressive", "--aggressive"]
-        
+
 
 pre-commit install
 pre-commit run --all-files
@@ -31,7 +31,7 @@ autopep8 --in-place --aggressive --aggressive -r src/
 
 autopep8 --diff -r src/
 
-
+autoflake --in-place --remove-unused-variables --remove-all-unused-imports -r .
 
 .flake8
 
