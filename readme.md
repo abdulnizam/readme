@@ -1,17 +1,9 @@
-mutmut_config.py
-
-# Define test command (Change this based on your test framework)
-test_command = "pytest --maxfail=1 --disable-warnings --quiet"
-
-# List of paths to exclude from mutation testing
-exclude_paths = [
-    "tests/",  # Exclude test files
-    "migrations/",  # Exclude Django migrations
-    "config.py",  # Exclude config files
-]
-
-# Timeout for running tests (in seconds)
-timeout_factor = 2.0  # Increase if tests take too long
-
-# Use cache to speed up runs
-use_coverage = True  # Set to True to only mutate covered code
+  File "/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv4/bin/mutmut", line 5, in <module>
+    from mutmut.__main__ import climain
+  File "/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv4/lib/python3.13/site-packages/mutmut/__main__.py", line 41, in <module>
+    from mutmut.cache import (
+    ...<2 lines>...
+    )
+  File "/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv4/lib/python3.13/site-packages/mutmut/cache.py", line 14, in <module>
+    from junit_xml import TestSuite, TestCase, to_xml_report_string
+ImportError: cannot import name 'to_xml_report_string' from 'junit_xml' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv4/lib/python3.13/site-packages/junit_xml/__init__.py)
