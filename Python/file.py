@@ -1,37 +1,69 @@
-import pytest
-from fastapi.testclient import TestClient
-from fastapi.middleware.cors import CORSMiddleware
+import boto3
+import os
+import logging
+from functools import wraps
+from botocore.exceptions import ClientError
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-    global client, app
-    from main import app
-    client = TestClient(app)
+logger = logging.getLogger()
 
-def test_app_initialization():
-    """Test that the FastAPI app initializes correctly."""
-    response = client.get("/v1/liveness")  # Assuming `/v1/liveness` is a health check endpoint
-    assert response.status_code == 200
-    assert response.json() == {"message": "TODO: implement liveness route"}  # Modify based on actual response
 
-def test_cors_middleware():
-    """Test that CORS middleware is configured correctly."""
-    assert app.middleware_stack is not None
+def get_credentials():
+    """Retrieve temporary AWS credentials using STS assume_role."""
+    try:
+        container_aws_role = os.getenv("CONTAINER_AWS_ROLE")
 
-    cors_config = None
-    for middleware in app.user_middleware:
-        if isinstance(middleware.cls, CORSMiddleware):
-            cors_config = middleware
-            break
+        sts_client = boto3.client("sts", verify=False)
 
-    assert cors_config is not None, "CORS middleware is missing"
-    assert cors_config.options["allow_origins"] == ["http://localhost", "http://localhost:8083"]
-    assert cors_config.options["allow_credentials"] is True
-    assert cors_config.options["allow_methods"] == ["*"]
-    assert cors_config.options["allow_headers"] == ["*"]
+        response = sts_client.assume_role(
+            RoleArn=container_aws_role, RoleSessionName="CrossAccountSession"
+        )
 
-def test_router_inclusion():
-    """Test that `generate_content_router_v1` is included in the app."""
-    routes = [route.path for route in app.router.routes]
-    assert "/v1/topicoutlines" in routes  # Adjust based on actual endpoints
-    assert "/v1/regeneratetopicoutlines" in routes  # Modify based on registered endpoints
+        logger.debug("%s credentials retrieved", container_aws_role)
+        return response["Credentials"]
+    except Exception as error:
+        logger.error(f"Error retrieving credentials: {error}")
+        raise error
+
+
+def get_client(service: str):
+    """Create a boto3 client with temporary credentials."""
+    try:
+        bedrock_endpoint = os.getenv("BEDROCK_ENDPOINT")
+
+        credentials = get_credentials()
+        # TODO: add DWP AWS CA chain
+        client = boto3.client(
+            service,
+            endpoint_url=bedrock_endpoint or None,
+            verify=False,
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+        )
+
+        return client
+    except Exception as e:  # Correctly capture the exception
+        logger.error(f"Error in get_client: {e}")
+        raise e
+
+
+def retry_if_invalid_settings(func):
+    """Decorator to retry function if settings are invalid."""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ClientError as error:
+            if hasattr(error, "response") and "Error" in error.response:
+                # If validation error, refresh settings and try again
+                if error.response["Error"]["Code"] == "ValidationException":
+                    # Import inside function to avoid circular import
+                    from config import refresh_settings
+
+                    refresh_settings()
+                    return func(*args, **kwargs)
+            # Raise an exception for any other error
+            raise error
+
+    return wrapper
