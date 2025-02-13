@@ -1,132 +1,74 @@
-import boto3
+import sys
 import os
-from pydantic import Field
-from pydantic_settings import (
-    BaseSettings,
-    SettingsConfigDict,
-    PydanticBaseSettingsSource,
-)
-from typing import Any
-import logging
+import pytest
+from unittest.mock import patch, MagicMock
 
-# Disable InsecureRequestWarning while DWP CA gets sorted out
-import warnings
-import urllib3
+# Get the absolute path of the project root
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+# Add `src/` to `sys.path`
+sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
-)
+required_env_vars = {
+    "APP_LOG_LEVEL": "debug",
+    "SERVICES_MALWARE_HOST": "clamav-api",
+    "SERVICES_MALWARE_PORT": "8087",
+    "BEDROCK_PII_GUARDRAIL_ID": "spidt98ibszt",
+    "BEDROCK_PII_GUARDRAIL_VERSION": "3",
+    "BEDROCK_EMBEDDING_MODEL_ID": "mock_model_id",
+    "BEDROCK_HARMS_GUARDRAIL_ID": "6qz78hvz3kfl",
+    "BEDROCK_HARMS_GUARDRAIL_VERSION": "1",
+    "BEDROCK_LLAMA3_8B_MODEL_ID": "test_model",
+    "BEDROCK_LLAMA3_70B_MODEL_ID": "test_model",
+    "BLOCKED_GUARDRAIL_MESSAGE": "Blocked",
+    "SERVICES_DOC_MANAGER_HOST": "http://localhost",
+    "DB_HOSTNAME": "mock_db_host",
+    "DB_PORT": "5432",
+    "DB_NAME": "mock_db",
+    "CONTAINER_AWS_ROLE": "arn:aws:iam::123456789012:role/TestRole",
+    "BEDROCK_ENDPOINT": "https://mock-endpoint",
+}
 
-logger = logging.getLogger(__name__)
+for key, value in required_env_vars.items():
+    os.environ[key] = value
 
 
-class Settings(BaseSettings):
-    services_malware_host: str
-    services_malware_port: int
-    app_log_level: str
-    bedrock_pii_guardrail_id: str = Field(
-        metadata={
-            "source_type": "ssm",
-            "name": os.getenv("BEDROCK_PII_GUARDRAIL_ID"),
+@pytest.fixture(scope="module")
+def mock_get_settings_and_boto3():
+    """Mock `config.get_settings` and `boto3.client` before importing `ai_models_config`."""
+
+    with patch("config.get_settings") as mock_get_settings, patch(
+        "boto3.client"
+    ) as mock_boto_client:
+
+        # Mock `config.get_settings`
+        mock_instance = MagicMock()
+        mock_instance.bedrock_llama3_8b_model_id = "test_model"
+        mock_instance.bedrock_llama3_70b_model_id = "test_model"
+        mock_instance.bedrock_embedding_model_id = "mock_model_id"
+        mock_instance.bedrock_harms_guardrail_id = "6qz78hvz3kfl"
+        mock_instance.bedrock_harms_guardrail_version = "1"
+        mock_instance.blocked_guardrail_message = "Blocked"
+        mock_instance.services_doc_manager_host = "http://localhost"
+        mock_get_settings.return_value = mock_instance
+
+        # Mock `boto3.client`
+        mock_sts_client = MagicMock()
+        mock_sts_client.assume_role.return_value = {
+            "Credentials": {
+                "AccessKeyId": "mock-access-key",
+                "SecretAccessKey": "mock-secret-key",
+                "SessionToken": "mock-session-token",
+            }
         }
-    )
-    bedrock_pii_guardrail_version: str = Field(
-        metadata={
-            "source_type": "ssm",
-            "name": os.getenv("BEDROCK_PII_GUARDRAIL_VERSION"),
-        }
-    )
-    bedrock_embedding_model_id: str
-    db_hostname: str
-    db_port: str
-    db_name: str
-    # credentials_profile_name: str
 
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
+        mock_bedrock_client = MagicMock()
 
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        def mock_boto_service(service_name, *args, **kwargs):
+            if service_name == "sts":
+                return mock_sts_client
+            return mock_bedrock_client
 
-        def aws_source() -> dict[str, Any]:
-            data = {}
-            # Iterate over fields and check which ones are AWS secrets
-            for field_name, field_model in cls.model_fields.items():
-                if (
-                    field_model.json_schema_extra
-                    and field_model.json_schema_extra.get("metadata")
-                ):
-                    source_type = field_model.json_schema_extra.get(
-                        "metadata"
-                    ).get("source_type")
-                    sts_client = boto3.client("sts", verify=False)
-                    value_name = field_model.json_schema_extra.get(
-                        "metadata"
-                    ).get("name", field_name)
-                    container_aws_role = os.getenv("CONTAINER_AWS_ROLE")
+        mock_boto_client.side_effect = mock_boto_service
 
-                    try:
-                        response = sts_client.assume_role(
-                            RoleArn=container_aws_role,
-                            RoleSessionName="CrossAccountSession",
-                        )
-
-                        credentials = response["Credentials"]
-
-                        # TODO: add DWP AWS CA chain
-                        client = boto3.client(
-                            source_type,
-                            # endpoint_url=custom_endpoint,
-                            verify=False,
-                            aws_access_key_id=credentials["AccessKeyId"],
-                            aws_secret_access_key=credentials[
-                                "SecretAccessKey"
-                            ],
-                            aws_session_token=credentials["SessionToken"],
-                        )
-
-                        response = client.get_parameter(Name=value_name)
-                        value = response["Parameter"]["Value"]
-
-                        data[field_name] = value
-                    except Exception as e:
-                        logger.error(e)
-
-            return data
-
-        # Return sources in the desired priority:
-        # 1. AWS Secrets Manager
-        # 2. Environment variables
-        # 3. .env file
-        return aws_source, env_settings, dotenv_settings
-
-
-settings = Settings()
-
-# Use get_settings to return the latest values (in case of refresh)
-
-
-def get_settings():
-    return settings
-
-
-# Refresh the settings
-
-
-def refresh_settings():
-    global settings
-    settings = Settings()
+        yield mock_get_settings, mock_boto_client
