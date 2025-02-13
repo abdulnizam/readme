@@ -1,69 +1,132 @@
 import boto3
 import os
+from pydantic import Field
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+    PydanticBaseSettingsSource,
+)
+from typing import Any
 import logging
-from functools import wraps
-from botocore.exceptions import ClientError
 
-logger = logging.getLogger()
+# Disable InsecureRequestWarning while DWP CA gets sorted out
+import warnings
+import urllib3
 
+warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
 
-def get_credentials():
-    """Retrieve temporary AWS credentials using STS assume_role."""
-    try:
-        container_aws_role = os.getenv("CONTAINER_AWS_ROLE")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
+)
 
-        sts_client = boto3.client("sts", verify=False)
-
-        response = sts_client.assume_role(
-            RoleArn=container_aws_role, RoleSessionName="CrossAccountSession"
-        )
-
-        logger.debug("%s credentials retrieved", container_aws_role)
-        return response["Credentials"]
-    except Exception as error:
-        logger.error(f"Error retrieving credentials: {error}")
-        raise error
+logger = logging.getLogger(__name__)
 
 
-def get_client(service: str):
-    """Create a boto3 client with temporary credentials."""
-    try:
-        bedrock_endpoint = os.getenv("BEDROCK_ENDPOINT")
+class Settings(BaseSettings):
+    services_malware_host: str
+    services_malware_port: int
+    app_log_level: str
+    bedrock_pii_guardrail_id: str = Field(
+        metadata={
+            "source_type": "ssm",
+            "name": os.getenv("BEDROCK_PII_GUARDRAIL_ID"),
+        }
+    )
+    bedrock_pii_guardrail_version: str = Field(
+        metadata={
+            "source_type": "ssm",
+            "name": os.getenv("BEDROCK_PII_GUARDRAIL_VERSION"),
+        }
+    )
+    bedrock_embedding_model_id: str
+    db_hostname: str
+    db_port: str
+    db_name: str
+    # credentials_profile_name: str
 
-        credentials = get_credentials()
-        # TODO: add DWP AWS CA chain
-        client = boto3.client(
-            service,
-            endpoint_url=bedrock_endpoint or None,
-            verify=False,
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-        )
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
-        return client
-    except Exception as e:  # Correctly capture the exception
-        logger.error(f"Error in get_client: {e}")
-        raise e
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+
+        def aws_source() -> dict[str, Any]:
+            data = {}
+            # Iterate over fields and check which ones are AWS secrets
+            for field_name, field_model in cls.model_fields.items():
+                if (
+                    field_model.json_schema_extra
+                    and field_model.json_schema_extra.get("metadata")
+                ):
+                    source_type = field_model.json_schema_extra.get(
+                        "metadata"
+                    ).get("source_type")
+                    sts_client = boto3.client("sts", verify=False)
+                    value_name = field_model.json_schema_extra.get(
+                        "metadata"
+                    ).get("name", field_name)
+                    container_aws_role = os.getenv("CONTAINER_AWS_ROLE")
+
+                    try:
+                        response = sts_client.assume_role(
+                            RoleArn=container_aws_role,
+                            RoleSessionName="CrossAccountSession",
+                        )
+
+                        credentials = response["Credentials"]
+
+                        # TODO: add DWP AWS CA chain
+                        client = boto3.client(
+                            source_type,
+                            # endpoint_url=custom_endpoint,
+                            verify=False,
+                            aws_access_key_id=credentials["AccessKeyId"],
+                            aws_secret_access_key=credentials[
+                                "SecretAccessKey"
+                            ],
+                            aws_session_token=credentials["SessionToken"],
+                        )
+
+                        response = client.get_parameter(Name=value_name)
+                        value = response["Parameter"]["Value"]
+
+                        data[field_name] = value
+                    except Exception as e:
+                        logger.error(e)
+
+            return data
+
+        # Return sources in the desired priority:
+        # 1. AWS Secrets Manager
+        # 2. Environment variables
+        # 3. .env file
+        return aws_source, env_settings, dotenv_settings
 
 
-def retry_if_invalid_settings(func):
-    """Decorator to retry function if settings are invalid."""
+settings = Settings()
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ClientError as error:
-            if hasattr(error, "response") and "Error" in error.response:
-                # If validation error, refresh settings and try again
-                if error.response["Error"]["Code"] == "ValidationException":
-                    # Import inside function to avoid circular import
-                    from config import refresh_settings
+# Use get_settings to return the latest values (in case of refresh)
 
-                    refresh_settings()
-                    return func(*args, **kwargs)
-            # Raise an exception for any other error
-            raise error
 
-    return wrapper
+def get_settings():
+    return settings
+
+
+# Refresh the settings
+
+
+def refresh_settings():
+    global settings
+    settings = Settings()
