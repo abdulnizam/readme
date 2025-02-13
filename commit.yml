@@ -1,40 +1,384 @@
-boto3==1.35.31
-fastapi==0.112.1
-httpx==0.27.2
-uvicorn[standard]
-python-multipart==0.0.6
-requests==2.32.3
-mammoth==1.8.0
-markdownify==0.13.1
-matplotlib
-mongomock==4.2.0.post1
-langchain_aws
-pandas==2.2.2
-pptx2md==1.7.1
-pymongo==4.10.1
-pydantic-settings==2.6.1
-pymupdf4llm==0.0.16
-python-pptx==1.0.2
-scipy
-python-docx==1.1.2
-pre-commit
-autopep8
-autoflake
-flake8
-commitizen
-awscli
-regex==2024.11.6
-mypy
-types-pkg-resources==0.1.3
-# mutmut==2.4.0 this is commented because mutmut takes too much time
+<?xml version="1.0" ?>
+<testsuites failures="22" errors="1" tests="33" disabled="0" time="0.0">
+	<testsuite name="mutmut" disabled="0" failures="22" errors="1" skipped="0" time="0" tests="33">
+		<testcase name="Mutant #1" file="src/config.py" line="15">
+			<system-out>warnings.simplefilter(&quot;ignore&quot;, urllib3.exceptions.InsecureRequestWarning)</system-out>
+		</testcase>
+		<testcase name="Mutant #2" file="src/config.py" line="19">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -17,7 +17,7 @@
+ 
+ logging.basicConfig(
+     level=logging.INFO,
+-    format=&quot;%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s&quot;,
++    format=&quot;XX%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)sXX&quot;,
+ )
+ 
+ logger = logging.getLogger(__name__)
+</failure>
+			<system-out>    format=&quot;%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #3" file="src/config.py" line="22">
+			<system-out>logger = logging.getLogger(__name__)</system-out>
+		</testcase>
+		<testcase name="Mutant #4" file="src/config.py" line="31">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -29,7 +29,7 @@
+     app_log_level: str
+     bedrock_pii_guardrail_id: str = Field(
+         metadata={
+-            &quot;source_type&quot;: &quot;ssm&quot;,
++            &quot;XXsource_typeXX&quot;: &quot;ssm&quot;,
+             &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),
+         }
+     )
+</failure>
+			<system-out>            &quot;source_type&quot;: &quot;ssm&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #5" file="src/config.py" line="31">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -29,7 +29,7 @@
+     app_log_level: str
+     bedrock_pii_guardrail_id: str = Field(
+         metadata={
+-            &quot;source_type&quot;: &quot;ssm&quot;,
++            &quot;source_type&quot;: &quot;XXssmXX&quot;,
+             &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),
+         }
+     )
+</failure>
+			<system-out>            &quot;source_type&quot;: &quot;ssm&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #6" file="src/config.py" line="32">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -30,7 +30,7 @@
+     bedrock_pii_guardrail_id: str = Field(
+         metadata={
+             &quot;source_type&quot;: &quot;ssm&quot;,
+-            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),
++            &quot;XXnameXX&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),
+         }
+     )
+     bedrock_pii_guardrail_version: str = Field(
+</failure>
+			<system-out>            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),</system-out>
+		</testcase>
+		<testcase name="Mutant #7" file="src/config.py" line="32">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -30,7 +30,7 @@
+     bedrock_pii_guardrail_id: str = Field(
+         metadata={
+             &quot;source_type&quot;: &quot;ssm&quot;,
+-            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),
++            &quot;name&quot;: os.getenv(&quot;XXBEDROCK_PII_GUARDRAIL_IDXX&quot;),
+         }
+     )
+     bedrock_pii_guardrail_version: str = Field(
+</failure>
+			<system-out>            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_ID&quot;),</system-out>
+		</testcase>
+		<testcase name="Mutant #8" file="src/config.py" line="37">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -35,7 +35,7 @@
+     )
+     bedrock_pii_guardrail_version: str = Field(
+         metadata={
+-            &quot;source_type&quot;: &quot;ssm&quot;,
++            &quot;XXsource_typeXX&quot;: &quot;ssm&quot;,
+             &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),
+         }
+     )
+</failure>
+			<system-out>            &quot;source_type&quot;: &quot;ssm&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #9" file="src/config.py" line="37">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -35,7 +35,7 @@
+     )
+     bedrock_pii_guardrail_version: str = Field(
+         metadata={
+-            &quot;source_type&quot;: &quot;ssm&quot;,
++            &quot;source_type&quot;: &quot;XXssmXX&quot;,
+             &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),
+         }
+     )
+</failure>
+			<system-out>            &quot;source_type&quot;: &quot;ssm&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #10" file="src/config.py" line="38">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -36,7 +36,7 @@
+     bedrock_pii_guardrail_version: str = Field(
+         metadata={
+             &quot;source_type&quot;: &quot;ssm&quot;,
+-            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),
++            &quot;XXnameXX&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),
+         }
+     )
+     bedrock_embedding_model_id: str
+</failure>
+			<system-out>            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),</system-out>
+		</testcase>
+		<testcase name="Mutant #11" file="src/config.py" line="38">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -36,7 +36,7 @@
+     bedrock_pii_guardrail_version: str = Field(
+         metadata={
+             &quot;source_type&quot;: &quot;ssm&quot;,
+-            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),
++            &quot;name&quot;: os.getenv(&quot;XXBEDROCK_PII_GUARDRAIL_VERSIONXX&quot;),
+         }
+     )
+     bedrock_embedding_model_id: str
+</failure>
+			<system-out>            &quot;name&quot;: os.getenv(&quot;BEDROCK_PII_GUARDRAIL_VERSION&quot;),</system-out>
+		</testcase>
+		<testcase name="Mutant #12" file="src/config.py" line="48">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -46,7 +46,7 @@
+     # credentials_profile_name: str
+ 
+     model_config = SettingsConfigDict(
+-        env_file=&quot;.env&quot;,
++        env_file=&quot;XX.envXX&quot;,
+         env_file_encoding=&quot;utf-8&quot;,
+         case_sensitive=False,
+         extra=&quot;ignore&quot;,
+</failure>
+			<system-out>        env_file=&quot;.env&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #13" file="src/config.py" line="49">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -47,7 +47,7 @@
+ 
+     model_config = SettingsConfigDict(
+         env_file=&quot;.env&quot;,
+-        env_file_encoding=&quot;utf-8&quot;,
++        env_file_encoding=&quot;XXutf-8XX&quot;,
+         case_sensitive=False,
+         extra=&quot;ignore&quot;,
+     )
+</failure>
+			<system-out>        env_file_encoding=&quot;utf-8&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #14" file="src/config.py" line="50">
+			<system-out>        case_sensitive=False,</system-out>
+		</testcase>
+		<testcase name="Mutant #15" file="src/config.py" line="51">
+			<system-out>        extra=&quot;ignore&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #16" file="src/config.py" line="54">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -52,7 +52,6 @@
+         extra=&quot;ignore&quot;,
+     )
+ 
+-    @classmethod
+     def settings_customise_sources(
+         cls,
+         settings_cls: type[BaseSettings],
+</failure>
+			<system-out>    @classmethod</system-out>
+		</testcase>
+		<testcase name="Mutant #17" file="src/config.py" line="65">
+			<system-out>            data = {}</system-out>
+		</testcase>
+		<testcase name="Mutant #18" file="src/config.py" line="70">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -68,7 +68,7 @@
+             for field_name, field_model in cls.model_fields.items():
+                 if (
+                     field_model.json_schema_extra
+-                    and field_model.json_schema_extra.get(&quot;metadata&quot;)
++                    and field_model.json_schema_extra.get(&quot;XXmetadataXX&quot;)
+                 ):
+                     source_type = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+</failure>
+			<system-out>                    and field_model.json_schema_extra.get(&quot;metadata&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #19" file="src/config.py" line="70">
+			<system-out>                    and field_model.json_schema_extra.get(&quot;metadata&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #20" file="src/config.py" line="73">
+			<system-out>                        &quot;metadata&quot;</system-out>
+		</testcase>
+		<testcase name="Mutant #21" file="src/config.py" line="74">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -72,7 +72,7 @@
+                 ):
+                     source_type = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+-                    ).get(&quot;source_type&quot;)
++                    ).get(&quot;XXsource_typeXX&quot;)
+                     sts_client = boto3.client(&quot;sts&quot;, verify=False)
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+</failure>
+			<system-out>                    ).get(&quot;source_type&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #22" file="src/config.py" line="74">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -70,9 +70,7 @@
+                     field_model.json_schema_extra
+                     and field_model.json_schema_extra.get(&quot;metadata&quot;)
+                 ):
+-                    source_type = field_model.json_schema_extra.get(
+-                        &quot;metadata&quot;
+-                    ).get(&quot;source_type&quot;)
++                    source_type = None
+                     sts_client = boto3.client(&quot;sts&quot;, verify=False)
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+</failure>
+			<system-out>                    ).get(&quot;source_type&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #23" file="src/config.py" line="75">
+			<system-out>                    sts_client = boto3.client(&quot;sts&quot;, verify=False)</system-out>
+		</testcase>
+		<testcase name="Mutant #24" file="src/config.py" line="75">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -73,7 +73,7 @@
+                     source_type = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;source_type&quot;)
+-                    sts_client = boto3.client(&quot;sts&quot;, verify=False)
++                    sts_client = boto3.client(&quot;sts&quot;, verify=True)
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;name&quot;, field_name)
+</failure>
+			<system-out>                    sts_client = boto3.client(&quot;sts&quot;, verify=False)</system-out>
+		</testcase>
+		<testcase name="Mutant #25" file="src/config.py" line="75">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -73,7 +73,7 @@
+                     source_type = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;source_type&quot;)
+-                    sts_client = boto3.client(&quot;sts&quot;, verify=False)
++                    sts_client = None
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;name&quot;, field_name)
+</failure>
+			<system-out>                    sts_client = boto3.client(&quot;sts&quot;, verify=False)</system-out>
+		</testcase>
+		<testcase name="Mutant #26" file="src/config.py" line="77">
+			<system-out>                        &quot;metadata&quot;</system-out>
+		</testcase>
+		<testcase name="Mutant #27" file="src/config.py" line="78">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -76,7 +76,7 @@
+                     sts_client = boto3.client(&quot;sts&quot;, verify=False)
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+-                    ).get(&quot;name&quot;, field_name)
++                    ).get(&quot;XXnameXX&quot;, field_name)
+                     container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)
+ 
+                     try:
+</failure>
+			<system-out>                    ).get(&quot;name&quot;, field_name)</system-out>
+		</testcase>
+		<testcase name="Mutant #28" file="src/config.py" line="78">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -74,9 +74,7 @@
+                         &quot;metadata&quot;
+                     ).get(&quot;source_type&quot;)
+                     sts_client = boto3.client(&quot;sts&quot;, verify=False)
+-                    value_name = field_model.json_schema_extra.get(
+-                        &quot;metadata&quot;
+-                    ).get(&quot;name&quot;, field_name)
++                    value_name = None
+                     container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)
+ 
+                     try:
+</failure>
+			<system-out>                    ).get(&quot;name&quot;, field_name)</system-out>
+		</testcase>
+		<testcase name="Mutant #29" file="src/config.py" line="79">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -77,7 +77,7 @@
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;name&quot;, field_name)
+-                    container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)
++                    container_aws_role = os.getenv(&quot;XXCONTAINER_AWS_ROLEXX&quot;)
+ 
+                     try:
+                         response = sts_client.assume_role(
+</failure>
+			<system-out>                    container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #30" file="src/config.py" line="79">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -77,7 +77,7 @@
+                     value_name = field_model.json_schema_extra.get(
+                         &quot;metadata&quot;
+                     ).get(&quot;name&quot;, field_name)
+-                    container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)
++                    container_aws_role = None
+ 
+                     try:
+                         response = sts_client.assume_role(
+</failure>
+			<system-out>                    container_aws_role = os.getenv(&quot;CONTAINER_AWS_ROLE&quot;)</system-out>
+		</testcase>
+		<testcase name="Mutant #31" file="src/config.py" line="84">
+			<failure type="failure" message="bad_survived">--- src/config.py
++++ src/config.py
+@@ -82,7 +82,7 @@
+                     try:
+                         response = sts_client.assume_role(
+                             RoleArn=container_aws_role,
+-                            RoleSessionName=&quot;CrossAccountSession&quot;,
++                            RoleSessionName=&quot;XXCrossAccountSessionXX&quot;,
+                         )
+ 
+                         credentials = response[&quot;Credentials&quot;]
+</failure>
+			<system-out>                            RoleSessionName=&quot;CrossAccountSession&quot;,</system-out>
+		</testcase>
+		<testcase name="Mutant #32" file="src/config.py" line="117">
+			<system-out>settings = Settings()</system-out>
+		</testcase>
+		<testcase name="Mutant #33" file="src/model/aws/aws_helpers.py" line="6">
+			<error type="error" message="ok_suspicious">--- src/model/aws/aws_helpers.py
++++ src/model/aws/aws_helpers.py
+@@ -4,7 +4,7 @@
+ from functools import wraps
+ from botocore.exceptions import ClientError
+ 
+-logger = logging.getLogger()
++logger = None
+ 
+ 
+ def get_credentials():
+</error>
+			<system-out>logger = logging.getLogger()</system-out>
+		</testcase>
+	</testsuite>
+</testsuites>
 
-# Core pytest requirements
-pytest==8.3.4                  
-pytest-asyncio==0.25.3
-pytest-mock==3.14.0
-pytest-cov==6.0.0
-pytest-anyio
-pytest-mock-resources==2.12.1
-pytest-timeout==2.3.1
-pytest-xdist==3.5.0
-json-repair==0.35.0
