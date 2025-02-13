@@ -9,29 +9,31 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Add `src/` to `sys.path`
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
 
-required_env_vars = {
-    "APP_LOG_LEVEL": "debug",
-    "SERVICES_MALWARE_HOST": "clamav-api",
-    "SERVICES_MALWARE_PORT": "8087",
-    "BEDROCK_PII_GUARDRAIL_ID": "spidt98ibszt",
-    "BEDROCK_PII_GUARDRAIL_VERSION": "3",
-    "BEDROCK_EMBEDDING_MODEL_ID": "mock_model_id",
-    "BEDROCK_HARMS_GUARDRAIL_ID": "6qz78hvz3kfl",
-    "BEDROCK_HARMS_GUARDRAIL_VERSION": "1",
-    "BEDROCK_LLAMA3_8B_MODEL_ID": "test_model",
-    "BEDROCK_LLAMA3_70B_MODEL_ID": "test_model",
-    "BLOCKED_GUARDRAIL_MESSAGE": "Blocked",
-    "SERVICES_DOC_MANAGER_HOST": "http://localhost",
-    "DB_HOSTNAME": "mock_db_host",
-    "DB_PORT": "5432",
-    "DB_NAME": "mock_db",
-    "CONTAINER_AWS_ROLE": "arn:aws:iam::123456789012:role/TestRole",
-    "BEDROCK_ENDPOINT": "https://mock-endpoint",
-}
+@pytest.fixture(scope="session", autouse=True)
+def set_mock_env_vars():
+    """Mock required environment variables globally before tests start."""
+    required_env_vars = {
+        "APP_LOG_LEVEL": "debug",
+        "SERVICES_MALWARE_HOST": "clamav-api",
+        "SERVICES_MALWARE_PORT": "8087",
+        "BEDROCK_PII_GUARDRAIL_ID": "mock-guardrail-id",
+        "BEDROCK_PII_GUARDRAIL_VERSION": "mock-guardrail-version",
+        "BEDROCK_EMBEDDING_MODEL_ID": "mock_model_id",
+        "BEDROCK_HARMS_GUARDRAIL_ID": "6qz78hvz3kfl",
+        "BEDROCK_HARMS_GUARDRAIL_VERSION": "1",
+        "BEDROCK_LLAMA3_8B_MODEL_ID": "test_model",
+        "BEDROCK_LLAMA3_70B_MODEL_ID": "test_model",
+        "BLOCKED_GUARDRAIL_MESSAGE": "Blocked",
+        "SERVICES_DOC_MANAGER_HOST": "http://localhost",
+        "DB_HOSTNAME": "mock_db_host",
+        "DB_PORT": "5432",
+        "DB_NAME": "mock_db",
+        "CONTAINER_AWS_ROLE": "arn:aws:iam::123456789012:role/TestRole",
+        "BEDROCK_ENDPOINT": "https://mock-endpoint",
+    }
 
-for key, value in required_env_vars.items():
-    os.environ[key] = value
-
+    with patch.dict(os.environ, required_env_vars, clear=True):
+        yield  # Ensure all tests use the mocked environment variables
 
 @pytest.fixture(scope="module")
 def mock_get_settings_and_boto3():
