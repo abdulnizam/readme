@@ -1,436 +1,135 @@
 
-tests/test_main.py EEEEEEEEEEE                                                                                     [100%]
+tests/test_main.py .FFFFFF.F.F                                                                                     [100%]
 
-========================================================= ERRORS =========================================================
-_______________________________________ ERROR at setup of test_app_initialization ________________________________________
+======================================================== FAILURES ========================================================
+_________________________________________________ test_router_inclusion __________________________________________________
 
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
+    def test_router_inclusion():
+        """Test that `doc_manager_router_v1` is included in the app."""
+        routes = [route.path for route in app.router.routes]
     
-        original = DEFAULT
-        local = False
+        assert "/v1/writeknowledgecheck" in routes
+        assert "/v1/writepowerpoint" in routes
+>       assert "/v1/liveness" in routes
+E       AssertionError: assert '/v1/liveness' in ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/v1/uploadnameandpurpose', '/v1/scanfile', ...]
+
+tests/test_main.py:33: AssertionError
+________________________ test_writeknowledgecheck_edge_cases[input_data0-200-expected_response0] _________________________
+
+input_data = {'data': 'valid input'}, expected_status = 200, expected_response = {'result': 'success'}
+
+    @pytest.mark.parametrize("input_data, expected_status, expected_response", [
+        ({"data": "valid input"}, 200, {"result": "success"}),  # Happy path
+        ({}, 400, {"detail": "Bad request, missing data"}),  # Missing data
+        ({"data": None}, 422, {"detail": "Invalid input type"}),  # Invalid type
+    ])
+    def test_writeknowledgecheck_edge_cases(input_data, expected_status, expected_response):
+        """Test /v1/writeknowledgecheck with various inputs"""
+        response = client.post("/v1/writeknowledgecheck", json=input_data)
     
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
+>       assert response.status_code == expected_status
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_main.py:45: AssertionError
+________________________ test_writeknowledgecheck_edge_cases[input_data1-400-expected_response1] _________________________
+
+input_data = {}, expected_status = 400, expected_response = {'detail': 'Bad request, missing data'}
+
+    @pytest.mark.parametrize("input_data, expected_status, expected_response", [
+        ({"data": "valid input"}, 200, {"result": "success"}),  # Happy path
+        ({}, 400, {"detail": "Bad request, missing data"}),  # Missing data
+        ({"data": None}, 422, {"detail": "Invalid input type"}),  # Invalid type
+    ])
+    def test_writeknowledgecheck_edge_cases(input_data, expected_status, expected_response):
+        """Test /v1/writeknowledgecheck with various inputs"""
+        response = client.post("/v1/writeknowledgecheck", json=input_data)
     
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
+>       assert response.status_code == expected_status
+E       assert 422 == 400
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_main.py:45: AssertionError
+________________________ test_writeknowledgecheck_edge_cases[input_data2-422-expected_response2] _________________________
+
+input_data = {'data': None}, expected_status = 422, expected_response = {'detail': 'Invalid input type'}
+
+    @pytest.mark.parametrize("input_data, expected_status, expected_response", [
+        ({"data": "valid input"}, 200, {"result": "success"}),  # Happy path
+        ({}, 400, {"detail": "Bad request, missing data"}),  # Missing data
+        ({"data": None}, 422, {"detail": "Invalid input type"}),  # Invalid type
+    ])
+    def test_writeknowledgecheck_edge_cases(input_data, expected_status, expected_response):
+        """Test /v1/writeknowledgecheck with various inputs"""
+        response = client.post("/v1/writeknowledgecheck", json=input_data)
     
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
+        assert response.status_code == expected_status
+>       assert response.json() == expected_response
+E       AssertionError: assert {'detail': [{...: 'missing'}]} == {'detail': 'I...d input type'}
+E         
+E         Differing items:
+E         {'detail': [{'input': {'data': None}, 'loc': ['body', 'extension'], 'msg': 'Field required', 'type': 'missing'}, {'inp... 'type': 'missing'}, {'input': {'data': None}, 'loc': ['body', 'topics'], 'msg': 'Field required', 'type': 'missing'}]} != {'detail': 'Invalid input type'}
+E         Use -v to get more diff
 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-________________________________________ ERROR at setup of test_router_inclusion _________________________________________
+tests/test_main.py:46: AssertionError
+____________________________________ test_writepowerpoint_edge_cases[input_data0-201] ____________________________________
 
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
+input_data = {'content': 'Valid presentation', 'slides': 5}, expected_status = 201
 
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
+    @pytest.mark.parametrize("input_data, expected_status", [
+        ({"slides": 5, "content": "Valid presentation"}, 201),  # Normal case
+        ({}, 400),  # Missing content
+        ({"slides": "invalid"}, 422),  # Wrong type
+    ])
+    def test_writepowerpoint_edge_cases(input_data, expected_status):
+        """Test /v1/writepowerpoint for valid and invalid input handling"""
+        response = client.post("/v1/writepowerpoint", json=input_data)
     
-        original = DEFAULT
-        local = False
+>       assert response.status_code == expected_status
+E       assert 422 == 201
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_main.py:58: AssertionError
+____________________________________ test_writepowerpoint_edge_cases[input_data1-400] ____________________________________
+
+input_data = {}, expected_status = 400
+
+    @pytest.mark.parametrize("input_data, expected_status", [
+        ({"slides": 5, "content": "Valid presentation"}, 201),  # Normal case
+        ({}, 400),  # Missing content
+        ({"slides": "invalid"}, 422),  # Wrong type
+    ])
+    def test_writepowerpoint_edge_cases(input_data, expected_status):
+        """Test /v1/writepowerpoint for valid and invalid input handling"""
+        response = client.post("/v1/writepowerpoint", json=input_data)
     
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
+>       assert response.status_code == expected_status
+E       assert 422 == 400
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+tests/test_main.py:58: AssertionError
+___________________________________________________ test_cors_enabled ____________________________________________________
+
+    def test_cors_enabled():
+        """Test that CORS middleware is working correctly"""
+        response = client.options("/v1/liveness", headers={"Origin": "http://localhost"})
     
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response [405 Method Not Allowed]>.status_code
+
+tests/test_main.py:65: AssertionError
+____________________________________________________ test_healthcheck ____________________________________________________
+
+    def test_healthcheck():
+        """Test that a basic health check endpoint works"""
+        response = client.get("/v1/health")
     
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________ ERROR at setup of test_writeknowledgecheck_edge_cases[input_data0-200-expected_response0] ________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________ ERROR at setup of test_writeknowledgecheck_edge_cases[input_data1-400-expected_response1] ________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________ ERROR at setup of test_writeknowledgecheck_edge_cases[input_data2-422-expected_response2] ________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-___________________________ ERROR at setup of test_writepowerpoint_edge_cases[input_data0-201] ___________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-___________________________ ERROR at setup of test_writepowerpoint_edge_cases[input_data1-400] ___________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-___________________________ ERROR at setup of test_writepowerpoint_edge_cases[input_data2-422] ___________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-__________________________________________ ERROR at setup of test_cors_enabled ___________________________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-__________________________________________ ERROR at setup of test_404_not_found __________________________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-___________________________________________ ERROR at setup of test_healthcheck ___________________________________________
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_dependencies():
-        """Setup mocked dependencies before tests"""
->       with patch("controller.routes.some_dependency") as mock_dependency:
-
-tests/test_main.py:14: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <unittest.mock._patch object at 0x12fbba910>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/controller/routes.py'> does not have the attribute 'some_dependency'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
+tests/test_main.py:79: AssertionError
 ==================================================== warnings summary ====================================================
 ../venv6/lib/python3.11/site-packages/pydantic/fields.py:1032
 ../venv6/lib/python3.11/site-packages/pydantic/fields.py:1032
@@ -456,7 +155,7 @@ Name                                                                Stmts   Miss
 src/__init__.py                                                         0      0   100%
 src/config.py                                                          48      7    85%
 src/controller/__init__.py                                              0      0   100%
-src/controller/routes.py                                              263    177    33%
+src/controller/routes.py                                              263    176    33%
 src/main.py                                                             8      0   100%
 src/model/__init__.py                                                   0      0   100%
 src/model/aws/__init__.py                                               0      0   100%
@@ -479,18 +178,16 @@ src/model/pii_mask.py                                                  38     30
 src/model/process_uploaded_file.py                                     88     71    19%
 src/model/scan_file_for_malware.py                                     22     13    41%
 ---------------------------------------------------------------------------------------
-TOTAL                                                                1246    965    23%
+TOTAL                                                                1246    964    23%
 
 ================================================ short test summary info =================================================
-ERROR tests/test_main.py::test_app_initialization - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_router_inclusion - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data0-200-expected_response0] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data1-400-expected_response1] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data2-422-expected_response2] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writepowerpoint_edge_cases[input_data0-201] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writepowerpoint_edge_cases[input_data1-400] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_writepowerpoint_edge_cases[input_data2-422] - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_cors_enabled - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_404_not_found - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-ERROR tests/test_main.py::test_healthcheck - AttributeError: <module 'controller.routes' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering...
-============================================= 7 warnings, 11 errors in 8.12s ======
+FAILED tests/test_main.py::test_router_inclusion - AssertionError: assert '/v1/liveness' in ['/openapi.json', '/docs', '/docs/oauth2-redirect', '/redoc', '/v1/uploadnam...
+FAILED tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data0-200-expected_response0] - assert 422 == 200
+FAILED tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data1-400-expected_response1] - assert 422 == 400
+FAILED tests/test_main.py::test_writeknowledgecheck_edge_cases[input_data2-422-expected_response2] - AssertionError: assert {'detail': [{...: 'missing'}]} == {'detail': 'I...d input type'}
+FAILED tests/test_main.py::test_writepowerpoint_edge_cases[input_data0-201] - assert 422 == 201
+FAILED tests/test_main.py::test_writepowerpoint_edge_cases[input_data1-400] - assert 422 == 400
+FAILED tests/test_main.py::test_cors_enabled - assert 405 == 200
+FAILED tests/test_main.py::test_healthcheck - assert 404 == 200
+======================================== 8 failed, 3 passed, 7 warnings in 2.81s =========================================
+sys:1: DeprecationWarning: builtin type swigvarlink has no __module__ attribute
