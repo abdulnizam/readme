@@ -7,13 +7,13 @@ from main import app
 
 client = TestClient(app)
 
-
+# ✅ Removed incorrect dependency patching
+# ✅ Added correct patching for router to ensure it's part of the app
 @pytest.fixture(scope="module", autouse=True)
 def setup_mocked_router():
     """Mock the router used in the FastAPI app."""
     with patch("controller.routes.doc_manager_router_v1") as mock_router:
-        mock_router.return_value = "mocked_router"
-        yield
+        yield mock_router
 
 
 def test_app_initialization():
