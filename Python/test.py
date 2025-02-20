@@ -9,10 +9,10 @@ client = TestClient(app)
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_mocked_dependencies():
-    """Setup mocked dependencies before tests"""
-    with patch("controller.routes.some_dependency") as mock_dependency:
-        mock_dependency.return_value = {"mocked": "response"}
+def setup_mocked_router():
+    """Mock the router used in the FastAPI app."""
+    with patch("controller.routes.doc_manager_router_v1") as mock_router:
+        mock_router.return_value = "mocked_router"
         yield
 
 
@@ -25,11 +25,12 @@ def test_app_initialization():
 
 
 def test_router_inclusion():
-    """Test that routes are correctly registered in FastAPI"""
+    """Test that `doc_manager_router_v1` is included in the app."""
     routes = [route.path for route in app.router.routes]
 
     assert "/v1/writeknowledgecheck" in routes
     assert "/v1/writepowerpoint" in routes
+    assert "/v1/liveness" in routes
 
 
 @pytest.mark.parametrize("input_data, expected_status, expected_response", [
@@ -60,6 +61,7 @@ def test_writepowerpoint_edge_cases(input_data, expected_status):
 def test_cors_enabled():
     """Test that CORS middleware is working correctly"""
     response = client.options("/v1/liveness", headers={"Origin": "http://localhost"})
+    
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "http://localhost"
 
@@ -73,5 +75,6 @@ def test_404_not_found():
 def test_healthcheck():
     """Test that a basic health check endpoint works"""
     response = client.get("/v1/health")
+    
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
