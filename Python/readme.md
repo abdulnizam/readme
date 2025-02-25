@@ -1,10 +1,10 @@
 
-tests/tests_model/test_fetch_relevant_chunks.py F...                                                                                                               [100%]
+tests/tests_model/test_fetch_relevant_chunks.py .F...                                                                                                              [100%]
 
 ================================================================================ FAILURES ================================================================================
-___________________________________________________________________ test_fetch_relevant_chunks_success ___________________________________________________________________
+___________________________________________________________ test_fetch_relevant_chunks_invalid_json_structure ____________________________________________________________
 
-learning_id = '12345', data = ['AI in healthcare', 'AI for automation'], top_k = 2, journey_type = None
+learning_id = '12345', data = ['AI in finance'], top_k = 1, journey_type = None
 
     async def fetch_relevant_chunks(
         learning_id: str, data: List[str], top_k: int, journey_type: str = None
@@ -34,7 +34,7 @@ src/model/fetch_relevant_chunks.py:37: KeyError
 
 The above exception was the direct cause of the following exception:
 
-learning_id = '12345', data = ['AI in healthcare', 'AI for automation'], top_k = 2, journey_type = None
+learning_id = '12345', data = ['AI in finance'], top_k = 1, journey_type = None
 
     async def fetch_relevant_chunks(
         learning_id: str, data: List[str], top_k: int, journey_type: str = None
@@ -69,26 +69,25 @@ src/model/fetch_relevant_chunks.py:42: UnboundLocalError
 
 The above exception was the direct cause of the following exception:
 
-mock_requests_post = <MagicMock name='post' id='4531503248'>, mock_response = <MagicMock name='post()' id='4523844176'>
+mock_requests_post = <MagicMock name='post' id='4406883664'>, mock_invalid_json_response = <MagicMock name='post()' id='4406551696'>
 
     @patch("model.fetch_relevant_chunks.requests.post")
     @pytest.mark.asyncio
-    async def test_fetch_relevant_chunks_success(mock_requests_post, mock_response):
-        """Test successful retrieval of relevant chunks"""
-    
-        # Mock requests.post to return fake response
-        mock_requests_post.return_value = mock_response
+    async def test_fetch_relevant_chunks_invalid_json_structure(mock_requests_post, mock_invalid_json_response):
+        """✅ Test case when response JSON is missing 'relevant_chunks' key"""
+        mock_requests_post.return_value = mock_invalid_json_response
     
         learning_id = "12345"
-        data = ["AI in healthcare", "AI for automation"]
-        top_k = 2
+        data = ["AI in finance"]
+        top_k = 1
     
->       result = await fetch_relevant_chunks(learning_id, data, top_k)
+        with pytest.raises(UnboundLocalError):
+>           await fetch_relevant_chunks(learning_id, data, top_k)
 
-tests/tests_model/test_fetch_relevant_chunks.py:47: 
+tests/tests_model/test_fetch_relevant_chunks.py:106: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-learning_id = '12345', data = ['AI in healthcare', 'AI for automation'], top_k = 2, journey_type = None
+learning_id = '12345', data = ['AI in finance'], top_k = 1, journey_type = None
 
     async def fetch_relevant_chunks(
         learning_id: str, data: List[str], top_k: int, journey_type: str = None
@@ -128,13 +127,6 @@ learning_id = '12345', data = ['AI in healthcare', 'AI for automation'], top_k =
 E           fastapi.exceptions.HTTPException: 500: An error occured in connecting to the document management service: 'relevant_chunks'
 
 src/model/fetch_relevant_chunks.py:47: HTTPException
---------------------------------------------------------------------------- Captured log setup ---------------------------------------------------------------------------
-ERROR    config:config.py:115 Unable to locate credentials
-ERROR    config:config.py:115 Unable to locate credentials
-ERROR    config:config.py:115 Unable to locate credentials
-ERROR    config:config.py:115 Unable to locate credentials
-ERROR    config:config.py:115 Unable to locate credentials
-ERROR    config:config.py:115 Unable to locate credentials
 --------------------------------------------------------------------------- Captured log call ----------------------------------------------------------------------------
 ERROR    model.fetch_relevant_chunks:fetch_relevant_chunks.py:46 Error in network
 ============================================================================ warnings summary ============================================================================
@@ -163,7 +155,7 @@ src/model/aws/aws_helpers.py                  38     38     0%
 src/model/content_creation_funcs.py          308    308     0%
 src/model/continuous_learning_prompts.py      64     64     0%
 src/model/fetch_content_for_methods.py        21     21     0%
-src/model/fetch_relevant_chunks.py            30      3    90%
+src/model/fetch_relevant_chunks.py            30      0   100%
 src/model/generate_continuous_content.py      67     67     0%
 src/model/generate_core_content.py           136    136     0%
 src/model/llama3handler.py                    80     80     0%
@@ -172,7 +164,7 @@ src/model/regnerate_content.py                17     17     0%
 src/model/reprompt_content.py                123    123     0%
 src/model/scenario1_prompts.py               189    189     0%
 --------------------------------------------------------------
-TOTAL                                       1436   1366     5%
+TOTAL                                       1436   1363     5%
 
 ======================================================================== short test summary info =========================================================================
-FAILED tests/tests_model/test_fetch_relevant_chunks.py::test_fetch_relevant_chunks_success - fastapi.exceptions.HTTPException: 500: An error occured in connecting to the document management service: 'relevant_chunks'
+FAILED tests/tests_model/test_fetch_relevant_chunks.py::test_fetch_relevant_chunks_invalid_json_structure - fastapi.exceptions.HTTPException: 500: An error occured in connecting to the document management service: 'relevant_chunks'
