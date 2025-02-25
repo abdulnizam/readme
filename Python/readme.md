@@ -1,318 +1,101 @@
-tests/tests_model/test_chunk_and_vectorise.py EE.EEEE                                                                                                                                                         [100%]
 
-====================================================================================================== ERRORS =======================================================================================================
-____________________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise _____________________________________________________________________________________
+tests/tests_model/test_pii_mask.py FFF.                                                                                                                                                                       [100%]
 
-mocker = <pytest_mock.plugin.MockerFixture object at 0x113870710>
+===================================================================================================== FAILURES ======================================================================================================
+_______________________________________________________________________________________________ test_guardrail_check ________________________________________________________________________________________________
 
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
-        )
+mock_get_settings = <MagicMock name='get_settings' id='4562990608'>, mock_get_client = <MagicMock name='get_client' id='4724412944'>
+mock_guardrail_response = {'assessments': [{'sensitiveInformationPolicy': {'piiEntities': [{'type': 'NAME'}]}}], 'outputs': [{'text': 'Hello, {NAME}'}]}
 
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x113855d50>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
+    @patch("model.pii_mask.get_client")
+    @patch("model.pii_mask.get_settings")
+    def test_guardrail_check(
+        mock_get_settings, mock_get_client, mock_guardrail_response
+    ):
+        """Test guardrail_check function"""
     
-        original = DEFAULT
-        local = False
+        # Mock settings
+        mock_settings = MagicMock()
+        mock_settings.bedrock_pii_guardrail_id = "test-guardrail-id"
+        mock_settings.bedrock_pii_guardrail_version = "v1"
+        mock_get_settings.return_value = mock_settings
     
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
+        # Mock Bedrock client
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
     
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
+        # Mock Bedrock response
+        mock_client.apply_guardrail.return_value = mock_guardrail_response
     
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
+        # Call function
+        input_text = "What is UC?"
+        source = "test-source"
+>       is_masked, output_text = pii_guardrail_check(input_text, source)
+E       NameError: name 'pii_guardrail_check' is not defined
 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
+tests/tests_model/test_pii_mask.py:73: NameError
 ------------------------------------------------------------------------------------------------ Captured log setup -------------------------------------------------------------------------------------------------
 ERROR    config:config.py:107 Unable to locate credentials
 ERROR    config:config.py:107 Unable to locate credentials
-_______________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise_700_words ________________________________________________________________________________
+_________________________________________________________________________________________________ test_replace_pii __________________________________________________________________________________________________
 
-mocker = <pytest_mock.plugin.MockerFixture object at 0x114711910>
+mock_open = <MagicMock name='open' id='4559362320'>, mock_json_load = <MagicMock name='load' id='4559027792'>
+mock_guardrail_response = {'assessments': [{'sensitiveInformationPolicy': {'piiEntities': [{'type': 'NAME'}]}}], 'outputs': [{'text': 'Hello, {NAME}'}]}, mock_dummy_data = {'NAME': 'DWP Gail'}
 
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
+    @patch("model.pii_mask.json.load")
+    @patch("builtins.open", new_callable=MagicMock)
+    def test_replace_pii(
+        mock_open, mock_json_load, mock_guardrail_response, mock_dummy_data
+    ):
+        """Test replace_pii function"""
+    
+        # Mock loading dummy_data.json
+        mock_json_load.return_value = mock_dummy_data
+    
+        # Call function
+>       result = replace_pii(mock_guardrail_response)
+E       TypeError: replace_pii() missing 1 required positional argument: 'pii_guardrail_output'
+
+tests/tests_model/test_pii_mask.py:93: TypeError
+____________________________________________________________________________________________ test_guardrail_check_no_pii ____________________________________________________________________________________________
+
+mock_get_settings = <MagicMock name='get_settings' id='4559155792'>, mock_get_client = <MagicMock name='get_client' id='4559150096'>, mock_guardrail_response_no_outputs = {'outputs': []}
+
+    @patch("model.pii_mask.get_client")
+    @patch("model.pii_mask.get_settings")
+    def test_guardrail_check_no_pii(
+        mock_get_settings, mock_get_client, mock_guardrail_response_no_outputs
+    ):
+        """
+        Test guardrail_check when no PII is detected.
+        This covers where the response['outputs'] list is empty.
+        """
+    
+        # Mock settings
+        mock_settings = MagicMock()
+        mock_settings.bedrock_pii_guardrail_id = "test-guardrail-id"
+        mock_settings.bedrock_pii_guardrail_version = "v1"
+        mock_get_settings.return_value = mock_settings
+    
+        # Mock Bedrock client
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+    
+        # Mock Bedrock response (No outputs)
+        mock_client.apply_guardrail.return_value = (
+            mock_guardrail_response_no_outputs
         )
-
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x112ada710>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
     
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
+        # Call function
+        input_text = "what is UC?"
+        source = "test-source"
+>       is_masked, output_text = pii_guardrail_check(input_text, source)
+E       NameError: name 'pii_guardrail_check' is not defined
 
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise_500_words ________________________________________________________________________________
-
-mocker = <pytest_mock.plugin.MockerFixture object at 0x111c6a7d0>
-
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
-        )
-
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x1063eebd0>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise_512_words ________________________________________________________________________________
-
-mocker = <pytest_mock.plugin.MockerFixture object at 0x109033e50>
-
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
-        )
-
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x111cee710>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-_______________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise_empty_text _______________________________________________________________________________
-
-mocker = <pytest_mock.plugin.MockerFixture object at 0x11486a290>
-
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
-        )
-
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x11486b090>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
-____________________________________________________________________________ ERROR at setup of test_chunk_and_vectorise_chunking_failure ____________________________________________________________________________
-
-mocker = <pytest_mock.plugin.MockerFixture object at 0x113a20490>
-
-    @pytest.fixture
-    def mock_embeddings(mocker):
-        """Mocks the BedrockEmbeddings model."""
-        mock_embedder = MagicMock()
->       mocker.patch(
-            "model.chunk_and_vectorise.BedrockEmbeddings",
-            return_value=mock_embedder,
-        )
-
-tests/tests_model/test_chunk_and_vectorise.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:440: in __call__
-    return self._start_patch(
-../venv6/lib/python3.11/site-packages/pytest_mock/plugin.py:258: in _start_patch
-    mocked: MockType = p.start()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1594: in start
-    result = self.__enter__()
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x111d3e6d0>
-
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
-        try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> does not have the attribute 'BedrockEmbeddings'
-
-../../../../../.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:1419: AttributeError
+tests/tests_model/test_pii_mask.py:128: NameError
 ================================================================================================= warnings summary ==================================================================================================
-tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise
-tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise
+tests/tests_model/test_pii_mask.py::test_guardrail_check
+tests/tests_model/test_pii_mask.py::test_guardrail_check
   /Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv6/lib/python3.11/site-packages/pydantic/fields.py:1032: PydanticDeprecatedSince20: Using extra keyword arguments on `Field` is deprecated and will be removed. Use `json_schema_extra` instead. (Extra keys: 'metadata'). Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
     warn(
 
@@ -328,8 +111,8 @@ src/controller/routes.py                                              214    214
 src/main.py                                                             8      8     0%
 src/model/__init__.py                                                   0      0   100%
 src/model/aws/__init__.py                                               0      0   100%
-src/model/aws/aws_helpers.py                                           38     29    24%
-src/model/chunk_and_vectorise.py                                       56     37    34%
+src/model/aws/aws_helpers.py                                           38     26    32%
+src/model/chunk_and_vectorise.py                                       56     56     0%
 src/model/content_creation/__init__.py                                  0      0   100%
 src/model/content_creation/content_creation_funcs.py                   56     56     0%
 src/model/content_creation/llama3handler.py                            44     44     0%
@@ -339,23 +122,20 @@ src/model/csi/secrets_loader.py                                        22     22
 src/model/dao.py                                                      124    124     0%
 src/model/db_connection.py                                             25     25     0%
 src/model/doc_exporter.py                                              92     92     0%
-src/model/embeddings_model_config.py                                    7      2    71%
+src/model/embeddings_model_config.py                                    7      7     0%
 src/model/gail_util_funcs.py                                           64     64     0%
 src/model/generate_powerpoint/__init__.py                               0      0   100%
 src/model/generate_powerpoint/combine_script_and_bullets.py            10     10     0%
 src/model/generate_powerpoint/generate_powerpoint_presentation.py     226    226     0%
 src/model/get_relevant_chunks.py                                      108    108     0%
-src/model/pii_mask.py                                                  60     60     0%
+src/model/pii_mask.py                                                  60     41    32%
 src/model/process_uploaded_file.py                                     97     97     0%
 src/model/scan_file_for_malware.py                                     22     22     0%
 ---------------------------------------------------------------------------------------
-TOTAL                                                                1375   1301     5%
+TOTAL                                                                1375   1303     5%
 
 ============================================================================================== short test summary info ==============================================================================================
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise_700_words - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise_500_words - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise_512_words - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise_empty_text - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-ERROR tests/tests_model/test_chunk_and_vectorise.py::test_chunk_and_vectorise_chunking_failure - AttributeError: <module 'model.chunk_and_vectorise' from '/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/chunk_and_vectorise.py'> ...
-====================================================================================== 1 passed, 2 warnings, 6 errors in 5.71s ==
+FAILED tests/tests_model/test_pii_mask.py::test_guardrail_check - NameError: name 'pii_guardrail_check' is not defined
+FAILED tests/tests_model/test_pii_mask.py::test_replace_pii - TypeError: replace_pii() missing 1 required positional argument: 'pii_guardrail_output'
+FAILED tests/tests_model/test_pii_mask.py::test_guardrail_check_no_pii - NameError: name 'pii_guardrail_check' is not defined
+====================================================================================== 3 failed, 1 passed, 2 warnings in
