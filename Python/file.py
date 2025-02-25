@@ -1,29 +1,50 @@
 import logging
-from fastapi import Request, HTTPException
+from typing import List
 import requests
+from fastapi import HTTPException
+from pydantic import BaseModel
 from config import get_settings
+
+
+class QueryString(BaseModel):
+    query_strings: List[str]
+
 
 logger = logging.getLogger(__name__)
 
 
-async def get_content_for_methods(learning_id: str):
-    logger.info("Retrieving headers and making call to Document Management Service")
+async def fetch_relevant_chunks(
+    learning_id: str, data: List[str], top_k: int, journey_type: str = None
+):
+    logger.info("Entered fetch_relevant_chunks")
     try:
         http_request = requests
-        url = f"{get_settings().services_doc_manager_host}/v1/topicgenerationvariables"
+        url = f"{get_settings().services_doc_manager_host}/v1/getrelevantchunks"
+        # Intercept headers from request where required.
+        request_headers = {"Learning-ID": learning_id, "Journey-Type": journey_type}
 
-        request_headers = {'Learning-ID': learning_id}
-
-        logger.info("Retrieving required content from Document management service")
-        response = http_request.get(url, headers=request_headers, timeout=3)
+        logger.info("Attempting to fetch_relevant_chunks")
+        response = http_request.post(
+            url,
+            json={"query_strings": data, "top_k": top_k},
+            headers=request_headers,
+            timeout=10,
+        )
 
         if response.status_code == 200:
-            returned_db_info = response.json()
-            name = returned_db_info["name"]
-            topic_descriptions_list = returned_db_info["topic_outlines"]
-            return {"name": name, "topics": topic_descriptions_list}
+            try:
+                relevant_data = response.json()
+                relevant_chunks = relevant_data["relevant_chunks"]
+                low_relevancy_flags = relevant_data["low_relevancy_flags"]
+                logger.info("Relevant chunks received from Document Management Service")
+                return relevant_chunks, low_relevancy_flags
+            except Exception as error:
+                raise UnboundLocalError(error) from error
+        else:
+            return "An error occurred in fetching relevant chunks, ensure you have the correct headers with the request"
     except Exception as error:
         logger.error("Error in network")
         raise HTTPException(
-            status_code=500, detail=f"An error occured in content generation: {error}"
+            status_code=500,
+            detail=f"An error occured in connecting to the document management service: {error}",
         ) from error
