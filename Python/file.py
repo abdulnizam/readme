@@ -1,367 +1,440 @@
 import logging
-from langchain_aws import BedrockEmbeddings
-from model.scenario1_prompts import (
-    make_topic_outline_prompts,
-    make_facilitator_speaker_notes_usr_prompt,
-    make_facilitator_slides_bullets_usr_prompt,
-    make_kc_usr_prompt_from_list_of_scripts,
+from typing import Optional, List
+from pydantic import BaseModel
+from fastapi import APIRouter, Request, HTTPException
+from model.generate_core_content import (
+    generate_topic_outlines,
+    generate_facilitator_ppt,
+    generate_speaker_notes,
+    generate_knowledge_check_from_list_of_scripts,
+    markdown_to_list,
 )
-from model.scenario1_prompts import (
-    ONE_SHOT_SPEAKER_NOTES_USR_PROMPT,
-    ONE_SHOT_SPEAKER_NOTES_OUTPUT,
-    ONE_SHOT_SLIDES_BULLETS_USR_PROMPT,
-    ONE_SHOT_SLIDES_BULLETS_OUTPUT,
-    FACILITATOR_SPEAKER_NOTES_SYS_PROMPT,
-    FACILITATOR_SLIDES_BULLETS_SYS_PROMPT,
+from model.fetch_relevant_chunks import fetch_relevant_chunks
+from model.fetch_content_for_methods import get_content_for_methods
+from model.reprompt_content import (
+    shorten_bullet_points,
+    knowledge_check_case_study,
+    harder_knowledge_check_open_ended,
+    easier_knowledge_check_true_false,
+    shorten_speaker_notes,
+    elaborate_bullet_points,
+    elaborate_speaker_notes,
+    more_formal_bullet_points,
+    more_formal_speaker_notes,
+    less_formal_bullet_points,
+    less_formal_speaker_notes,
+    knowledge_check_add_question,
+    harder_knowledge_check_multi_answer,
 )
-from model.scenario1_prompts import (
-    ONE_SHOT_TOPIC_OUTLINES_USR_PROMPT,
-    ONE_SHOT_TOPIC_OUTLINES_OUTPUT,
-    ONE_SHOT_TOPIC_OUTLINES_USR_PROMPT_2,
-    ONE_SHOT_TOPIC_OUTLINES_OUTPUT_2,
-    KNOWLEDGE_CHECK_SYS_PROMPT,
-)
-from model.content_creation_funcs import (
-    run_concurrent_prompts,
-    run_json_prompt,
-    remove_similarities,
-    apply_sentence_case_to_title,
-    capitalise_script_headings,
-    shuffle_kc_choices,
-)
-from model.ai_models_config import llama3_70b
-from model.aws.aws_helpers import get_client
-from config import get_settings
-
-logger = logging.getLogger()
-
-# Define constants once
-TOPIC_OUTLINES_ONE_SHOT = [
-    llama3_70b.format_one_shot(
-        ONE_SHOT_TOPIC_OUTLINES_USR_PROMPT, ONE_SHOT_TOPIC_OUTLINES_OUTPUT
-    ),
-    llama3_70b.format_one_shot(
-        ONE_SHOT_TOPIC_OUTLINES_USR_PROMPT_2, ONE_SHOT_TOPIC_OUTLINES_OUTPUT_2
-    ),
-]
-SPEAKER_NOTES_ONE_SHOT = [
-    llama3_70b.format_one_shot(
-        ONE_SHOT_SPEAKER_NOTES_USR_PROMPT, ONE_SHOT_SPEAKER_NOTES_OUTPUT
-    )
-]
-FACILITATOR_SLIDES_BULLETS_ONE_SHOT = [
-    llama3_70b.format_one_shot(
-        ONE_SHOT_SLIDES_BULLETS_USR_PROMPT, ONE_SHOT_SLIDES_BULLETS_OUTPUT
-    )
-]
+from model.scenario1_prompts import format_topic_outline_as_str
+from model.regnerate_content import regenerate_topic_outline
+from constants.constants import FACILITATOR_POWERPOINT_SCRIPT, POWERPOINT_SCRIPT
 
 
-def list_to_markdown(lst, i=0):
-    """Converts nested lists to markdown-formatted bullet points"""
-
-    if isinstance(lst, str):
-        # Already a string (markdown format)!
-        return lst
-
-    TAB_VAL = "    "
-
-    if isinstance(lst, list):
-        result = ""
-        for item in lst:
-            if isinstance(item, list):
-                j = i + 1
-                result += list_to_markdown(item, j)
-            else:
-                tabs = i * TAB_VAL
-                result += tabs + "- " + str(item) + "\n"
-        return result
-    else:
-        return str(lst)
+class TopicOutline(BaseModel):
+    title: str
+    objectives: str
 
 
-# For converting bulletpoints: Markdown -> List
+class Citations(BaseModel):
+    id: str
+    title: str
+    chunks: str
 
 
-def markdown_to_list(markdown):
-    """Converts markdown-formatted bullet points to a nested list"""
-
-    if isinstance(markdown, list):
-        # Already a list!
-        return markdown
-
-    markdown = markdown.strip()
-    lines = markdown.split("\n")
-    result = []
-    stack = [result]
-    last_indent = 0
-    for line in lines:
-        indent = 0
-        while line.startswith(" "):
-            indent += 1
-            line = line[1:]
-        if indent > last_indent:
-            sublist = []
-            stack[-1].append(sublist)
-            stack.append(sublist)
-        elif indent < last_indent:
-            while indent < last_indent:
-                stack.pop()
-                last_indent = len(stack) - 1
-        if line.strip():
-            stack[-1].append(line[2:].strip())
-        last_indent = indent
-    while len(stack) > 1:
-        stack.pop()
-    return result
+class RegenerateTopicOutlinesRequest(BaseModel):
+    topic_outlines: List[TopicOutline]
+    review_index: int
+    citations: List[List[Citations]]
 
 
-def combine_script_and_bullets(speaker_notes_json, slide_content_json):
-    """
-    The speaker notes and slide content will be returned by the LLM as 2 separate JSON objects.
-    This function combines them into a single object, to be returned to the frontend.
-    """
-    combined_obj = {"slides": []}
-    for slide1, slide2 in zip(
-        speaker_notes_json["slides"], slide_content_json["slides"]
-    ):
-        combined_slide = {"heading": slide1["heading"]}
-        if "script" in slide1:
-            combined_slide["script"] = slide1["script"]
-        if "bullet_points" in slide2:
-            combined_slide["bullet_points"] = slide2["bullet_points"]
-        combined_obj["slides"].append(combined_slide)
-    return combined_obj
+class FacilitatorPowerPoint(BaseModel):
+    heading: str
+    script: Optional[str] = None
+    bullet_points: str
 
 
-def transform_list_of_bullets_to_string(slides):
-    """
-    The LLM returns the bulletpoints in the form of a nested list.
-    This function transforms the list of bulletpoints (for each slide) into a markdown-formatted string.
-    """
-    for slide in slides:
-        bullet_points = slide["bullet_points"]
-        if isinstance(bullet_points, list):
-            slide["bullet_points"] = list_to_markdown(bullet_points)
-    return slides
+class CoreContentRequest(BaseModel):
+    topic_outlines: List[TopicOutline]
+    topic_index: int
 
 
-def deduplicate_topic_outlines_objectives(topic_outlines: list[dict]):
-    """
-    Remove duplicate or similar objectives from a list of topic outlines.
-
-    Args:
-        topic_outlines (list[dict]): A list of dictionaries representing topic outlines.
-            Each dictionary should have a key
-            "objectives" containing a list of strings representing the objectives of the topic.
-        embeddings (BedrockEmbeddings): An instance of the BedrockEmbeddings class used to vectorise the objectives.
-
-    Returns:
-        topic_outlines (list[dict]): A list of dictionaries representing the topic outlines
-            with duplicate or similar objectives removed. Each dictionary will have a key "objectives"
-            containing a list of strings representing the deduplicated objectives.
-        removed_objectives (list[str]): A list of strings representing the objectives
-            that were detected as similar / duplicates, and hence, were removed.
-    """
-
-    # Extract all objectives and flatten to a single list
-    all_objectives = [o for to in topic_outlines for o in to["objectives"]]
-
-    # TODO: need to review where to store this logic
-    client = get_client("bedrock-runtime")
-
-    embedding_model_id = get_settings().bedrock_embedding_model_id
-
-    embeddings = BedrockEmbeddings(client=client, model_id=embedding_model_id)
-
-    # Vectorise
-    vec_objectives = embeddings.embed_documents(all_objectives)
-
-    # Deduplicate
-    deduplicated_objectives = remove_similarities(all_objectives, vec_objectives)
-
-    removed_objectives = [
-        obj for obj in all_objectives if obj not in deduplicated_objectives
-    ]
-
-    # Loop through each item in the original topic outlines
-    for to in topic_outlines:
-        # Create a new list of objectives that are in the deduplicated_objectives list
-        new_objectives = []
-        for objective in to["objectives"]:
-            if objective in deduplicated_objectives:
-                # Ensure that if 2 objectives are EXACTLY the same, only 1 is included in the output
-                deduplicated_objectives.remove(objective)
-                new_objectives.append(objective)
-        if len(new_objectives) == 0:  # If all objectives removed
-            new_objectives = [
-                to["objectives"][0]
-            ]  # Just maintain the original first objective from the topic
-        # Replace the old objectives list with the new one
-        to["objectives"] = new_objectives
-
-    return topic_outlines, removed_objectives
+class KnowledgeCheckRequest(BaseModel):
+    slides: List[FacilitatorPowerPoint]
+    topic_outline: TopicOutline
+    contextual_content: Optional[str] = None  # this need to revisit by dev
 
 
-def post_process_topic_outlines(
-    topic_outlines: list[dict],
-    relevant_topic_citations: list[list[dict]],
-    low_relevancy_flags: list[bool] = None,
-):
-    # Iterate through all topics and apply relevant formatting
-    for i, citations in enumerate(relevant_topic_citations):
+class generatedSpeakerNotes(BaseModel):
+    heading: str
+    script: str
 
-        # Convert to string
-        if isinstance(topic_outlines[i]["objectives"], list):
-            topic_outlines[i]["objectives"] = list_to_markdown(
-                topic_outlines[i]["objectives"]
-            )
 
-        # Append citations
-        if "citations" not in topic_outlines[i]:
-            topic_outlines[i]["citations"] = citations
+class slidesResponse(BaseModel):
+    slides: generatedSpeakerNotes
 
-        # Append relevancy flags (Warn users if no relevant chunks detected)
-        if (
-            "low_relevancy_flag" not in topic_outlines[i]
-            and low_relevancy_flags is not None
-        ):
-            topic_outlines[i]["low_relevancy_flag"] = low_relevancy_flags[i]
 
-        # Apply capitalisation of titles according to words in the objectives (sentence case)
-        topic_outlines[i]["title"] = apply_sentence_case_to_title(
-            topic_outlines[i]["title"], topic_outlines[i]["objectives"]
+class KnowledgeCheck(BaseModel):
+    question: str
+    choices: str
+    answer: str
+
+
+class RepromptPowerpoint(BaseModel):
+    reprompt: str
+    slides: List[FacilitatorPowerPoint]
+    slide_index: int
+    citations: List[Citations]
+
+
+class RepromptKnowledgeCheck(BaseModel):
+    reprompt: str
+    current_question: KnowledgeCheck
+    context: str
+
+
+class AddQuestionRequest(BaseModel):
+    question_list: List[KnowledgeCheck]
+    context: str
+
+
+logger = logging.getLogger(__name__)
+
+generate_content_router_v1 = APIRouter(prefix="/generate")
+
+
+def log_incoming_request(request: Request):
+    reqid = request.headers.get("X-Request-ID")
+    reqorigin = request.headers.get("X-Origin")
+
+    logger.info("Recieved request_id: %s \n with Origin: %s", reqid, reqorigin)
+
+
+@generate_content_router_v1.get("/topicoutlines")
+async def router_generate_topic_outlines(request: Request):
+    log_incoming_request(request)
+    logger.info("Entered content generation request")
+    learning_id = request.headers.get("Learning-ID")
+    top_k = 2
+    journey_type = request.headers.get("Journey-Type")
+
+    if not learning_id:
+        logger.error(
+            "Error occured in generate_topic_outlines: missing learning_id header"
+        )
+        raise HTTPException(status_code=400, detail="Missing learning_id header")
+    try:
+        logger.info("Entered generate topic outlines")
+        name_and_topics = await get_content_for_methods(learning_id)
+
+        module_title = name_and_topics["name"]
+        topic_descriptions_list = name_and_topics["topics"]
+        # Fetch the relevant chunks using information from the request
+        relevant_topic_citations, low_relevancy_flags = await fetch_relevant_chunks(
+            learning_id, topic_descriptions_list, top_k, journey_type
         )
 
-    return topic_outlines
+        generated_topic_outlines = await generate_topic_outlines(
+            module_title,
+            topic_descriptions_list,
+            relevant_topic_citations,
+            low_relevancy_flags,
+        )
+        return generated_topic_outlines
+
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occured in topic outline generation: {error}",
+        ) from error
 
 
-async def generate_topic_outlines(
-    module_title: str,
-    topic_descriptions_list: list[str],
-    relevant_topic_citations: list[list[dict]],
-    low_relevancy_flags: list[bool],
+@generate_content_router_v1.post("/regeneratetopicoutlines")
+async def router_regenerate_topic_outlines(
+    request: Request, data: RegenerateTopicOutlinesRequest
 ):
+    log_incoming_request(request)
+    logger.info("Entered content generation request")
+    learning_id = request.headers.get("Learning-ID")
 
-    logger.info("Generating topics")
+    if not learning_id:
+        logger.error(
+            "Error occured in generate_topic_outlines: missing learning_id header"
+        )
+        raise HTTPException(status_code=400, detail="Missing learning_id header")
+    try:
+        request_data = data.model_dump()
+        generated_topic_outlines = request_data["topic_outlines"]
+        name_and_topics = await get_content_for_methods(learning_id)
+        module_title = name_and_topics["name"]
 
-    # Format a prompt to generate each topic outline
-    topic_outline_prompts = make_topic_outline_prompts(
-        module_title,
-        topic_descriptions_list,
-        relevant_topic_citations,
-        TOPIC_OUTLINES_ONE_SHOT,
-    )
-    # Generate all responses (topic outlines)
-    topic_outlines = run_concurrent_prompts(
-        topic_outline_prompts, llama3_70b, is_json=True, style_guide_llm=llama3_70b
-    )
+        topic_descriptions_list = name_and_topics["topics"]
+        relevant_topic_citations = request_data["citations"]
 
-    # Remove duplicates (compare with other topic outlines)
-    topic_outlines, _ = deduplicate_topic_outlines_objectives(topic_outlines)
+        topic_index = request_data["review_index"]
+        logger.info("Entered generate topic outlines")
+        regenerated_topic_outline = await regenerate_topic_outline(
+            generated_topic_outlines,
+            module_title,
+            topic_descriptions_list,
+            relevant_topic_citations,
+            topic_index,
+        )
+        del regenerated_topic_outline["citations"]
+        return regenerated_topic_outline
 
-    # Apply post-processing
-    topic_outlines = post_process_topic_outlines(
-        topic_outlines,
-        relevant_topic_citations,
-        low_relevancy_flags,
-    )
-
-    logger.info("Topic outlines generated")
-    return topic_outlines
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occured in topic outline generation: {error}",
+        ) from error
 
 
-async def generate_speaker_notes(
-    generated_topic_outlines, relevant_topic_citations, topic_index
+@generate_content_router_v1.post("/corecontent")
+async def generate_speaker_notes_and_facilitator_powerpoint(
+    request: Request, data: CoreContentRequest
 ):
+    log_incoming_request(request)
+    logger.info("Entered generate_speaker_notes_and_facilitator_powerpoint")
+    learning_id = request.headers.get("Learning-ID")
+    top_k = 4
+    try:
 
-    logger.info("Generating speaker notes")
-    # GENERATE SPEAKER NOTES------------------------------------------------------------------------
-    # TODO: tech debt - in computing we start counting from 0
+        logger.info("Entered generate core content")
+        request_data = data.model_dump()
+        topic_index = request_data["topic_index"]
+        query_string = format_topic_outline_as_str(
+            request_data["topic_outlines"][topic_index]
+        )
 
-    # Make the prompt
-    facilitator_speaker_notes_usr_prompt = make_facilitator_speaker_notes_usr_prompt(
-        generated_topic_outlines, topic_index + 1, relevant_topic_citations
-    )
-    # Run the prompt
-    facilitator_speaker_notes_json = run_json_prompt(
-        llama_llm=llama3_70b,
-        usr_prompt=facilitator_speaker_notes_usr_prompt,
-        style_guide_llm=llama3_70b,
-        sys_prompt=FACILITATOR_SPEAKER_NOTES_SYS_PROMPT,
-        few_shots=SPEAKER_NOTES_ONE_SHOT,
-    )
-    logger.info("Speaker notes generated")
-    return facilitator_speaker_notes_json
+        relevant_topic_citations, _ = await fetch_relevant_chunks(
+            learning_id, [query_string], top_k
+        )
+        relevant_topic_citations = relevant_topic_citations[0]
+
+        logger.info("Generating content")
+        generated_speaker_notes = await generate_speaker_notes(
+            request_data["topic_outlines"], relevant_topic_citations, topic_index
+        )
+        generated_facilitator_ppt = await generate_facilitator_ppt(
+            generated_speaker_notes, relevant_topic_citations
+        )
+
+        return generated_facilitator_ppt
+    except Exception as error:
+        logger.error("An error occured when generating content: %s", error)
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occured when generating content with the header provided: {error}",
+        ) from error
 
 
-async def generate_facilitator_ppt(
-    facilitator_speaker_notes_json, relevant_topic_citations
+@generate_content_router_v1.post("/knowledgecheck")
+async def router_generate_knowledge_check_for_facilitator_powerpoint(
+    request: Request, data: KnowledgeCheckRequest
 ):
-    logger.info("Generating Facilitator powerpoint")
-    # Make the prompt
-    facilitator_slides_bullets_usr_prompt = make_facilitator_slides_bullets_usr_prompt(
-        facilitator_speaker_notes_json
-    )
-    # Run the prompt
-    facilitator_slides_bullets_json = run_json_prompt(
-        llama_llm=llama3_70b,
-        usr_prompt=facilitator_slides_bullets_usr_prompt,
-        style_guide_llm=llama3_70b,
-        sys_prompt=FACILITATOR_SLIDES_BULLETS_SYS_PROMPT,
-        few_shots=FACILITATOR_SLIDES_BULLETS_ONE_SHOT,
-    )
-    # Post-process to ensure string formatting
-    facilitator_slides_bullets_json["slides"] = transform_list_of_bullets_to_string(
-        facilitator_slides_bullets_json["slides"]
-    )
-    # Combine with speaker notes
-    facilitator_pptx_json = combine_script_and_bullets(
-        facilitator_speaker_notes_json, facilitator_slides_bullets_json
-    )
-    # Post-process to apply capitalisation of headings
-    capital_context = "\n".join(
-        [
-            slide["script"] + "\n" + slide["bullet_points"]
-            for slide in facilitator_pptx_json["slides"]
-        ]
-    )
-    facilitator_pptx_json = capitalise_script_headings(
-        facilitator_pptx_json, capital_context
-    )
-    # Append citations to output before returning to frontend (UI)
-    facilitator_pptx_json["citations"] = relevant_topic_citations
-    logger.info("Facilitator powerpoint generated")
-    return facilitator_pptx_json
+    logger.info("Entered content generation request")
+    log_incoming_request(request)
+    input_type = request.headers.get("Knowledge-Context")
+
+    if (
+        input_type is None
+    ):  # Raise Exception if there is no Knowledge-Context header provided.
+        raise HTTPException(
+            status_code=400,
+            detail="Malformed request, please provide the correct headers",
+        )
+
+    request_data = data.model_dump()
+    try:
+        logger.info("Entered generate knowledge check")
+        if input_type == FACILITATOR_POWERPOINT_SCRIPT:
+            logger.info("Using Facilitator script as context")
+            knowledge_check = await generate_knowledge_check_from_list_of_scripts(
+                request_data, request_data["topic_outline"]
+            )
+            logger.info(
+                "Successfully Generated knowledge check with facilitator script as context"
+            )
+            return knowledge_check
+        elif input_type == POWERPOINT_SCRIPT:
+            logger.info("Using slide bullets as context")
+            # the below line need to checked by dev
+            knowledge_check = (
+                request_data["contextual_content"],
+                request_data["topic_outline"],
+            )
+            logger.info(
+                "Successfully Generated knowledge check with slide bullets as context"
+            )
+            return knowledge_check
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500, detail="An error occured in knowledge check generation"
+        ) from error
 
 
-async def generate_knowledge_check_from_list_of_scripts(
-    list_of_scripts_json, topic_outline
+@generate_content_router_v1.post("/repromptpowerpoint")
+async def router_reprompt_speaker_notes(request: Request, data: RepromptPowerpoint):
+    log_incoming_request(request)
+    logger.info("Entered regenerating topic outlines")
+
+    try:
+        request_data = data.model_dump()
+        logger.info("Reprompting speaker notes")
+        restyle_type = request_data["reprompt"]
+        slides = {"slides": request_data["slides"]}
+        slide_index = request_data["slide_index"]
+        citations = request_data["citations"]
+        bullets_current = slides["slides"][slide_index]["bullet_points"]
+
+        if restyle_type == "shorter":
+            logger.info("Shorter notes requested")
+            shortened_speaker_notes = await shorten_speaker_notes(slides, slide_index)
+            shortened_bullet_points = await shorten_bullet_points(
+                bullets_current, shortened_speaker_notes
+            )
+            shortened_speaker_notes["bullet_points"] = shortened_bullet_points[
+                "bullet_points"
+            ]
+            return shortened_speaker_notes
+        elif restyle_type == "elaborate":
+            logger.info("Entered elaborate notes")
+            elaborated_speaker_notes = await elaborate_speaker_notes(
+                slides, citations, slide_index
+            )
+            elaborated_bullets = await elaborate_bullet_points(
+                bullets_current, elaborated_speaker_notes
+            )
+            elaborated_speaker_notes["bullet_points"] = elaborated_bullets[
+                "bullet_points"
+            ]
+            return elaborated_speaker_notes
+        elif restyle_type == "more-professional":
+            logger.info("Entered professional notes")
+            formal_speaker_notes = await more_formal_speaker_notes(slides, slide_index)
+            formal_bullet_points = await more_formal_bullet_points(
+                bullets_current, formal_speaker_notes
+            )
+            formal_speaker_notes["bullet_points"] = formal_bullet_points[
+                "bullet_points"
+            ]
+            return formal_speaker_notes
+        elif restyle_type == "more-casual":
+            logger.info("Entered casual notes")
+            casual_speaker_notes = await less_formal_speaker_notes(slides, slide_index)
+            casual_bullet_points = await less_formal_bullet_points(
+                bullets_current, casual_speaker_notes
+            )
+            casual_speaker_notes["bullet_points"] = casual_bullet_points[
+                "bullet_points"
+            ]
+            return casual_speaker_notes
+        else:
+            raise HTTPException(
+                status_code=403,
+                detail="An error occurred whilst restyling the content provided",
+            )
+
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500, detail="An error occured in regenerating speaker notes"
+        ) from error
+
+
+@generate_content_router_v1.post("/repromptknowledgecheck")
+async def router_reprompt_knowledge_check(
+    request: Request, data: RepromptKnowledgeCheck
 ):
-    logger.info("Entered generate_knowledge_check_from_list_of_scripts")
+    log_incoming_request(request)
+    logger.info("Entered regenerating topic outlines")
 
-    topic_outline["objectives"] = markdown_to_list(topic_outline["objectives"])
+    try:
+        request_data = data.model_dump()
+        logger.info("Reprompting speaker notes")
+        restyle_type = request_data["reprompt"]
+        question_current = request_data["current_question"]
+        context = request_data["context"]
 
-    contexts, knowledge_check_usr_prompt = make_kc_usr_prompt_from_list_of_scripts(
-        list_of_scripts_json, topic_outline["objectives"]
-    )
+        question_current["choices"] = markdown_to_list(
+            question_current["choices"]
+        )  # Convert to list, for reprompting
 
-    logger.info("Attempting to run_json_prompt")
-    knowledge_check_json = run_json_prompt(
-        llama_llm=llama3_70b,
-        usr_prompt=knowledge_check_usr_prompt,
-        sys_prompt=KNOWLEDGE_CHECK_SYS_PROMPT,
-        style_guide_llm=llama3_70b,
-    )
+        if restyle_type == "multi-select":
+            logger.info("Multi select requested")
+            multi_select_question = await harder_knowledge_check_multi_answer(
+                context, question_current
+            )
+            return multi_select_question
+        elif restyle_type == "true-false":
+            logger.info("True False requested")
+            true_false_question = await easier_knowledge_check_true_false(
+                context, question_current
+            )
+            return true_false_question
+        elif restyle_type == "open-ended":
+            logger.info("Open ended requested")
+            open_ended_question = await harder_knowledge_check_open_ended(
+                context, question_current
+            )
+            return open_ended_question
+        elif restyle_type == "scenario-based":
+            logger.info("Senario based requested")
+            scenario_based_question = await knowledge_check_case_study(
+                context, question_current
+            )
+            return scenario_based_question
+        else:
+            raise HTTPException(
+                status_code=403,
+                detail="An error occurred whilst restyling the content provided",
+            )
 
-    # Post-process to shuffle the answers (avoid answer always 'B')
-    knowledge_check_json = shuffle_kc_choices(knowledge_check_json)
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500, detail="An error occured in regenerating speaker notes"
+        ) from error
 
-    for question_set in knowledge_check_json["questions"]:
-        if isinstance(question_set["choices"], list):
-            question_set["choices"] = list_to_markdown(
-                question_set["choices"]
-            )  # Convert to string
 
-    knowledge_check_json["contexts"] = contexts
-    logger.info("Knowledge check generated")
-    return knowledge_check_json
+@generate_content_router_v1.post("/addnewquestion")
+async def router_add_new_question_to_knowledge_check(
+    request: Request, data: AddQuestionRequest
+):
+    log_incoming_request(request)
+    logger.info("Entered router_add_new_question_to_knowledge_check")
+
+    try:
+        request_data = data.model_dump()
+        logger.info("Add new question to knowledge check")
+        context = request_data["context"]
+        question_list = request_data["question_list"]
+
+        new_question = await knowledge_check_add_question(context, question_list)
+        return new_question
+    except Exception as error:
+        logger.error("Error in network")
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occured in regenerating knowledge checkL {error}",
+        ) from error
+
+
+@generate_content_router_v1.get("/liveness")
+async def get_liveness():
+    """
+    Liveness API call for K8's
+    """
+    return {"message": "TODO: implement liveness route"}
+
+
+@generate_content_router_v1.get("/readiness")
+async def get_readiness():
+    """
+    Readiness API call for K8's
+    """
+    return {"message": "TODO: implement readiness route"}
