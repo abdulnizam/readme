@@ -1,12 +1,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
-
+from model.llama3handler import Llama3Handler, PromptBlockedError, ResponseBlockedError
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-    global Llama3Handler, GuardrailsFilterError
-    from model.llama3handler import Llama3Handler, GuardrailsFilterError
-
+    """Fixture to ensure AWS helpers are mocked before tests."""
+    pass
 
 @pytest.fixture
 def mock_llama_handler(mock_bedrock_llm):
@@ -23,7 +22,7 @@ def mock_llama_handler(mock_bedrock_llm):
 def test_llama3handler_initialization(mock_llama_handler):
     """Ensure `Llama3Handler` initializes properly."""
     assert mock_llama_handler.llm is not None
-    assert mock_llama_handler.guardrail_response == "Blocked by guardrail"
+    assert mock_llama_handler.blocked_prompt_msg == "Blocked by guardrail"
 
 
 def test_format_prompt(mock_llama_handler):
@@ -50,7 +49,7 @@ def test_format_llama3_input(mock_llama_handler):
 
 
 def test_format_llama3_input_not_prompt(mock_llama_handler):
-    """Ensure input formatting works correctly."""
+    """Ensure input formatting works correctly without a system prompt."""
     formatted_input = mock_llama_handler._Llama3Handler__format_llama3_input(
         user_prompt="User prompt",
         system_prompt="",
@@ -103,14 +102,14 @@ def test_invoke_guardrail_error(mock_bedrock_llm):
     """Ensure guardrail filter raises an error when triggered."""
 
     mock_llm_instance = MagicMock()
-    mock_llm_instance.invoke.return_value = MOCK_LLM_RESPONSE
+    mock_llm_instance.invoke.return_value = "Blocked by guardrail"
     mock_bedrock_llm.return_value = mock_llm_instance
 
     config_with_guardrail = MOCK_CONFIG.copy()
     config_with_guardrail["guardrail"] = {"guardrailIdentifier": "GR123", "guardrailVersion": "1.0"}
-    config_with_guardrail["blocked_guardrail_message"] = "Quantum computing is a field of study that..."
+    config_with_guardrail["blocked_guardrail_message"] = "Blocked by guardrail"
 
     handler = Llama3Handler(llm_config=config_with_guardrail)
 
-    with pytest.raises(GuardrailsFilterError):
+    with pytest.raises(PromptBlockedError):
         handler.invoke(USER_PROMPT, SYSTEM_PROMPT, ASSISTANT_PROMPT, FEW_SHOTS)
