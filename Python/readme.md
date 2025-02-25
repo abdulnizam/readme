@@ -1,591 +1,140 @@
 
-tests/tests_model/test_dao.py EEEEEEEEEEEEEEEEEEEEEEEE                                                                                                           [100%]
-
-================================================================================ ERRORS ================================================================================
-_________________________________________________________ ERROR at setup of test_send_learning_to_db_exception _________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
--------------------------------------------------------------------------- Captured log setup --------------------------------------------------------------------------
-ERROR    config:config.py:107 Unable to locate credentials
-ERROR    config:config.py:107 Unable to locate credentials
-__________________________________________________________ ERROR at setup of test_send_chunks_to_db_exception __________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-___________________________________________________________ ERROR at setup of test_get_all_chunks_exception ____________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________________ ERROR at setup of test_send_file_to_db ________________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-___________________________________________________________ ERROR at setup of test_send_file_to_db_exception ___________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-______________________________________________________________ ERROR at setup of test_send_learning_to_db ______________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________________________ ERROR at setup of test_send_chunks_to_db _______________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________________ ERROR at setup of test_get_all_chunks _________________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________________ ERROR at setup of test_get_all_topics _________________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-____________________________________________________________ ERROR at setup of test_get_name_from_database _____________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________________ ERROR at setup of test_get_name_from_database_not_found ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________________ ERROR at setup of test_get_name_from_database_invalid_id _______________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________________ ERROR at setup of test_get_name_from_database_exception ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_____________________________________________________________ ERROR at setup of test_remove_by_learning_id _____________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_____________________________________________________ ERROR at setup of test_remove_document_from_source_documents _____________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-______________________________________________________________ ERROR at setup of test_get_all_chunks_none ______________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________ ERROR at setup of test_get_all_chunks_source_documents ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-______________________________________________________________ ERROR at setup of test_get_all_topics_none ______________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________ ERROR at setup of test_get_all_topics_source_documents ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________________ ERROR at setup of test_remove_by_learning_id_not_found ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________________ ERROR at setup of test_remove_by_learning_id_delete_one ________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-________________________________________________ ERROR at setup of test_remove_document_from_source_documents_not_found ________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-_______________________________________________ ERROR at setup of test_remove_document_from_source_documents_update_one ________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
-__________________________________________________________________ ERROR at setup of test_connect_db ___________________________________________________________________
-
-mock_get_settings_and_boto3 = (<MagicMock name='get_settings' id='4500444304'>, <MagicMock name='client' id='4500449360'>)
-
-    @pytest.fixture(scope="module", autouse=True)
-    def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-        """Apply mocks before importing `aws_helpers`."""
-        global send_file_to_db, send_learning_to_db, send_chunks_to_db, \
-            get_all_chunks, get_all_topics, get_name_from_datbase, remove_by_learning_id, \
-            remove_document_from_source_documents, connect_db, NamePurposeTopics
->       from model.dao import (
-            send_file_to_db,
-            send_learning_to_db,
-            send_chunks_to_db,
-            get_all_chunks,
-            get_all_topics,
-            get_name_from_datbase,
-            remove_by_learning_id,
-            remove_document_from_source_documents,
-            connect_db,
-        )
-E       ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-document-management/src/model/dao.py)
-
-tests/tests_model/test_dao.py:13: ImportError
+tests/tests_model/test_dao.py .FF.FF.......FF.......                                                                                                             [100%]
+
+=============================================================================== FAILURES ===============================================================================
+___________________________________________________________________ test_send_chunks_to_db_exception ___________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6053127760'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_send_chunks_to_db_exception(mock_connect_db):
+        """Test send_chunks_to_db when DB update fails."""
+        mock_col = AsyncMock()
+        mock_connect_db.return_value = mock_col
+        mock_col.update_one.side_effect = Exception("Update error")
+    
+        learning_id = str(ObjectId())
+        vectorised_chunks = [{"doc_id": "123", "text": "chunk"}]
+    
+        with pytest.raises(HTTPException) as exc:
+>           await send_chunks_to_db(learning_id, vectorised_chunks)
+E           TypeError: send_chunks_to_db() missing 1 required positional argument: 'file_type'
+
+tests/tests_model/test_dao.py:57: TypeError
+____________________________________________________________________ test_get_all_chunks_exception _____________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6041007696'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_get_all_chunks_exception(mock_connect_db):
+        """Test get_all_chunks when DB query fails."""
+        mock_col = AsyncMock()
+        mock_connect_db.return_value = mock_col
+        mock_col.find_one.side_effect = Exception("DB error")
+    
+        learning_id = str(ObjectId())
+    
+        with pytest.raises(HTTPException) as exc:
+>           await get_all_chunks(learning_id)
+E           TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+
+tests/tests_model/test_dao.py:73: TypeError
+________________________________________________________________________ test_send_chunks_to_db ________________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6041674128'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_send_chunks_to_db(mock_connect_db):
+        """Test inserting vectorized chunks into the database."""
+        mock_col = MagicMock()
+        mock_connect_db.return_value = mock_col
+    
+        mock_col.update_one.return_value = MagicMock(modified_count=1)
+    
+        learning_id = str(ObjectId())
+        vectorised_chunks = [
+            {"doc_id": "123", "raw_text": "chunk", "vector": [0.1, 0.2]}
+        ]
+    
+>       result = await send_chunks_to_db(learning_id, vectorised_chunks)
+E       TypeError: send_chunks_to_db() missing 1 required positional argument: 'file_type'
+
+tests/tests_model/test_dao.py:112: TypeError
+_________________________________________________________________________ test_get_all_chunks __________________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6040914768'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_get_all_chunks(mock_connect_db):
+        """Test retrieving all chunks from the database."""
+        mock_col = MagicMock()
+        mock_connect_db.return_value = mock_col
+    
+        mock_col.find_one.return_value = {
+            "source_documents": [{"doc_id": "123", "text": "chunk"}]
+        }
+    
+        learning_id = str(ObjectId())
+    
+>       result = await get_all_chunks(learning_id)
+E       TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+
+tests/tests_model/test_dao.py:129: TypeError
+_______________________________________________________________________ test_get_all_chunks_none _______________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6046423568'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_get_all_chunks_none(mock_connect_db):
+        """Test get_all_chunks when DB returns None."""
+    
+        mock_col = MagicMock()
+        mock_col.find_one.return_value = None
+        mock_connect_db.return_value = mock_col
+    
+        learning_id = str(ObjectId())
+    
+        with pytest.raises(HTTPException) as exc:
+>           await get_all_chunks(learning_id)
+E           TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+
+tests/tests_model/test_dao.py:274: TypeError
+_________________________________________________________________ test_get_all_chunks_source_documents _________________________________________________________________
+
+mock_connect_db = <AsyncMock name='connect_db' id='6054236752'>
+
+    @pytest.mark.asyncio
+    @patch("model.dao.connect_db", new_callable=AsyncMock)
+    async def test_get_all_chunks_source_documents(mock_connect_db):
+        """Test get_all_chunks when DB returns None."""
+    
+        mock_col = MagicMock()
+        mock_col.find_one.return_value = {"_id": 0}
+        mock_connect_db.return_value = mock_col
+    
+        learning_id = str(ObjectId())
+    
+>       results = await get_all_chunks(learning_id)
+E       TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+
+tests/tests_model/test_dao.py:290: TypeError
 =========================================================================== warnings summary ===========================================================================
 tests/tests_model/test_dao.py::test_send_learning_to_db_exception
 tests/tests_model/test_dao.py::test_send_learning_to_db_exception
   /Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/venv6/lib/python3.11/site-packages/pydantic/fields.py:1032: PydanticDeprecatedSince20: Using extra keyword arguments on `Field` is deprecated and will be removed. Use `json_schema_extra` instead. (Extra keys: 'metadata'). Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
     warn(
+
+tests/tests_model/test_dao.py::test_remove_by_learning_id_delete_one
+tests/tests_model/test_dao.py::test_remove_document_from_source_documents_update_one
+  /Users/adbul.nizam1/.homebrew/Cellar/python@3.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/mock.py:2178: RuntimeWarning: coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 
@@ -607,7 +156,7 @@ src/model/content_creation/llama3handler.py                            44     44
 src/model/content_creation/prompt_builder.py                           54     54     0%
 src/model/csi/__init__.py                                               0      0   100%
 src/model/csi/secrets_loader.py                                        22     18    18%
-src/model/dao.py                                                      124    103    17%
+src/model/dao.py                                                      124     28    77%
 src/model/db_connection.py                                             25     19    24%
 src/model/doc_exporter.py                                              92     92     0%
 src/model/embeddings_model_config.py                                    7      7     0%
@@ -620,30 +169,12 @@ src/model/pii_mask.py                                                  60     60
 src/model/process_uploaded_file.py                                     97     97     0%
 src/model/scan_file_for_malware.py                                     22     22     0%
 ---------------------------------------------------------------------------------------
-TOTAL                                                                1375   1303     5%
+TOTAL                                                                1375   1228    11%
 
 ======================================================================= short test summary info ========================================================================
-ERROR tests/tests_model/test_dao.py::test_send_learning_to_db_exception - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_send_chunks_to_db_exception - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_chunks_exception - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_send_file_to_db - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_send_file_to_db_exception - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_send_learning_to_db - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_send_chunks_to_db - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_chunks - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_topics - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_name_from_database - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_name_from_database_not_found - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_name_from_database_invalid_id - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_name_from_database_exception - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_by_learning_id - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_document_from_source_documents - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_chunks_none - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_chunks_source_documents - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_topics_none - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_get_all_topics_source_documents - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_by_learning_id_not_found - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_by_learning_id_delete_one - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_document_from_source_documents_not_found - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_remove_document_from_source_documents_update_one - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
-ERROR tests/tests_model/test_dao.py::test_connect_db - ImportError: cannot import name 'send_file_to_db' from 'model.dao' (/Users/adbul.nizam1/Library/CloudStorage/OneDrive-SecureEngineering/Developer/content-creation-...
+FAILED tests/tests_model/test_dao.py::test_send_chunks_to_db_exception - TypeError: send_chunks_to_db() missing 1 required positional argument: 'file_type'
+FAILED tests/tests_model/test_dao.py::test_get_all_chunks_exception - TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+FAILED tests/tests_model/test_dao.py::test_send_chunks_to_db - TypeError: send_chunks_to_db() missing 1 required positional argument: 'file_type'
+FAILED tests/tests_model/test_dao.py::test_get_all_chunks - TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+FAILED tests/tests_model/test_dao.py::test_get_all_chunks_none - TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
+FAILED tests/tests_model/test_dao.py::test_get_all_chunks_source_documents - TypeError: get_all_chunks() missing 1 required positional argument: 'chunks_type'
