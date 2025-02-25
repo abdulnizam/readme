@@ -1,115 +1,89 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from model.llama3handler import Llama3Handler, PromptBlockedError, ResponseBlockedError
+from fastapi import Request, HTTPException
+
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-    """Fixture to ensure AWS helpers are mocked before tests."""
-    pass
+    """Apply mocks before importing `aws_helpers`."""
+    global get_content_for_methods
+    from model.fetch_content_for_methods import get_content_for_methods
+
 
 @pytest.fixture
-def mock_llama_handler(mock_bedrock_llm):
-    """Fixture to create a Llama3Handler instance with mocked AWS dependencies."""
-    with patch("model.llama3handler.BedrockLLM", return_value=mock_bedrock_llm):
-        return Llama3Handler({
-            "model_id": "mock-llama3",
-            "model_kwargs": {"temperature": 0.7, "top_p": 0.9, "max_gen_len": 100},
-            "guardrail": {"guardrailIdentifier": "mock-guardrail", "guardrailVersion": "v1"},
-            "blocked_guardrail_message": "Blocked by guardrail",
-        })
+def mock_request():
+    """Mock FastAPI Request object"""
+    request = MagicMock(spec=Request)
+    request.headers = {"Learning-ID": "12345"}
+    return request
 
 
-def test_llama3handler_initialization(mock_llama_handler):
-    """Ensure `Llama3Handler` initializes properly."""
-    assert mock_llama_handler.llm is not None
-    assert mock_llama_handler.blocked_prompt_msg == "Blocked by guardrail"
-
-
-def test_format_prompt(mock_llama_handler):
-    """Test formatting of prompts with different roles."""
-    result = mock_llama_handler._Llama3Handler__format_prompt("user", "Hello")
-    assert "<|start_header_id|>user<|end_header_id|>\n\nHello<|eot_id|>" in result
-
-    result_no_close = mock_llama_handler._Llama3Handler__format_prompt("assistant", "Response", close_input=False)
-    assert "<|start_header_id|>assistant<|end_header_id|>\n\nResponse" in result_no_close
-    assert "<|eot_id|>" not in result_no_close
-
-
-def test_format_llama3_input(mock_llama_handler):
-    """Ensure input formatting works correctly."""
-    formatted_input = mock_llama_handler._Llama3Handler__format_llama3_input(
-        user_prompt="User prompt",
-        system_prompt="System info",
-        assistant_prompt="Assistant hint"
-    )
-    assert "<|begin_of_text|>" in formatted_input
-    assert "<|start_header_id|>system<|end_header_id|>\n\nSystem info" in formatted_input
-    assert "<|start_header_id|>user<|end_header_id|>\n\nUser prompt" in formatted_input
-    assert "<|start_header_id|>assistant<|end_header_id|>\n\nAssistant hint" in formatted_input
-
-
-def test_format_llama3_input_not_prompt(mock_llama_handler):
-    """Ensure input formatting works correctly without a system prompt."""
-    formatted_input = mock_llama_handler._Llama3Handler__format_llama3_input(
-        user_prompt="User prompt",
-        system_prompt="",
-        assistant_prompt="Assistant hint"
-    )
-    assert "<|begin_of_text|>" in formatted_input
-
-
-def test_format_one_shot(mock_llama_handler):
-    """Ensure one-shot formatting works."""
-    one_shot = mock_llama_handler.format_one_shot("What is AI?", "Artificial Intelligence is...")
-    assert one_shot["user"] == "What is AI?"
-    assert one_shot["assistant"] == "Artificial Intelligence is..."
-
-
-MOCK_LLM_RESPONSE = "Quantum computing is a field of study that..."
-MOCK_CONFIG = {
-    "region_name": "us-west-2",
-    "model_id": "meta-llama3",
-    "model_kwargs": {
-        "temperature": 0.7,
-        "top_p": 0.9,
-        "max_gen_len": 512
+@pytest.fixture
+def mock_response():
+    """Mock response from the Document Management Service"""
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "name": "AI Learning Module",
+        "topic_outlines": ["Introduction to AI", "Deep Learning Basics"]
     }
-}
-
-USER_PROMPT = "Explain quantum computing."
-SYSTEM_PROMPT = "You are a helpful AI assistant."
-ASSISTANT_PROMPT = "Sure! Quantum computing is..."
-FEW_SHOTS = [{"user": "What is AI?", "assistant": "AI stands for Artificial Intelligence."}]
+    return mock_resp
 
 
-@patch("model.llama3handler.BedrockLLM")
-def test_invoke(mock_bedrock_llm):
-    """Ensure `invoke()` calls BedrockLLM correctly."""
+@patch("model.fetch_content_for_methods.requests.get")
+@pytest.mark.asyncio
+async def test_get_content_for_methods_success(mock_requests_get, mock_request, mock_response):
+    """Test successful content retrieval from Document Management Service"""
 
-    mock_llm_instance = MagicMock()
-    mock_llm_instance.invoke.return_value = MOCK_LLM_RESPONSE
-    mock_bedrock_llm.return_value = mock_llm_instance
+    # Mock get_settings to return fake config
 
-    handler = Llama3Handler(llm_config=MOCK_CONFIG)
+    # Mock requests.get to return fake response
+    mock_requests_get.return_value = mock_response
 
-    response = handler.invoke(USER_PROMPT, SYSTEM_PROMPT, ASSISTANT_PROMPT, FEW_SHOTS)
+    result = await get_content_for_methods(mock_request)
 
-    assert response == MOCK_LLM_RESPONSE
+    assert result == {
+        "name": "AI Learning Module",
+        "topics": ["Introduction to AI", "Deep Learning Basics"]
+    }
+
+    mock_requests_get.assert_called_once_with(
+        "http://localhost/v1/topicgenerationvariables",
+        headers={"Learning-ID": "12345"},
+        timeout=3
+    )
 
 
-@patch("model.llama3handler.BedrockLLM")
-def test_invoke_guardrail_error(mock_bedrock_llm):
-    """Ensure guardrail filter raises an error when triggered."""
+@patch("model.fetch_content_for_methods.requests.get")
+@pytest.mark.asyncio
+async def test_get_content_for_methods_http_error(mock_requests_get, mock_request):
+    """Test HTTP error handling when Document Management Service is down"""
 
-    mock_llm_instance = MagicMock()
-    mock_llm_instance.invoke.return_value = "Blocked by guardrail"
-    mock_bedrock_llm.return_value = mock_llm_instance
+    # Simulate an HTTP error
+    mock_requests_get.side_effect = Exception("Network error")
 
-    config_with_guardrail = MOCK_CONFIG.copy()
-    config_with_guardrail["guardrail"] = {"guardrailIdentifier": "GR123", "guardrailVersion": "1.0"}
-    config_with_guardrail["blocked_guardrail_message"] = "Blocked by guardrail"
+    with pytest.raises(HTTPException) as exc_info:
+        await get_content_for_methods(mock_request)
 
-    handler = Llama3Handler(llm_config=config_with_guardrail)
+    assert exc_info.value.status_code == 500
 
-    with pytest.raises(PromptBlockedError):
-        handler.invoke(USER_PROMPT, SYSTEM_PROMPT, ASSISTANT_PROMPT, FEW_SHOTS)
+    mock_requests_get.assert_called_once()
+
+
+@patch("model.fetch_content_for_methods.get_settings")
+@patch("model.fetch_content_for_methods.requests.get")
+@pytest.mark.asyncio
+async def test_get_content_for_methods_invalid_status(mock_requests_get, mock_request):
+    """Test when Document Management Service returns a non-200 status"""
+
+    # Simulate a failed response
+    mock_resp = MagicMock()
+    mock_resp.status_code = 404
+    mock_requests_get.return_value = mock_resp
+
+    result = await get_content_for_methods(mock_request)
+
+    # The function does not raise an error in this case, but returns None
+    assert result is None
+
+    mock_requests_get.assert_called_once()
