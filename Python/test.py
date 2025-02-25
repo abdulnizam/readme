@@ -1,103 +1,116 @@
 import pytest
-import logging
-import json
 from unittest.mock import patch, MagicMock
-from config import get_settings, refresh_settings
-from model.regnerate_content import regenerate_topic_outline
 
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_mocked_aws_helpers(mock_get_settings_and_boto3):
-    """Ensure AWS helpers are mocked before tests."""
-    pass
-
-
-logger = logging.getLogger()
-
-
-@pytest.fixture(autouse=True)
-def mock_run_concurrent_prompts():
-    """Mock the AI response to return a predefined new topic outline."""
-    with patch("model.regnerate_content.run_concurrent_prompts") as mock_prompt:
-        mock_prompt.return_value = [{"title": "New Topic", "objectives": ["Updated Objective"]}]
-        yield mock_prompt
+    global Llama3Handler, GuardrailsFilterError
+    from model.llama3handler import Llama3Handler, GuardrailsFilterError
 
 
 @pytest.fixture
-def sample_topic_outlines():
-    """Provide sample topic outlines for the test."""
-    return [
-        {"title": "Topic 1", "objectives": "obj"},
-        {"title": "Topic 2", "objectives": ["Describe neural networks", "Outline AI applications"]}
-    ]
+def mock_llama_handler(mock_bedrock_llm):
+    """Fixture to create a Llama3Handler instance with mocked AWS dependencies."""
+    with patch("model.llama3handler.BedrockLLM", return_value=mock_bedrock_llm):
+        return Llama3Handler({
+            "model_id": "mock-llama3",
+            "model_kwargs": {"temperature": 0.7, "top_p": 0.9, "max_gen_len": 100},
+            "guardrail": {"guardrailIdentifier": "mock-guardrail", "guardrailVersion": "v1"},
+            "blocked_guardrail_message": "Blocked by guardrail",
+        })
 
 
-@pytest.fixture
-def sample_relevant_citations():
-    """Provide sample relevant citations."""
-    return [
-        [{"title": "AI Research", "chunks": "Some AI content"}],
-        [{"title": "Neural Networks", "chunks": "Some AI content"}]
-    ]
+def test_llama3handler_initialization(mock_llama_handler):
+    """Ensure `Llama3Handler` initializes properly."""
+    assert mock_llama_handler.llm is not None
+    assert mock_llama_handler.guardrail_response == "Blocked by guardrail"
 
 
-@pytest.fixture(autouse=True)
-def mock_bedrock_embedding():
-    """Mock AWS Bedrock embedding function to avoid real API calls."""
-    with patch("langchain_aws.embeddings.bedrock.BedrockEmbeddings.embed_documents") as mock_embed:
-        # Mock the response to return fake embeddings
-        mock_embed.return_value = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
-        yield mock_embed
+def test_format_prompt(mock_llama_handler):
+    """Test formatting of prompts with different roles."""
+    result = mock_llama_handler._Llama3Handler__format_prompt("user", "Hello")
+    assert "<|start_header_id|>user<|end_header_id|>\n\nHello<|eot_id|>" in result
+
+    result_no_close = mock_llama_handler._Llama3Handler__format_prompt("assistant", "Response", close_input=False)
+    assert "<|start_header_id|>assistant<|end_header_id|>\n\nResponse" in result_no_close
+    assert "<|eot_id|>" not in result_no_close
 
 
-@pytest.fixture(autouse=True)
-def mock_boto3_client():
-    """Mock boto3.client calls to return expected JSON responses."""
-    with patch("boto3.client") as mock_boto:
-        # Mock STS client for role assumption
-        mock_sts = MagicMock()
-        mock_sts.assume_role.return_value = {
-            "Credentials": {
-                "AccessKeyId": "mock-access-key",
-                "SecretAccessKey": "mock-secret-key",
-                "SessionToken": "mock-session-token",
-            }
-        }
-
-        # Mock Bedrock response with a valid JSON format
-        mock_bedrock = MagicMock()
-        mock_bedrock.invoke_model.return_value = {
-            "body": MagicMock(read=lambda: json.dumps({"embedding": [[0.1, 0.2, 0.3]]}))
-        }
-
-        def mock_boto_side_effect(service_name, *args, **kwargs):
-            if service_name == "sts":
-                return mock_sts
-            return mock_bedrock
-
-        mock_boto.side_effect = mock_boto_side_effect
-        yield mock_boto
-
-
-@pytest.mark.asyncio
-async def test_regenerate_topic_outline(
-    sample_topic_outlines, sample_relevant_citations, mock_run_concurrent_prompts, mock_bedrock_embedding
-):
-    """Test topic outline regeneration to ensure AI response is properly handled."""
-    
-    result = await regenerate_topic_outline(
-        sample_topic_outlines,
-        "Module Title",
-        ["Description 1", "Description 2"],
-        sample_relevant_citations,
-        topic_index=0
+def test_format_llama3_input(mock_llama_handler):
+    """Ensure input formatting works correctly."""
+    formatted_input = mock_llama_handler._Llama3Handler__format_llama3_input(
+        user_prompt="User prompt",
+        system_prompt="System info",
+        assistant_prompt="Assistant hint"
     )
+    assert "<|begin_of_text|>" in formatted_input
+    assert "<|start_header_id|>system<|end_header_id|>\n\nSystem info" in formatted_input
+    assert "<|start_header_id|>user<|end_header_id|>\n\nUser prompt" in formatted_input
+    assert "<|start_header_id|>assistant<|end_header_id|>\n\nAssistant hint" in formatted_input
 
-    # Ensure the returned object is a dictionary
-    assert isinstance(result, dict)
 
-    # Ensure the AI-generated title is correctly assigned
-    assert result["title"] == "New Topic"
+def test_format_llama3_input_not_prompt(mock_llama_handler):
+    """Ensure input formatting works correctly."""
+    formatted_input = mock_llama_handler._Llama3Handler__format_llama3_input(
+        user_prompt="User prompt",
+        system_prompt="",
+        assistant_prompt="Assistant hint"
+    )
+    assert "<|begin_of_text|>" in formatted_input
 
-    # Ensure AI-generated objectives are correctly set
-    assert "Updated Objective" in result["objectives"]
+
+def test_format_one_shot(mock_llama_handler):
+    """Ensure one-shot formatting works."""
+    one_shot = mock_llama_handler.format_one_shot("What is AI?", "Artificial Intelligence is...")
+    assert one_shot["user"] == "What is AI?"
+    assert one_shot["assistant"] == "Artificial Intelligence is..."
+
+
+MOCK_LLM_RESPONSE = "Quantum computing is a field of study that..."
+MOCK_CONFIG = {
+    "region_name": "us-west-2",
+    "model_id": "meta-llama3",
+    "model_kwargs": {
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "max_gen_len": 512
+    }
+}
+
+USER_PROMPT = "Explain quantum computing."
+SYSTEM_PROMPT = "You are a helpful AI assistant."
+ASSISTANT_PROMPT = "Sure! Quantum computing is..."
+FEW_SHOTS = [{"user": "What is AI?", "assistant": "AI stands for Artificial Intelligence."}]
+
+
+@patch("model.llama3handler.BedrockLLM")
+def test_invoke(mock_bedrock_llm):
+    """Ensure `invoke()` calls BedrockLLM correctly."""
+
+    mock_llm_instance = MagicMock()
+    mock_llm_instance.invoke.return_value = MOCK_LLM_RESPONSE
+    mock_bedrock_llm.return_value = mock_llm_instance
+
+    handler = Llama3Handler(llm_config=MOCK_CONFIG)
+
+    response = handler.invoke(USER_PROMPT, SYSTEM_PROMPT, ASSISTANT_PROMPT, FEW_SHOTS)
+
+    assert response == MOCK_LLM_RESPONSE
+
+
+@patch("model.llama3handler.BedrockLLM")
+def test_invoke_guardrail_error(mock_bedrock_llm):
+    """Ensure guardrail filter raises an error when triggered."""
+
+    mock_llm_instance = MagicMock()
+    mock_llm_instance.invoke.return_value = MOCK_LLM_RESPONSE
+    mock_bedrock_llm.return_value = mock_llm_instance
+
+    config_with_guardrail = MOCK_CONFIG.copy()
+    config_with_guardrail["guardrail"] = {"guardrailIdentifier": "GR123", "guardrailVersion": "1.0"}
+    config_with_guardrail["blocked_guardrail_message"] = "Quantum computing is a field of study that..."
+
+    handler = Llama3Handler(llm_config=config_with_guardrail)
+
+    with pytest.raises(GuardrailsFilterError):
+        handler.invoke(USER_PROMPT, SYSTEM_PROMPT, ASSISTANT_PROMPT, FEW_SHOTS)
