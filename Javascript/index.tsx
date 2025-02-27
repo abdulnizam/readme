@@ -1,209 +1,302 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import styles from './EditBox.module.scss';
-import { Button, H4, InputArea, Link, LoadingSpinner } from '@/components';
-import { addLineBreaks, relabelKeys } from '@/helpers/content-helpers/content-helpers';
-import { TOPIC_OUTLINES } from '@/constants/urlpaths';
-import { RepromptButtons } from '@/models/Edit';
-import { useErrorContext } from '@/context/ErrorContext/ErrorContext';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Button,
+  Indicator,
+  Descriptor,
+  ReadOnlyBox,
+  SourcesBox,
+  EditBox,
+  VersionController,
+  InsetText,
+  EditBoxContainer,
+  Details,
+} from '@/components';
+import { useFunctionContext } from '@/context/FunctionContext/FunctionContext';
+import { useAppSelector } from '@/redux/hooks';
+import { useConfigurationContext } from '@/context/ConfigurationContext/ConfigurationContext';
+import { SourcesAccordionProps } from '@/components/SourcesAccordion/SourcesAccordion';
+import { useJourneyContext } from '@/context/JourneyContext/JourneyContext';
+import { CONTINUOUS_KNOWLEDGE, KNOWLEDGE_CHECK, TOPIC_OUTLINES } from '@/constants/urlpaths';
+import styles from './edit.module.scss';
 
-interface EditProps {
-  data: Record<string, any>;
-  selectedIndex: number;
-  multipleItemsIndex: number;
-  buttons: RepromptButtons[];
-  onEditClick: () => void;
-  onSaveOrCancel: (value: any, multipleItemsIndex: number) => void;
-  onFireReprompt: (value: string, question: string) => void;
-  removeCurrentRestyle: () => void;
-  isEditDisabled: boolean;
-
-  context: string;
-  listLength: number;
-}
-
-const READ_ONLY = 'read-only';
-const MANUAL_EDIT = 'manual-edit';
-const REPROMPT = 'reprompt';
-
-const EditBox: React.FC<EditProps> = ({
-  data,
-  selectedIndex,
-  buttons,
-  onEditClick,
-  onSaveOrCancel,
-  isEditDisabled,
-  multipleItemsIndex,
-  context,
-  onFireReprompt,
-  listLength,
-  removeCurrentRestyle,
-}) => {
-  const { errorEnabled } = useErrorContext();
-  const [boxState, setBoxState] = useState<string>(READ_ONLY);
-  const [inputAreas, setInputAreas] = useState<Record<string, any>>(data);
-  const [disabledButtons, setDisabledButtons] = useState<string[]>([]);
-  const [loadingOverlayEnabled, setLoadingOverlayEnabled] = useState<boolean>(false);
-
-  const handlePromptClick = (e: Event) => {
-    e.preventDefault();
-    if (!isEditDisabled) {
-      onEditClick();
-      setBoxState(REPROMPT);
-    }
-  };
-
-  const handleChangeClick = (e: Event) => {
-    e.preventDefault();
-    if (!isEditDisabled) {
-      onEditClick();
-      setBoxState(MANUAL_EDIT);
-    }
-  };
-
-  const handleSave = (value: any) => {
-    onSaveOrCancel(value, multipleItemsIndex);
-    setBoxState(READ_ONLY);
-  };
-
-  const handleCancel = (e: Event) => {
-    e.preventDefault();
-    if (boxState === MANUAL_EDIT) {
-      setInputAreas(data);
-      onSaveOrCancel(data, multipleItemsIndex);
-    } else if (boxState === REPROMPT) {
-      removeCurrentRestyle();
-      setDisabledButtons((prev) => prev.slice(0, -1));
-    }
-  };
-
-  const handleRepromptClick = (group: string, value: string, entry: string) => {
-    setLoadingOverlayEnabled(true);
-    setDisabledButtons((prev) => [...prev, group]);
-    onFireReprompt(value, entry);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>, key: string) => {
-    setInputAreas((prevState) => ({ ...prevState, [key]: e.target.value }));
-  };
-
-  useEffect(() => {
-    setLoadingOverlayEnabled(false);
-  }, [errorEnabled]);
-
-  useEffect(() => {
-    setInputAreas(data);
-    setLoadingOverlayEnabled(false);
-  }, [data]);
-
-  const renderContent = (key: string, value: any, i: number) => (
-    <div key={i}>
-      <div className={styles.headerRow}>
-        <H4 data-testid={`edit-box-h4-${key}-${selectedIndex}`}>
-          {relabelKeys(key)}
-          {relabelKeys(key) &&
-            `${context !== TOPIC_OUTLINES ? multipleItemsIndex + 1 : selectedIndex + 1} of ${listLength ? listLength : data.length}`}
-        </H4>
-        {boxState === REPROMPT && i === 0 && (
-          <div className={styles.inlineButtons}>
-            {buttons.map((btn, i) => (
-              <Button
-                key={i}
-                disabled={disabledButtons.includes(btn.group)}
-                className={!disabledButtons.includes(btn.group) ? styles.editButton : styles.editButtonDisabled}
-                onClick={() => handleRepromptClick(btn.group, btn.value, value)}
-                data-testid={`edit-box-button-${btn.value}-${selectedIndex}`}
-              >
-                {btn.label}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
-      {boxState === MANUAL_EDIT ? (
-        <InputArea
-          data-testid={`edit-box-text-area-${key}-${selectedIndex}`}
-          className={`${styles.textArea}`}
-          value={value}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e, key)}
-        />
-      ) : (
-        <p className="govuk-body-m" data-testid={`edit-box-content-${key}-${selectedIndex}`}>
-          {addLineBreaks(value)}
-        </p>
-      )}
-    </div>
+const Edit: React.FC = () => {
+  const {
+    editPrimaryClick,
+    saveEditedContent,
+    regenerateContentClick,
+    contentVersionClick,
+    fireRepromptContentStyle,
+    removeCurrentRestyle,
+    addNewEditContextItem,
+    removeEditContextItem,
+  } = useFunctionContext();
+  const { descriptor, editDescriptor, warning, button, buttons, details } = useAppSelector(
+    (state) => state.content.editContent,
   );
+  const { editGeneratedContent, sourceMaterials } = useConfigurationContext();
+  const { content: context } = useJourneyContext();
+  const { reviewIndex, reviewHeader } = useAppSelector((state) => state.generatedContent);
+  const [editState, setEditState] = useState<boolean>(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [displayedContent, setDisplayedContent] = useState<Record<string, any>[][]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [versions, setVersions] = useState<number>(0);
+  const [newQuestionCount, setNewQuestionCount] = useState<number>(0);
+  const [descriptorTitle, setDescriptorTitle] = useState<string>(descriptor[editState ? 1 : 0].title);
+  const [isReviewed, setIsReviewed] = useState<boolean>(false);
+  const firstElementRef = useRef<HTMLDivElement>(null);
+
+  const handleButtonClick = () => {
+    if (editState || isReviewed) {
+      editPrimaryClick(reviewIndex);
+    } else {
+      setEditState(!editState);
+    }
+  };
+
+  const handleSelect = (index: number) => {
+    contentVersionClick(index, reviewIndex);
+  };
+
+  const handlePrevious = () => {
+    if (editGeneratedContent[reviewIndex].selectedVersion > 0) {
+      contentVersionClick(editGeneratedContent[reviewIndex].selectedVersion - 1, reviewIndex);
+    }
+  };
+
+  const handleNext = () => {
+    if (editGeneratedContent[reviewIndex].selectedVersion < versions - 1) {
+      contentVersionClick(editGeneratedContent[reviewIndex].selectedVersion + 1, reviewIndex);
+    }
+  };
+
+  const handleRegenerateClick = () => {
+    regenerateContentClick(reviewIndex);
+  };
+
+  const handleUndo = (reviewIndex: number, index: number) => {
+    removeCurrentRestyle(reviewIndex, index);
+  };
+
+  const handleReprompt = (reviewIndex: number, index: number, value: string, question: string) => {
+    fireRepromptContentStyle(
+      reviewIndex,
+      index,
+      editGeneratedContent[reviewIndex].versions[selectedIndex],
+      value,
+      question,
+    );
+  };
+
+  const handleEditClick = (index: number) => {
+    setActiveIndex(index);
+  };
+
+  const handleSaveOrCancel = (value: any, multipleItemsIndex: number) => {
+    setActiveIndex(null);
+    saveEditedContent(reviewIndex, value, multipleItemsIndex);
+  };
+
+  const handleRemoveQuestion = (e: Event, index: number) => {
+    e.preventDefault();
+    removeEditContextItem(reviewIndex, index);
+    setNewQuestionCount((prev) => prev - 1);
+  };
+
+  const handleAddQuestion = () => {
+    addNewEditContextItem(reviewIndex);
+    setNewQuestionCount((prev) => prev + 1);
+  };
+
+  const sourceMats: SourcesAccordionProps[] = sourceMaterials.map((item) => ({
+    source: {
+      ...item,
+    },
+    index: 0,
+  }));
+
+  useEffect(() => {
+    if (editState) {
+      setDescriptorTitle(setEditDescriptor());
+    } else {
+      setDescriptorTitle(setReviewDescriptor());
+    }
+    if (editState && firstElementRef.current) {
+      firstElementRef.current.focus();
+      if ('scrollIntoView' in firstElementRef.current) {
+        firstElementRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [editState]);
+
+  const setEditDescriptor = () => {
+    if (context === TOPIC_OUTLINES) {
+      return `${descriptor[editState ? 1 : 0].title} name and objectives individually`;
+    } else {
+      return 'Edit and regenerate sections of content';
+    }
+  };
+
+  const setReviewDescriptor = () => {
+    if (context === TOPIC_OUTLINES) {
+      return `${descriptor[editState ? 1 : 0].title} topic ${reviewIndex + 1} name and objectives`;
+    } else if (context === KNOWLEDGE_CHECK || context === CONTINUOUS_KNOWLEDGE) {
+      return `${descriptor[editState ? 1 : 0].title} topic ${reviewIndex + 1} knowledge check ${reviewHeader}`;
+    } else {
+      return `${descriptor[editState ? 1 : 0].title} topic ${reviewIndex + 1} content ${reviewHeader}`;
+    }
+  };
+
+  useEffect(() => {
+    setVersions(editGeneratedContent[reviewIndex].versions.length);
+    setSelectedIndex(editGeneratedContent[reviewIndex].selectedVersion);
+    setIsReviewed(editGeneratedContent[reviewIndex].review === 'completed');
+  }, [editGeneratedContent, reviewIndex]);
+
+  useEffect(() => {
+    setDisplayedContent(editGeneratedContent[reviewIndex].versions[selectedIndex]);
+  }, [reviewIndex, editGeneratedContent, selectedIndex]);
 
   return (
-    <div>
-      {loadingOverlayEnabled ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          {Object.entries(inputAreas).map(([key, value], i) => renderContent(key, value, i))}
-          <div className={styles.buttonRow}>
-            <div className={styles.buttonContainer}>
-              {[MANUAL_EDIT, REPROMPT].includes(boxState) ? (
+    <div className="govuk-grid-row">
+      <div className="govuk-grid-column-full">
+        <Descriptor
+          title={descriptorTitle}
+          description={descriptor[editState ? 1 : 0].description}
+          hint={descriptor[editState ? 1 : 0].hint}
+          textSize={descriptor[editState ? 1 : 0].textSize}
+          variation="Header"
+          data-testid={descriptor[editState ? 1 : 0]['data-testid']}
+          ref={firstElementRef}
+        />
+        <Indicator data-testid={warning['data-testid']} aria-label={warning['aria-label']}>
+          {warning.children}
+        </Indicator>
+        {editDescriptor![editState ? 1 : 0] && (
+          <Descriptor
+            title={editDescriptor![editState ? 1 : 0].title}
+            hint={editDescriptor![editState ? 1 : 0].hint}
+            textSize={editDescriptor![editState ? 1 : 0].textSize}
+            variation="Header"
+            data-testid={editDescriptor![editState ? 1 : 0]['data-testid']}
+          />
+        )}
+        <Details detail={details[editState ? 1 : 0].detail} summary={details[editState ? 1 : 0].summary} />
+        {!editState && (
+          <>
+            <ReadOnlyBox
+              data={displayedContent}
+              selectedIndex={reviewIndex}
+              context={context!}
+              listLength={context === TOPIC_OUTLINES ? editGeneratedContent.length : 0}
+              removeListItem={handleRemoveQuestion}
+            />
+            <div className={`${styles['navigation-container']}`}>
+              {!isReviewed && (
                 <>
-                  <Button
-                    className={`${styles.saveButton} govuk-button`}
-                    onClick={() => handleSave(inputAreas)}
-                    data-testid={`edit-box-save-button-${selectedIndex}`}
-                  >
-                    Save
-                  </Button>
-                  <Link
-                    href=""
-                    onClick={(e) => handleCancel(e)}
-                    aria-label={'undo link'}
-                    className={styles['editing-link']}
-                  >
-                    Undo
-                  </Link>
-                </>
-              ) : (
-                !isEditDisabled && (
-                  <div className={styles['edit-links-container']}>
-                    {context !== TOPIC_OUTLINES && (
-                      <>
-                        <Link
-                          href=""
-                          onClick={(e) => handlePromptClick(e)}
-                          data-testid={'use-ai-prompts-link'}
-                          aria-label={'change link'}
-                          className={styles['edit-link']}
-                        >
-                          Use AI prompts
-                        </Link>
-                        <br />
-                      </>
-                    )}
-                    <Link
-                      href=""
-                      onClick={(e) => handleChangeClick(e)}
-                      data-testid={'manually-edit-link'}
-                      aria-label={'change link'}
-                      className={styles['edit-link']}
+                  {versions < 3 ? (
+                    <div className={styles.inlineButtons}>
+                      {!isReviewed &&
+                        !editState &&
+                        (context === KNOWLEDGE_CHECK || context === CONTINUOUS_KNOWLEDGE) && (
+                          <Button
+                            onClick={handleAddQuestion}
+                            data-testid={button['data-testid']}
+                            aria-label={button['aria-label']}
+                            disabled={activeIndex !== null || newQuestionCount >= 3}
+                            hexButtonColour="#f3f2f1"
+                            hexButtonHoverColour="#dbdad9"
+                            hexButtonShadowColour="#929191"
+                            hexButtonTextColour="#0b0c0c"
+                            className={styles['regenerate-all-button']}
+                          >
+                            Generate a question
+                          </Button>
+                        )}
+                      <Button
+                        onClick={handleRegenerateClick}
+                        data-testid={'rewrite-all-button'}
+                        aria-label={'rewrite all'}
+                        start={false}
+                        hexButtonColour="#f3f2f1"
+                        hexButtonHoverColour="#dbdad9"
+                        hexButtonShadowColour="#929191"
+                        hexButtonTextColour="#0b0c0c"
+                        className={styles['regenerate-all-button']}
+                      >
+                        Regenerate all
+                      </Button>
+                    </div>
+                  ) : (
+                    <InsetText
+                      className={styles['regenerate-all-inset-text']}
+                      data-testid={'regenerations-used-inset-text'}
                     >
-                      Edit manually
-                    </Link>
-                  </div>
-                )
+                      All regenerations have been used
+                    </InsetText>
+                  )}
+                  <VersionController
+                    versions={versions}
+                    selectedIndex={selectedIndex}
+                    onSelect={handleSelect}
+                    onPrevious={handlePrevious}
+                    onNext={handleNext}
+                  />
+                </>
               )}
             </div>
-          </div>
-        </>
-      )}
+            {versions > 1 && (
+              <div className={styles['navigation-container']}>
+                <InsetText
+                  className={`${styles['regenerated-inset-text']}`}
+                  data-testid={'regeneration-successful-inset-text'}
+                >
+                  Content successfully regenerated
+                </InsetText>
+              </div>
+            )}
+          </>
+        )}
+        {editState &&
+          displayedContent.map((regeneratedList, index) => (
+            <EditBoxContainer
+              key={index}
+              styleClass={activeIndex === index ? styles['container-edit'] : styles['container-read']}
+            >
+              <EditBox
+                data={regeneratedList[regeneratedList.length - 1]}
+                selectedIndex={selectedIndex}
+                multipleItemsIndex={index}
+                key={index}
+                buttons={buttons}
+                onEditClick={() => handleEditClick(index)}
+                removeCurrentRestyle={() => handleUndo(reviewIndex, index)}
+                onSaveOrCancel={handleSaveOrCancel}
+                isEditDisabled={activeIndex !== index && activeIndex !== null}
+                context={context!}
+                listLength={context === TOPIC_OUTLINES ? editGeneratedContent.length : displayedContent.length}
+                onFireReprompt={(value: string, question: string) =>
+                  handleReprompt(reviewIndex, index, value, question)
+                }
+              />
+            </EditBoxContainer>
+          ))}
+        <SourcesBox data={sourceMats} disabled={activeIndex !== null} />
+        <Button
+          onClick={handleButtonClick}
+          data-testid={button['data-testid']}
+          aria-label={button['aria-label']}
+          hexButtonColour={activeIndex !== null ? '#80B79D' : '#00703C'}
+          hexButtonHoverColour={activeIndex !== null ? '#80B79D' : '#00572e'}
+          disabled={activeIndex !== null}
+        >
+          {button.text}
+        </Button>
+      </div>
     </div>
   );
 };
 
-export default EditBox;
-
-const EditBoxContainer: React.FC<{ children: any; styleClass: string }> = ({ children, styleClass }) => {
-  return <div className={styleClass}>{children}</div>;
-};
-
-export { EditBoxContainer };
+export default Edit;
