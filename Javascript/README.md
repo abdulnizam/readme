@@ -1,246 +1,97 @@
- ✕ renders the Overview page with correct content (33 ms)
-    ✓ calls primaryButtonClick when the button is clicked (20 ms)
-    ✕ disables button when sections are incomplete (3 ms)
-    ✓ triggers overviewCreateClick when OverviewList create button is clicked (3 ms)
-    ✓ triggers overviewReviewContentClick when overview review link is clicked (6 ms)
-    ✓ does not render button if all sections are incomplete (4 ms)
+ FAIL  redux/feature/generatedContent/generatedContent.test.ts
+  generatedContentSlice Reducers
+    ✓ should return the initial state (2 ms)
+    ✓ should handle setList (1 ms)
+    ✓ should handle setCitations (1 ms)
+    ✓ should handle addVersionToList
+    ✕ should handle addContentToMultiItemList (2 ms)
+    ✕ should handle removeContentFromMultiItemList (1 ms)
+    ✓ should handle addRestyleToList (1 ms)
+    ✕ should handle removeRestyleFromList
+    ✕ should handle setEditedContent
+    ✓ should handle setEditContextListSelectedVersion (1 ms)
+    ✓ should handle addNewListItem
+    ✓ should handle setReviewIndex (1 ms)
+    ✓ should handle resetReviewIndex
+    ✓ should handle resetAllGeneratedContent
+    ✓ should handle setReviewHeader
 
-  ● Overview Page › renders the Overview page with correct content
+  ● generatedContentSlice Reducers › should handle addContentToMultiItemList
 
-    TestingLibraryElementError: Unable to find an element with the text: Finish. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+    expect(received).toEqual(expected) // deep equality
 
-    Ignored nodes: comments, script, style
-    <body>
-      <div>
-        <div
-          class="govuk-grid-row"
-        >
-          <div
-            class="govuk-grid-column-full"
-          >
-            <div
-              class="descriptorGroupHeader"
-            >
-              <div
-                tabindex="-1"
-              >
-                <h2
-                  class="heading__StyledHeading-sc-1dsobun-0 gEtKVr heading"
-                  data-testid="test-title-descriptor-h2-text"
-                >
-                  Test Title
-                  <br />
-                </h2>
-              </div>
-              <div
-                class="headingRow govuk-body-m"
-                data-testid="test-title-descriptor-description-text"
-              >
-                Test Description
-                <br />
-              </div>
-            </div>
-            <div
-              class="govuk-grid-row"
-            >
-              <div
-                class="govuk-grid-column-full"
-              >
-                <h3
-                  class="heading__StyledHeading-sc-1dsobun-0 jbyZaT"
-                  data-testid="overview-list-1-h3"
-                >
-                  Test Heading
-                </h3>
-                <div>
-                  <hr
-                    class="govuk-section-break govuk-section-break--m govuk-section-break--visible sectionMidBreak"
-                  />
-                  <div
-                    class="govuk-grid-row sectionRow"
-                    data-testid="overview-list-1-row-0"
-                  >
-                    <div
-                      class="govuk-grid-column-three-quarters"
-                      data-testid="overview-list-1-label-0"
-                    >
-                      <h6
-                        class="heading__StyledHeading-sc-1dsobun-0 dWpWjO rowHeading"
-                      >
-                        <a
-                          class="src__Link-sc-1loawqx-0 keQBfx"
-                          data-testid="overview-list-return-link-0"
-                          href="#"
-                          tabindex="0"
-                        >
-                          Section 1
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      class="govuk-grid-column-one-quarter sectionOneQuarter"
-                      data-testid="overview-list-1-function-0"
-                    >
-                      <strong
-                        class="govuk-tag govuk-tag--green tag-display"
-                        data-testid="tag-green-0"
-                      >
-                        Complete
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <hr
-                    class="govuk-section-break govuk-section-break--m govuk-section-break--visible sectionMidBreak"
-                  />
-                  <div
-                    class="govuk-grid-row sectionRow"
-                    data-testid="overview-list-1-row-1"
-                  >
-                    <div
-                      class="govuk-grid-column-three-quarters"
-                      data-testid="overview-list-1-label-1"
-                    >
-                      <h6
-                        class="heading__StyledHeading-sc-1dsobun-0 dWpWjO rowHeading"
-                        data-testid="overview-list-1-h6-1"
-                      >
-                        Section 2
-                      </h6>
-                    </div>
-                    <div
-                      class="govuk-grid-column-one-quarter sectionOneQuarter"
-                      data-testid="overview-list-1-function-1"
-                    >
-                      <strong
-                        class="govuk-tag govuk-tag--grey tag-display"
-                        data-testid="tag-grey-1"
-                      >
-                        Can't start yet
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-                <hr
-                  class="govuk-section-break govuk-section-break--m govuk-section-break--visible sectionEndBreak"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </body>
+    - Expected  - 7
+    + Received  + 1
 
-      68 |     expect(screen.getByText('Test Title')).toBeInTheDocument();
-      69 |     expect(screen.getByText('Test Description')).toBeInTheDocument();
-    > 70 |     expect(screen.getByText('Finish')).toBeInTheDocument();
-         |                   ^
-      71 |     expect(screen.getByText('Test Heading')).toBeInTheDocument();
-      72 |     expect(screen.getByText('Section 1')).toBeInTheDocument();
-      73 |     expect(screen.getByText("Can't start yet")).toBeInTheDocument();
+    - Array [
+    -   Object {
+    -     "answer": "A",
+    -     "choices": "A,B,C",
+    -     "question": "Q1",
+    -   },
+    - ]
+    + Array []
 
-      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
-      at node_modules/@testing-library/dom/dist/query-helpers.js:76:38
-      at node_modules/@testing-library/dom/dist/query-helpers.js:52:17
-      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
-      at Object.getByText (app/[user-context]/overview/overview.test.tsx:70:19)
+      91 |     );
+      92 |
+    > 93 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(questionList);
+         |                                                           ^
+      94 |   });
+      95 |
+      96 |   test('should handle removeContentFromMultiItemList', () => {
 
-  ● Overview Page › disables button when sections are incomplete
+      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:93:59)
 
-    TestingLibraryElementError: Unable to find an element with the text: Finish. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+  ● generatedContentSlice Reducers › should handle removeContentFromMultiItemList
 
-    Ignored nodes: comments, script, style
-    <body>
-      <div>
-        <div
-          class="govuk-grid-row"
-        >
-          <div
-            class="govuk-grid-column-full"
-          >
-            <div
-              class="descriptorGroupHeader"
-            >
-              <div
-                tabindex="-1"
-              >
-                <h2
-                  class="heading__StyledHeading-sc-1dsobun-0 gEtKVr heading"
-                  data-testid="undefined-h2-text"
-                >
-                  Test Title
-                  <br />
-                </h2>
-              </div>
-              <div
-                class="headingRow govuk-body-m"
-                data-testid="undefined-description-text"
-              >
-                Test Description
-                <br />
-              </div>
-            </div>
-            <div
-              class="govuk-grid-row"
-            >
-              <div
-                class="govuk-grid-column-full"
-              >
-                <h3
-                  class="heading__StyledHeading-sc-1dsobun-0 jbyZaT"
-                  data-testid="undefined-h3"
-                >
-                  Test Heading
-                </h3>
-                <div>
-                  <hr
-                    class="govuk-section-break govuk-section-break--m govuk-section-break--visible sectionMidBreak"
-                  />
-                  <div
-                    class="govuk-grid-row sectionRow"
-                    data-testid="undefined-row-0"
-                  >
-                    <div
-                      class="govuk-grid-column-three-quarters"
-                      data-testid="undefined-label-0"
-                    >
-                      <h6
-                        class="heading__StyledHeading-sc-1dsobun-0 dWpWjO rowHeading"
-                        data-testid="undefined-h6-0"
-                      >
-                        Section 1
-                      </h6>
-                    </div>
-                    <div
-                      class="govuk-grid-column-one-quarter sectionOneQuarter"
-                      data-testid="undefined-function-0"
-                    />
-                  </div>
-                </div>
-                <hr
-                  class="govuk-section-break govuk-section-break--m govuk-section-break--visible sectionEndBreak"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </body>
+    TypeError: Cannot read properties of undefined (reading 'length')
 
-      144 |
-      145 |     render(<Overview />);
-    > 146 |     const finishButton = screen.getByText('Finish');
-          |                                 ^
-      147 |     expect(finishButton).toBeDisabled();
-      148 |   });
-      149 |
+      108 |     const newState = generatedContentReducer(initial, removeContentFromMultiItemList({ context: KNOWLEDGE_CHECK, reviewIndex: 0, multiItemIndex: 0 }));
+      109 |
+    > 110 |     expect(newState.knowledgeCheckList[0].versions[0][0].length).toBe(0);
+          |                                                          ^
+      111 |   });
+      112 |
+      113 |   test('should handle addRestyleToList', () => {
 
-      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
-      at node_modules/@testing-library/dom/dist/query-helpers.js:76:38
-      at node_modules/@testing-library/dom/dist/query-helpers.js:52:17
-      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
-      at Object.getByText (app/[user-context]/overview/overview.test.tsx:146:33)
+      at Object.length (redux/feature/generatedContent/generatedContent.test.ts:110:58)
+
+  ● generatedContentSlice Reducers › should handle removeRestyleFromList
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      136 |     const newState = generatedContentReducer(initial, removeRestyleFromList({ context: POWERPOINT_SCRIPT, reviewIndex: 0, multipleItemsIndex: 0 }));
+      137 |
+    > 138 |     expect(newState.elearningList[0].versions[0][0].length).toBe(0);
+          |                                                             ^
+      139 |   });
+      140 |
+      141 |   test('should handle setEditedContent', () => {
+
+      at Object.toBe (redux/feature/generatedContent/generatedContent.test.ts:138:61)
+
+  ● generatedContentSlice Reducers › should handle setEditedContent
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"bullet_points": "Updated Point", "heading": "Updated Slide"}
+    Received: undefined
+
+      147 |     );
+      148 |
+    > 149 |     expect(newState.elearningList[0].versions[0][0][0]).toEqual(newContent);
+          |                                                         ^
+      150 |   });
+      151 |
+      152 |   test('should handle setEditContextListSelectedVersion', () => {
+
+      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:149:57)
 
 Test Suites: 1 failed, 1 total
-Tests:       2 failed, 4 passed, 6 total
+Tests:       4 failed, 11 passed, 15 total
+Snapshots:   0 total
+Time:        3.482 s
+Ran all test suites matching /generatedContent.test/i.
