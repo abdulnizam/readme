@@ -1,18 +1,17 @@
- FAIL  redux/feature/generatedContent/generatedContent.test.ts
-  generatedContentSlice Reducers
+generatedContentSlice Reducers
     ✓ should return the initial state (2 ms)
-    ✓ should handle setList (1 ms)
-    ✓ should handle setCitations
+    ✓ should handle setList
+    ✓ should handle setCitations (1 ms)
     ✓ should handle addVersionToList
     ✕ should handle addContentToMultiItemList (2 ms)
-    ✕ should handle removeContentFromMultiItemList (1 ms)
-    ✓ should handle addRestyleToList (1 ms)
-    ✓ should handle removeRestyleFromList
-    ✓ should handle setEditedContent (1 ms)
-    ✓ should handle setEditContextListSelectedVersion
+    ✓ should handle removeContentFromMultiItemList (1 ms)
+    ✓ should handle addRestyleToList
+    ✓ should handle removeRestyleFromList (1 ms)
+    ✓ should handle setEditedContent
+    ✓ should handle setEditContextListSelectedVersion (1 ms)
     ✓ should handle addNewListItem
     ✓ should handle setReviewIndex
-    ✓ should handle resetReviewIndex
+    ✓ should handle resetReviewIndex (1 ms)
     ✓ should handle resetAllGeneratedContent
     ✓ should handle setReviewHeader (1 ms)
 
@@ -21,36 +20,20 @@
     expect(received).toEqual(expected) // deep equality
 
     Expected: ArrayContaining [{"answer": "A", "choices": "A,B,C", "question": "Q1"}]
-    Received: []
+    Received: [[{"answer": "A", "choices": "A,B,C", "question": "Q1"}]]
 
+      102 |     );
       103 |   
-      104 |     // Ensure the newly added content exists inside versions
-    > 105 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(expect.arrayContaining([questionList[0]]));
+    > 104 |     expect(newState.knowledgeCheckList[0].versions[0][1]).toEqual(expect.arrayContaining([questionList[0]]));
           |                                                           ^
-      106 |   });
-      107 |
-      108 |   test('should handle removeContentFromMultiItemList', () => {
+      105 |   });
+      106 |
+      107 |   test('should handle removeContentFromMultiItemList', () => {
 
-      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:105:59)
-
-  ● generatedContentSlice Reducers › should handle removeContentFromMultiItemList
-
-    expect(received).toBeDefined()
-
-    Received: undefined
-
-      124 |   
-      125 |     // Instead of checking for an empty array, ensure it is still structured
-    > 126 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toBeDefined();
-          |                                                           ^
-      127 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toHaveLength(0);
-      128 |   });
-      129 |
-
-      at Object.toBeDefined (redux/feature/generatedContent/generatedContent.test.ts:126:59)
+      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:104:59)
 
 Test Suites: 1 failed, 1 total
-Tests:       2 failed, 13 passed, 15 total
+Tests:       1 failed, 14 passed, 15 total
 Snapshots:   0 total
-Time:        4.448 s
+Time:        0.712 s, estimated 1 s
 Ran all test suites matching /generatedContent.test/i.
