@@ -1,40 +1,40 @@
-test('should handle removeRestyleFromList with an unknown context', () => {
+test('should not modify state when addContentToMultiItemList is called with undefined context', () => {
+    const newContent = [{ question: 'Q1', choices: 'A,B,C', answer: 'A' }];
+  
     const initial = {
       ...initialState,
-      elearningList: [
+      knowledgeCheckList: [
         {
           review: 'pending',
           selectedVersion: 0,
-          versions: [[[{ heading: 'Slide', bullet_points: 'Point' }]]],
+          versions: [[[{ question: 'Existing Q', choices: 'X,Y,Z', answer: 'X' }]]],
         },
       ],
     };
   
     const newState = generatedContentReducer(
       initial,
-      removeRestyleFromList({ context: 'UNKNOWN_CONTEXT', reviewIndex: 0, multipleItemsIndex: 0 })
+      addContentToMultiItemList({ context: undefined as any, reviewIndex: 0, newContent })
     );
   
     expect(newState).toEqual(initial);
   });
 
-  test('should handle setEditedContent with an unknown context', () => {
-    const newContent = { heading: 'Edited Slide', bullet_points: 'Edited Point' };
-  
+  test('should not modify state when removeContentFromMultiItemList is called with undefined context', () => {
     const initial = {
       ...initialState,
-      elearningList: [
+      knowledgeCheckList: [
         {
           review: 'pending',
           selectedVersion: 0,
-          versions: [[[{ heading: 'Old Slide', bullet_points: 'Old Point' }]]],
+          versions: [[[{ question: 'Q1', choices: 'A,B,C', answer: 'A' }]]],
         },
       ],
     };
   
     const newState = generatedContentReducer(
       initial,
-      setEditedContent({ context: 'UNKNOWN_CONTEXT', reviewIndex: 0, newContent, multipleItemsIndex: 0 })
+      removeContentFromMultiItemList({ context: undefined as any, reviewIndex: 0, multiItemIndex: 0 })
     );
   
     expect(newState).toEqual(initial);
