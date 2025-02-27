@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Edit from './page'; // Adjust the path to your Edit component
+import Edit from './page';
 import { useFunctionContext } from '../../../context/FunctionContext/FunctionContext';
 import { useAppSelector } from '../../../redux/hooks';
 import { useConfigurationContext } from '../../../context/ConfigurationContext/ConfigurationContext';
@@ -39,6 +39,8 @@ describe('Edit Component', () => {
   const mockContentVersionClick = jest.fn();
   const mockFireRepromptContentStyle = jest.fn();
   const mockRemoveCurrentRestyle = jest.fn();
+  const mockAddNewEditContextItem = jest.fn();
+  const mockRemoveEditContextItem = jest.fn();
 
   const mockUseFunctionContext = useFunctionContext as jest.Mock;
   const mockUseAppSelector = useAppSelector as jest.Mock;
@@ -56,56 +58,24 @@ describe('Edit Component', () => {
       contentVersionClick: mockContentVersionClick,
       fireRepromptContentStyle: mockFireRepromptContentStyle,
       removeCurrentRestyle: mockRemoveCurrentRestyle,
+      addNewEditContextItem: mockAddNewEditContextItem,
+      removeEditContextItem: mockRemoveEditContextItem,
     });
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
         content: {
           editContent: {
             descriptor: [
-              {
-                title: 'Descriptor Title 1',
-                description: 'Description 1',
-                hint: 'Hint 1',
-                textSize: 4,
-                'data-testid': 'descriptor-1',
-              },
-              {
-                title: 'Descriptor Title 2',
-                description: 'Description 2',
-                hint: 'Hint 2',
-                textSize: 4,
-                'data-testid': 'descriptor-2',
-              },
+              { title: 'Descriptor Title 1', description: 'Description 1', hint: 'Hint 1', textSize: 4, 'data-testid': 'descriptor-1' },
+              { title: 'Descriptor Title 2', description: 'Description 2', hint: 'Hint 2', textSize: 4, 'data-testid': 'descriptor-2' },
             ],
             editDescriptor: [
-              {
-                title: 'Edit Descriptor Title 1',
-                description: 'Edit Description 1',
-                textSize: 4,
-                'data-testid': 'edit-descriptor-1',
-              },
-              {
-                title: 'Edit Descriptor Title 2',
-                description: 'Edit Description 2',
-                textSize: 4,
-                'data-testid': 'edit-descriptor-2',
-              },
+              { title: 'Edit Descriptor Title 1', description: 'Edit Description 1', textSize: 4, 'data-testid': 'edit-descriptor-1' },
+              { title: 'Edit Descriptor Title 2', description: 'Edit Description 2', textSize: 4, 'data-testid': 'edit-descriptor-2' },
             ],
             details: [
-              {
-                detail: {
-                  statement: 'Test statement1',
-                  bullets: [`Test bullets1`],
-                },
-                summary: 'Test summary1',
-              },
-              {
-                detail: {
-                  statement: 'Test statement2',
-                  bullets: [`Test bullets2`],
-                },
-                summary: 'Test summary2',
-              },
+              { detail: { statement: 'Test statement1', bullets: ['Test bullets1'] }, summary: 'Test summary1' },
+              { detail: { statement: 'Test statement2', bullets: ['Test bullets2'] }, summary: 'Test summary2' },
             ],
             warning: { children: 'Warning message', 'data-testid': 'warning', 'aria-label': 'Warning' },
             button: { text: 'Save', 'data-testid': 'button', 'aria-label': 'Save Button' },
@@ -114,14 +84,15 @@ describe('Edit Component', () => {
         },
         generatedContent: {
           reviewIndex: 0,
+          reviewHeader: 'Test Header',
         },
       }),
     );
     mockUseConfigurationContext.mockReturnValue({
       editGeneratedContent: [
-        { versions: [[[{ content: 'Version 1' }]], [[{ content: 'Version 2' }]]], selectedVersion: 0 },
+        { versions: [[[{ content: 'Version 1' }]], [[{ content: 'Version 2' }]]], selectedVersion: 0, review: 'pending' },
       ],
-      sourceMaterials: [{ title: 'Source 1', description: 'Source Description 1' }],
+      sourceMaterials: [{ title: 'Source 1', chunks: 'Source Description 1' }],
     });
     mockUseJourneyContext.mockReturnValue({
       content: TOPIC_OUTLINES,
@@ -134,8 +105,7 @@ describe('Edit Component', () => {
 
   test('renders the Edit component with correct data', () => {
     render(<Edit />);
-
-    // expect(screen.getByText('Descriptor Title 1')).toBeInTheDocument();
+    expect(screen.getByText('Descriptor Title 1')).toBeInTheDocument();
     expect(screen.getByText('Test statement1')).toBeInTheDocument();
     expect(screen.getByText('Test bullets1')).toBeInTheDocument();
     expect(screen.getByText('Test summary1')).toBeInTheDocument();
@@ -145,34 +115,62 @@ describe('Edit Component', () => {
 
   test('handles button click correctly', () => {
     render(<Edit />);
-
     fireEvent.click(screen.getByText('Save'));
     expect(mockEditPrimaryClick).not.toHaveBeenCalled();
   });
 
   test('handles regenerate content click correctly', () => {
     render(<Edit />);
-
     fireEvent.click(screen.getByText('Regenerate all'));
     expect(mockRegenerateContentClick).toHaveBeenCalled();
   });
 
-  test('renders versions controller correctly', () => {
-    render(<Edit />);
-
-    expect(screen.getByText('V2')).toBeInTheDocument();
-  });
-
   test('handles version selection correctly', () => {
     render(<Edit />);
-
     fireEvent.click(screen.getByText('V2'));
     expect(mockContentVersionClick).toHaveBeenCalled();
   });
 
   test('renders source materials correctly', () => {
     render(<Edit />);
+    expect(screen.getByText('Source document extracts')).toBeInTheDocument();
+  });
 
-    expect(screen.getByText('1. Source 1')).toBeInTheDocument();
+  test('handles edit descriptor rendering correctly', () => {
+    render(<Edit />);
+    expect(screen.getByText('Edit Descriptor Title 1')).toBeInTheDocument();
+  });
+
+  test('handles removing a question', () => {
+    render(<Edit />);
+    fireEvent.click(screen.getByText('Remove question'));
+    expect(mockRemoveEditContextItem).toHaveBeenCalled();
+  });
+
+  test('handles adding a question', () => {
+    render(<Edit />);
+    fireEvent.click(screen.getByText('Generate a question'));
+    expect(mockAddNewEditContextItem).toHaveBeenCalled();
+  });
+
+  test('renders InsetText when regenerations are used', () => {
+    mockUseConfigurationContext.mockReturnValue({
+      editGeneratedContent: [{ versions: [[], [], []], selectedVersion: 0, review: 'completed' }],
+      sourceMaterials: [],
+    });
+    render(<Edit />);
+    expect(screen.getByText('All regenerations have been used')).toBeInTheDocument();
+  });
+
+  test('handles AI reprompt click correctly', () => {
+    render(<Edit />);
+    fireEvent.click(screen.getByText('Use AI prompts'));
+    expect(mockFireRepromptContentStyle).toHaveBeenCalled();
+  });
+
+  test('renders version navigation buttons correctly', () => {
+    render(<Edit />);
+    expect(screen.getByText('Previous')).toBeInTheDocument();
+    expect(screen.getByText('Next')).toBeInTheDocument();
   });
 });
