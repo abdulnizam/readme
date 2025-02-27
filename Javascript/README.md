@@ -47,18 +47,22 @@ export AWS_REGION="<your-region>"  # e.g., eu-west-1
 
 aws eks update-kubeconfig --name gail-dev-cluster --region eu-west-1 --role-arn arn:aws:iam::741448915328:role/aii-gail-dev-doc-manager-role
 
+Account id: 943009210227
+
+Role name: eks-pdu-dev-aii-namespace-admin-role
 
 
 export AWS_PROFILE=future-dev
-export AWS_ROLE_ARN="arn:aws:iam::741448915328:role/aii-gail-dev-doc-manager-role"
-export AWS_REGION="eu-west-1"
+export AWS_ROLE_ARN="arn:aws:iam::741448915328:role/eks-pdu-dev-aii-namespace-admin-role"
+export AWS_REGION="eu-west-2"
+export CLUSTER=pdu-dev-eks-cluster
 
 CREDENTIALS=$(aws sts assume-role --role-arn $AWS_ROLE_ARN --role-session-name k9s-session --profile $AWS_PROFILE --query "Credentials" --output json)
 export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS | jq -r '.AccessKeyId')
 export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS | jq -r '.SecretAccessKey')
 export AWS_SESSION_TOKEN=$(echo $CREDENTIALS | jq -r '.SessionToken')
 
-aws eks update-kubeconfig --name gail-dev-cluster --region $AWS_REGION --role-arn $AWS_ROLE_ARN
+aws eks update-kubeconfig --name $CLUSTER --region $AWS_REGION --role-arn $AWS_ROLE_ARN
 
 
 source ~/.zshrc  # or source ~/.bashrc
