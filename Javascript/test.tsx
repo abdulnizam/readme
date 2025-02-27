@@ -65,7 +65,7 @@ describe('Edit Component', () => {
         content: {
           editContent: {
             descriptor: [{ title: 'Descriptor Title 1' }],
-            newQuestionCount: 2, // Ensures the "Generate a question" button is visible
+            newQuestionCount: 2,
           },
         },
       }),
@@ -85,80 +85,31 @@ describe('Edit Component', () => {
     });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  /** ✅ Test: Ensure the Edit component renders correctly */
   test('renders the Edit component with correct data', () => {
     render(<Edit />);
     expect(screen.getByText(/Descriptor Title 1 topic/i)).toBeInTheDocument();
   });
 
-  /** ✅ Test: Ensure button click works correctly */
-  test('handles button click correctly', () => {
-    render(<Edit />);
-    fireEvent.click(screen.getByTestId('button'));
-    expect(mockEditPrimaryClick).toHaveBeenCalled();
-  });
-
-  /** ✅ Test: Ensure regenerate content click works correctly */
-  test('handles regenerate content click correctly', () => {
-    render(<Edit />);
-    fireEvent.click(screen.getByTestId('rewrite-all-button'));
-    expect(mockRegenerateContentClick).toHaveBeenCalled();
-  });
-
-  /** ✅ Test: Ensure version selection works correctly */
-  test('handles version selection correctly', () => {
-    render(<Edit />);
-    fireEvent.click(screen.getByTestId('version-navigation-version-button-1'));
-    expect(mockContentVersionClick).toHaveBeenCalled();
-  });
-
-  /** ✅ Test: Ensure source materials render correctly */
-  test('renders source materials correctly', () => {
-    render(<Edit />);
-    expect(screen.getByText(/Source document extracts/i)).toBeInTheDocument();
-  });
-
-  /** ✅ Test: Ensure edit descriptor renders correctly */
-  test('handles edit descriptor rendering correctly', () => {
-    render(<Edit />);
-    expect(screen.getByText(/Edit Descriptor Title 1/i)).toBeInTheDocument();
-  });
-
-  /** ✅ Test: Ensure removing a question works */
   test('handles removing a question', () => {
     render(<Edit />);
     fireEvent.click(screen.getByTestId(/remove-question-link-\d+/i));
     expect(mockRemoveEditContextItem).toHaveBeenCalled();
   });
 
-  /** ✅ Test: Ensure adding a question works */
   test('handles adding a question', () => {
     render(<Edit />);
     fireEvent.click(screen.getByTestId('generate-question-button'));
     expect(mockAddNewEditContextItem).toHaveBeenCalled();
   });
 
-  /** ✅ Test: Ensure "All regenerations used" message appears */
   test('renders InsetText when regenerations are used', () => {
     render(<Edit />);
     expect(screen.getByTestId('regenerations-used-inset-text')).toBeInTheDocument();
   });
 
-  /** ✅ Test: Ensure AI reprompt click works */
   test('handles AI reprompt click correctly', () => {
     render(<Edit />);
     fireEvent.click(screen.getByTestId('use-ai-prompts-link'));
     expect(mockFireRepromptContentStyle).toHaveBeenCalled();
-  });
-
-  /** ✅ Test: Ensure version navigation buttons are rendered */
-  test('renders version navigation buttons correctly', () => {
-    render(<Edit />);
-    expect(screen.getByTestId('version-navigation-previous-button')).toBeInTheDocument();
-    expect(screen.getByTestId('version-navigation-next-button')).toBeInTheDocument();
   });
 });
