@@ -427,3 +427,729 @@ const OverviewList: React.FC<SectionContent> = ({ heading, sections, buttonClick
 
 export default OverviewList;
 
+/useFunctionContext
+
+import React, { createContext, ReactNode, useContext, useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useJourneyContext } from '../JourneyContext/JourneyContext';
+import { TableRow } from '@/models/Table';
+import { SelectProps } from '@/models/MultiSelectGroup';
+import { InputAreaConfigProps } from '@/models/InputArea';
+import { RadioProps } from '@/models/RadioGroup';
+import { FunctionContextProps, FunctionProviderProps } from '@/models/FunctionContext';
+import { useContentCreationService } from '@/helpers/content-creation-service/content-creation-service';
+import { useDocumentManagementService } from '@/helpers/document-management-service/document-management-service';
+import knowledgeCheckDummy from '../../data/knowledge-check.json';
+
+import {
+  setContentName,
+  setContentPurpose,
+  setJourneyRoute,
+  setOutputFormats,
+  setKnowledgeCheck,
+  setUploadedFilesList,
+  setContentTopics,
+  setLearningId,
+  setOverview,
+  updateNextOverviewState,
+  resetAllConfiguration,
+  setReviewList,
+  updateReviewRowToView,
+  updateCreateRowToReview,
+  setReviewRowToReviewLink,
+  setcontinuousLearningCreationType,
+  setAimInput,
+  setContinuousChangeDocId,
+  setChangeText,
+  setChangeFile
+} from '@/redux/feature/configuration/configuration';
+import {
+  setList,
+  setReviewIndex,
+  setReviewHeader,
+  setCitations,
+  addVersionToList,
+  setEditContextListSelectedVersion,
+  setEditContextListReviewComplete,
+  setEditedContent,
+  addRestyleToList,
+  removeRestyleFromList,
+  addNewListItem,
+  addContentToMultiItemList,
+  removeContentFromMultiItemList,
+  resetAllGeneratedContent,
+} from '@/redux/feature/generatedContent/generatedContent';
+
+import {
+  buildKnowledgeCheckList,
+  buildReviewGeneratedTopicObjectives,
+  buildSlidesContentList,
+  buildTopicOutlinesList,
+  prepareKnowledgeCheckResponse,
+  prepareContextualContent,
+  isQuestionChoicesAnswer,
+  mapTopicsForRequest,
+} from '@/helpers/content-helpers/content-helpers';
+
+import {
+  Citations,
+  ContentSlide,
+  ContentSlideResponse,
+  DocumentContent,
+  DocumentQuestions,
+  DocumentSlides,
+  EditContext,
+  FacilitatorAndContentSlide,
+  FacilitatorAndContentSlideResponse,
+  QuestionChoicesAnswer,
+  QuestionChoicesAnswerResponse,
+  TopicOutline,
+} from '@/models/GeneratedContent';
+
+import {
+  CORE_LEARNING_OVERVIEW,
+  CORE_LEARNING_REVIEW,
+  FACILITATOR_POWERPOINT_SCRIPT,
+  KNOWLEDGE_CHECK,
+  KNOWLEDGE_CHECK_PAGE,
+  LEARNING_AND_DEVELOPMENT,
+  NAME_PURPOSE_TOPICS,
+  OUTPUT_FORMATS,
+  OVERVIEW,
+  POWERPOINT_SCRIPT,
+  REVIEW_GENERATED_CONTENT,
+  SOURCE_DOCUMENT,
+  CHANGE_CONTINUOUS_DOCUMENT,
+  TOPIC_OUTLINES,
+  CONTINUOUS_CREATION_TYPE,
+  CONTINUOUS_CORE,
+  CONTINUOUS_LEARNING_REVIEW,
+  CONTINUOUS_CORE_CONTENT,
+  CONTINUOUS_LEARNING_OVERVIEW,
+  CONTINUOUS_KNOWLEDGE,
+  CONTINUOUS_AFTER_RADIO,
+  CONTINUOUS_TOPICS,
+  CONTINUOUS_AIM_SUBJECT_PRODUCT,
+  SOURCE_CORE_LEARNING,
+  CONTINUOUS_CHANGE,
+  SOURCE_CONTINUOUS_DOCUMENT,
+} from '@/constants/urlpaths';
+import { downloadDocumentLink } from '@/helpers/document-handling/document-handling';
+
+export const FunctionContext = createContext<FunctionContextProps | undefined>(undefined);
+
+const FunctionProvider: React.FC<FunctionProviderProps> = ({ children }: ReactNode | any) => {
+  const { learningId, topicOutlineReview, learningName } = useAppSelector((state) => state.configuration);
+  const {
+    topicList,
+    topicCitations,
+    powerPointList,
+    powerpointCitations,
+    knowledgeCheckList,
+    knowledgeCheckCitations,
+    continuousList,
+    continuousCitations,
+  } = useAppSelector((state) => state.generatedContent);
+  const dispatch = useAppDispatch();
+  const {
+    nextScreen,
+    appendJourney,
+    findNextPageRefIndex,
+    setScreenIndex,
+    finishJourney,
+    findAndRouteToPageInJourney,
+    setPageAndContextTarget,
+    content: context,
+  } = useJourneyContext();
+
+  const {
+    createTopicObjectives,
+    createPowerpointContent,
+    createKnowledgeCheck,
+    addNewQuestion,
+    restyleFacilitatorPowerpoint,
+    restyleKnowledgeCheck,
+    regenerateTopicObjectives,
+    createContinuousPowerpointContent,
+  } = useContentCreationService();
+
+  const {
+    setLearningNameAndPurpose,
+    uploadSourceDocuments,
+    uploadRawText,
+    removeDocument,
+    removeSourceDocument,
+    downloadDocument,
+  } = useDocumentManagementService();
+
+  const primaryButtonClick = async (prop?: any) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_CREATION_TYPE:
+          appendJourney(prop.value as string);
+          appendJourney(CONTINUOUS_AFTER_RADIO);
+          break;
+        case LEARNING_AND_DEVELOPMENT:
+          appendJourney(prop.value as string);
+          break;
+        case NAME_PURPOSE_TOPICS:
+        case CONTINUOUS_AIM_SUBJECT_PRODUCT:
+          const response = await setLearningNameAndPurpose(prop, learningId) as {
+            object_id: string; learning_id: string;
+
+          }; if (response.learning_id || response.object_id) {
+            let chosenLearningId = Object.values(response)
+            dispatch(setLearningId(chosenLearningId[0]));
+          }
+          break;
+        case CONTINUOUS_LEARNING_REVIEW:
+        case CORE_LEARNING_REVIEW:
+          dispatch(setOverview(context));
+          break;
+        case CONTINUOUS_LEARNING_OVERVIEW:
+        case CORE_LEARNING_OVERVIEW:
+          appendJourney(prop);
+          finishJourney();
+          break;
+        case CONTINUOUS_CORE:
+        case TOPIC_OUTLINES:
+        case CONTINUOUS_TOPICS:
+        case FACILITATOR_POWERPOINT_SCRIPT:
+        case POWERPOINT_SCRIPT:
+        case CONTINUOUS_KNOWLEDGE:
+        case KNOWLEDGE_CHECK:
+          dispatch(updateNextOverviewState(context));
+          // This enabled the primary button to skip to the next section. 
+          const nextOverview = findNextPageRefIndex(OVERVIEW);
+          if (nextOverview !== -1) {
+            setScreenIndex(nextOverview);
+            return;
+          }
+      }
+    }
+    nextScreen();
+  };
+
+  // editPrimaryClick page holds a different set of functionality to the primaryButtonClick suite.
+  const editPrimaryClick = (reviewIndex?: number) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_TOPICS:
+        case TOPIC_OUTLINES:
+          dispatch(setReviewList({ context, reviewList: buildReviewGeneratedTopicObjectives(context, topicList as EditContext[]) }));
+          break;
+        case KNOWLEDGE_CHECK:
+        case POWERPOINT_SCRIPT:
+        case FACILITATOR_POWERPOINT_SCRIPT:
+        case CONTINUOUS_CORE_CONTENT:
+          dispatch(setEditContextListReviewComplete({ context, reviewIndex: reviewIndex! }));
+      }
+      dispatch(updateReviewRowToView({ context }));
+      findAndRouteToPageInJourney(context, REVIEW_GENERATED_CONTENT);
+    }
+  };
+
+  const fireRemoveFromDB = async (id: string) => {
+    if (context) {
+      switch (context) {
+        case SOURCE_DOCUMENT:
+          //id of document to remove. 
+          await removeSourceDocument(learningId, id);
+          break;
+        default:
+          await removeDocument(learningId);
+      }
+    }
+  };
+
+  const fireFileUpload = async (file: File) => {
+    if (context) {
+      return await uploadSourceDocuments(file!, learningId, context);
+    }
+    return { success: false, pii_detected: false, is_infected: false };
+  };
+
+  const fireRawTextUpload = async (rawText: string) => {
+    if (context) {
+      return await uploadRawText(rawText, learningId, context)
+    }
+    return { success: false, pii_detected: false, is_infected: false };
+  }
+  const radioGroupChange = (content: RadioProps) => {
+    if (context) {
+      switch (context) {
+        case LEARNING_AND_DEVELOPMENT:
+          dispatch(setJourneyRoute(content));
+          break;
+        case KNOWLEDGE_CHECK_PAGE:
+          dispatch(setKnowledgeCheck(content));
+          break;
+        case CONTINUOUS_CREATION_TYPE:
+          dispatch(setcontinuousLearningCreationType(content));
+      }
+    }
+  };
+
+  const regenerateContentClick = async (reviewIndex: number) => {
+    if (context) {
+      if (context) {
+        // topicOutlineReview is automatically updated when Topics are edited. ReviewGeneratedTopicsList type is simpler to manipulate than EditContext[] type.
+        const topicsForRequest = mapTopicsForRequest(topicOutlineReview);
+        switch (context) {
+          case TOPIC_OUTLINES:
+          case CONTINUOUS_TOPICS:
+            {
+              const res = await regenerateTopicObjectives(topicsForRequest, reviewIndex, topicCitations, learningId);
+              dispatch(addVersionToList({ context, reviewIndex, list: res as TopicOutline[] }));
+            }
+            break;
+          case POWERPOINT_SCRIPT:
+          case FACILITATOR_POWERPOINT_SCRIPT:
+            {
+              const res = await createPowerpointContent(context, learningId, topicsForRequest, reviewIndex);
+              dispatch(addVersionToList({ context, reviewIndex, list: (res as FacilitatorAndContentSlideResponse).slides }));
+            }
+            break;
+          case CONTINUOUS_KNOWLEDGE:
+          case KNOWLEDGE_CHECK: {
+            const contextualContent: FacilitatorAndContentSlide[] = prepareContextualContent(
+              powerPointList[reviewIndex],
+            );
+            const res = await createKnowledgeCheck(
+              contextualContent,
+              topicsForRequest[reviewIndex],
+              FACILITATOR_POWERPOINT_SCRIPT,
+            );
+            dispatch(addVersionToList({ context, reviewIndex, list: (res as QuestionChoicesAnswerResponse).questions }));
+          }
+        }
+      }
+    }
+  };
+
+  const inputAreaChange = (content: string) => {
+    if (context) {
+      switch (context) {
+        case NAME_PURPOSE_TOPICS:
+        case CONTINUOUS_AIM_SUBJECT_PRODUCT:
+          dispatch(setContentName(content));
+          break;
+      }
+    }
+  };
+
+  const aimInputAreaChange = (content: string) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_AIM_SUBJECT_PRODUCT:
+          dispatch(setAimInput(content));
+          break;
+      }
+    }
+  };
+
+  const addContinuousChangeDocId = (doc_id: string) => {
+    if (context) {
+      switch (context) {
+        case CHANGE_CONTINUOUS_DOCUMENT:
+          dispatch(setContinuousChangeDocId(doc_id));
+          break;
+      }
+    }
+  }
+
+
+  const continuousChangeText = (changeText: string) => {
+    if (context) {
+      switch (context) {
+        case CHANGE_CONTINUOUS_DOCUMENT:
+          dispatch(setChangeText(changeText));
+          break;
+      }
+    }
+
+  }
+
+  const continuousFileChange = (fileList: TableRow) => {
+    if (context) {
+      switch (context) {
+        case CHANGE_CONTINUOUS_DOCUMENT:
+          dispatch(setChangeFile(fileList));
+          break;
+      }
+    }
+  }
+
+  const textAreaChange = (content: string) => {
+    if (context) {
+      switch (context) {
+        case NAME_PURPOSE_TOPICS:
+        case CONTINUOUS_AIM_SUBJECT_PRODUCT:
+          dispatch(setContentPurpose(content));
+      }
+    }
+  };
+
+  const listChange = (list: InputAreaConfigProps[]) => {
+    if (context) {
+      switch (context) {
+        case NAME_PURPOSE_TOPICS:
+          dispatch(setContentTopics(list));
+          break;
+      }
+    }
+  };
+
+  const multiselectChange = (selectedOptions: SelectProps[]) => {
+    if (context) {
+      switch (context) {
+        case OUTPUT_FORMATS:
+          dispatch(setOutputFormats(selectedOptions));
+          break;
+      }
+    }
+  };
+
+  const tableChange = (tableList: TableRow[]) => {
+    if (context) {
+      switch (context) {
+        case SOURCE_CORE_LEARNING:
+        case SOURCE_DOCUMENT:
+        case SOURCE_CONTINUOUS_DOCUMENT:
+          dispatch(setUploadedFilesList(tableList));
+          break;
+      }
+    }
+  };
+
+  const overviewCreateClick = async (desiredOutput: string) => {
+    appendJourney(desiredOutput);
+    if (context) {
+      switch (desiredOutput) {
+        case CONTINUOUS_TOPICS:
+        case TOPIC_OUTLINES: {
+          const res = await createTopicObjectives(desiredOutput, learningId);
+          const [topics, citations] = buildTopicOutlinesList(res!);
+          dispatch(setList({ context: desiredOutput, list: topics as EditContext[] }));
+          dispatch(setCitations({ context: desiredOutput, citations: citations as Citations[][] }));
+          dispatch(
+            setReviewList({
+              context: desiredOutput,
+              reviewList: buildReviewGeneratedTopicObjectives(desiredOutput, topics as EditContext[]),
+            }),
+          );
+          break;
+        }
+        default: {
+          dispatch(
+            setReviewList({
+              context: desiredOutput,
+              reviewList: buildReviewGeneratedTopicObjectives(desiredOutput, topicList as EditContext[]),
+            }),
+          );
+          break;
+        }
+      }
+      setPageAndContextTarget(REVIEW_GENERATED_CONTENT, desiredOutput);
+    }
+  };
+
+  const overviewReviewContentClick = (desiredOutput: string) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_TOPICS:
+        case CONTINUOUS_LEARNING_OVERVIEW:
+        case CORE_LEARNING_OVERVIEW:
+          findAndRouteToPageInJourney(desiredOutput, REVIEW_GENERATED_CONTENT);
+          break;
+      }
+    }
+  };
+
+  const reviewContentClick = (desiredOutput: string) => {
+    if (context) {
+      switch (context) {
+        case CORE_LEARNING_OVERVIEW:
+          findAndRouteToPageInJourney(desiredOutput, REVIEW_GENERATED_CONTENT);
+          break;
+      }
+    }
+  };
+
+  const addNewEditContextItem = async (reviewIndex: number) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_KNOWLEDGE:
+        case KNOWLEDGE_CHECK:
+          const knowledgeCheckRequest = prepareKnowledgeCheckResponse(knowledgeCheckList[reviewIndex]);
+          const res = await addNewQuestion(knowledgeCheckRequest, knowledgeCheckCitations[reviewIndex][0].chunks);
+          dispatch(addContentToMultiItemList({ context, newContent: res!, reviewIndex }));
+      }
+    }
+  };
+
+  const removeEditContextItem = (reviewIndex: number, multiItemIndex: number) => {
+    if (context) {
+      switch (context) {
+        case CONTINUOUS_KNOWLEDGE:
+        case KNOWLEDGE_CHECK:
+          dispatch(removeContentFromMultiItemList({ context, reviewIndex, multiItemIndex }));
+      }
+    }
+  }
+
+  const removeCurrentRestyle = (reviewIndex: number, multipleItemsIndex: number) => {
+    if (context) {
+      dispatch(removeRestyleFromList({ context, reviewIndex, multipleItemsIndex }));
+    }
+  };
+
+  const fireRepromptContentStyle = async (
+    reviewIndex: number,
+    multipleItemsIndex: number,
+    content: ContentSlide[][] | FacilitatorAndContentSlide[][] | QuestionChoicesAnswer[][],
+    reprompt: string,
+    question: string,
+  ) => {
+    if (context) {
+      {
+        switch (context) {
+          case POWERPOINT_SCRIPT:
+          case FACILITATOR_POWERPOINT_SCRIPT:
+            {
+              const cont = content.map((item) => item[item.length - 1]);
+              const res = await restyleFacilitatorPowerpoint(
+                reprompt,
+                cont as FacilitatorAndContentSlide[],
+                multipleItemsIndex,
+                powerpointCitations[reviewIndex],
+              );
+              dispatch(addRestyleToList({ context, reviewIndex, newContent: res as any, multipleItemsIndex }));
+            }
+            break;
+          case CONTINUOUS_KNOWLEDGE:
+          case KNOWLEDGE_CHECK:
+            {
+              const chosenQuestion = content[multipleItemsIndex].find((item) => isQuestionChoicesAnswer(item) && question === item.question);
+              const res = await restyleKnowledgeCheck(
+                reprompt,
+                chosenQuestion as QuestionChoicesAnswer,
+                knowledgeCheckCitations[reviewIndex][0].chunks,
+              );
+              dispatch(addRestyleToList({ context, reviewIndex, newContent: res as any, multipleItemsIndex }));
+            }
+            break;
+        }
+      }
+    }
+  };
+
+  const contentVersionClick = (index: number, reviewIndex: number) => {
+    if (context) {
+      dispatch(setEditContextListSelectedVersion({ newVersionSelected: index, context, reviewIndex }));
+    }
+  };
+
+  const saveEditedContent = (reviewIndex: number, value: any, multipleItemsIndex: number) => {
+    if (context) {
+      dispatch(setEditedContent({ context, reviewIndex, newContent: value, multipleItemsIndex }));
+    }
+  };
+
+  const buildDownloadMaterial = (): DocumentContent[] => {
+    const output = topicOutlineReview.list.map((it, index) => {
+      if (context === KNOWLEDGE_CHECK || context === CONTINUOUS_KNOWLEDGE) {
+        const arr = knowledgeCheckList[index].versions[knowledgeCheckList[index].selectedVersion]
+          .map((item) => item[item.length - 1] as QuestionChoicesAnswer);
+        return {
+          topic_outline: {
+            title: it.Heading,
+            objectives: it.Objectives
+          },
+          content: {
+            questions: [...arr]
+          } as DocumentQuestions
+        }
+      } else if (context === FACILITATOR_POWERPOINT_SCRIPT) {
+        const arr = powerPointList[index].versions[powerPointList[index].selectedVersion]
+          .map((item) => item[item.length - 1] as FacilitatorAndContentSlide | ContentSlide);
+        return {
+          topic_outline: {
+            title: it.Heading,
+            objectives: it.Objectives
+          },
+          content: {
+            slides: [...arr]
+          } as DocumentSlides
+        }
+      } else if (context === CONTINUOUS_CORE_CONTENT || context === CONTINUOUS_CHANGE) {
+        const arr = continuousList[index].versions[continuousList[index].selectedVersion]
+          .map((item) => item[item.length - 1] as FacilitatorAndContentSlide | ContentSlide);
+        return {
+          topic_outline: {
+            title: it.Heading,
+            objectives: it.Objectives
+          },
+          content: {
+            slides: [...arr]
+          } as DocumentSlides
+        }
+      }
+    })
+    return output as DocumentContent[];
+  };
+
+  const fireDownloadLearningMaterial = async () => {
+    if (context) {
+      const content = {
+        topics: buildDownloadMaterial()
+      };
+      const res = await downloadDocument(learningId, learningName, context, content);
+      const blob = new Blob([res]);
+      let name = learningName;
+      if (context === FACILITATOR_POWERPOINT_SCRIPT || context === CONTINUOUS_CORE_CONTENT) {
+        name = `${learningName}-powerpoint-script.pptx`
+      } else {
+      };
+      name = `${learningName}-knowledge-check.docx`
+      downloadDocumentLink(blob, name);
+    };
+  };
+
+  const createEditableContentClick = async (index: number, heading: string,) => {
+    if (context) {
+      // Set all of the variables for the UI to perform.
+      dispatch(setReviewIndex(index));
+      dispatch(setReviewHeader(heading));
+      dispatch(updateCreateRowToReview({ context }));
+      const topicsForRequest = topicOutlineReview.list.map((item) => {
+        return {
+          title: item.Heading,
+          objectives: item.Objectives,
+        } as TopicOutline
+      });
+      switch (context) {
+        case CONTINUOUS_CORE_CONTENT:
+          const res = await createContinuousPowerpointContent(context, learningId, topicsForRequest, index);
+          const [list, citations] = buildSlidesContentList(
+            res! as ContentSlideResponse | FacilitatorAndContentSlideResponse,
+          );
+          dispatch(addNewListItem({ context, list: list as EditContext[] }));
+          dispatch(setCitations({ context, citations: citations as Citations[][] }));
+          break;
+        case POWERPOINT_SCRIPT:
+        case FACILITATOR_POWERPOINT_SCRIPT: {
+          const res = await createPowerpointContent(context, learningId, topicsForRequest, index);
+          const [list, citations] = buildSlidesContentList(res! as ContentSlideResponse | FacilitatorAndContentSlideResponse);
+
+          dispatch(addNewListItem({ context, list: list as EditContext[] }));
+          dispatch(setCitations({ context, citations: citations as Citations[][] }));
+          break;
+        }
+        case CONTINUOUS_KNOWLEDGE: {
+          //Needs to be made dynamic for the future requests
+          const contextualContent: FacilitatorAndContentSlide[] = prepareContextualContent(continuousList[index]);
+          const [list, citations] = buildKnowledgeCheckList(knowledgeCheckDummy as QuestionChoicesAnswerResponse);
+          dispatch(addNewListItem({ context, list: list as EditContext[] }));
+          dispatch(setCitations({ context, citations: citations as Citations[][] }));
+          break;
+        }
+        case KNOWLEDGE_CHECK: {
+          //Needs to be made dynamic for the future requests
+          const contextualContent: FacilitatorAndContentSlide[] = prepareContextualContent(powerPointList[index]);
+          const res = await createKnowledgeCheck(
+            // Facilitator script takes precedence over slide content if present.
+            contextualContent,
+            topicsForRequest[index],
+            // Facilitator script takes precedence over slide content if present.
+            FACILITATOR_POWERPOINT_SCRIPT,
+          );
+          const [list, citations] = buildKnowledgeCheckList(res! as QuestionChoicesAnswerResponse);
+          dispatch(addNewListItem({ context, list: list as EditContext[] }));
+          dispatch(setCitations({ context, citations: citations as Citations[][] }));
+          break;
+        }
+      }
+      dispatch(setReviewRowToReviewLink({ context, index }));
+    }
+    nextScreen();
+  };
+
+  const reviewEditedContentClick = (index: number, heading: string) => {
+    dispatch(setReviewIndex(index));
+    dispatch(setReviewHeader(heading));
+    nextScreen();
+  };
+
+  const resetState = () => {
+    if (learningId) {
+      removeDocument(learningId);
+    };
+    dispatch(resetAllConfiguration());
+    dispatch(resetAllGeneratedContent());
+  };
+
+  useEffect(() => {
+    if (context === LEARNING_AND_DEVELOPMENT) {
+      resetState();
+    }
+  }, [context]);
+
+  return (
+    <FunctionContext.Provider
+      value={{
+        primaryButtonClick,
+        textAreaChange,
+        inputAreaChange,
+        aimInputAreaChange,
+        multiselectChange,
+        radioGroupChange,
+        fireFileUpload,
+        tableChange,
+        listChange,
+        fireRemoveFromDB,
+        overviewCreateClick,
+        overviewReviewContentClick,
+        createEditableContentClick,
+        reviewContentClick,
+        resetState,
+        saveEditedContent,
+        editPrimaryClick,
+        regenerateContentClick,
+        contentVersionClick,
+        fireRepromptContentStyle,
+        removeCurrentRestyle,
+        addNewEditContextItem,
+        removeEditContextItem,
+        reviewEditedContentClick,
+        fireDownloadLearningMaterial,
+        addContinuousChangeDocId,
+        continuousFileChange,
+        continuousChangeText,
+        fireRawTextUpload
+      }}
+    >
+      {children}
+    </FunctionContext.Provider>
+  );
+};
+
+export function useFunctionContext(): FunctionContextProps {
+  const context = useContext(FunctionContext);
+  if (!context) {
+    throw new Error('useFunctionContext must be used within an App Provider');
+  }
+  return context;
+}
+
+export default FunctionProvider;
+
+
+/useAppSelector
+
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from './store';
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
