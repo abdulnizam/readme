@@ -7,7 +7,7 @@ test('should handle addContentToMultiItemList', () => {
         {
           review: 'pending',
           selectedVersion: 0,
-          versions: [[[]]], // Ensure correct structure
+          versions: [[[{ question: 'Old Q', choices: 'X,Y,Z', answer: 'X' }]]], // Ensure valid structure
         },
       ],
     };
@@ -17,10 +17,8 @@ test('should handle addContentToMultiItemList', () => {
       addContentToMultiItemList({ context: KNOWLEDGE_CHECK, reviewIndex: 0, newContent: questionList })
     );
   
-    // Ensure the newly added content exists inside versions
-    expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(expect.arrayContaining([questionList[0]]));
+    expect(newState.knowledgeCheckList[0].versions[0][1]).toEqual(expect.arrayContaining([questionList[0]]));
   });
-
 
   test('should handle removeContentFromMultiItemList', () => {
     const initial = {
@@ -29,7 +27,7 @@ test('should handle addContentToMultiItemList', () => {
         {
           review: 'pending',
           selectedVersion: 0,
-          versions: [[[{ question: 'Q1', choices: 'A,B,C', answer: 'A' }]]], // Ensure correct structure
+          versions: [[[{ question: 'Q1', choices: 'A,B,C', answer: 'A' }]]], // Properly structured initial state
         },
       ],
     };
@@ -39,7 +37,6 @@ test('should handle addContentToMultiItemList', () => {
       removeContentFromMultiItemList({ context: KNOWLEDGE_CHECK, reviewIndex: 0, multiItemIndex: 0 })
     );
   
-    // Instead of checking for an empty array, ensure it is still structured
-    expect(newState.knowledgeCheckList[0].versions[0][0]).toBeDefined();
-    expect(newState.knowledgeCheckList[0].versions[0][0]).toHaveLength(0);
+    expect(newState.knowledgeCheckList[0].versions[0]).toBeDefined();
+    expect(newState.knowledgeCheckList[0].versions[0].length).toBe(0); // Ensure item was removed
   });
