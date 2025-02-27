@@ -1,15 +1,9 @@
 import React from 'react';
-
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useAppSelector } from '../../../redux/hooks';
 import { useFunctionContext } from '../../../context/FunctionContext/FunctionContext';
-import { OverviewContent } from '@/models/Overview';
 import Overview from './page';
-
-beforeEach(() => {
-  jest.spyOn(console, 'error').mockImplementation(jest.fn());
-});
 
 jest.mock('../../../redux/hooks', () => ({
   useAppSelector: jest.fn(),
@@ -19,41 +13,252 @@ jest.mock('../../../context/FunctionContext/FunctionContext', () => ({
   useFunctionContext: jest.fn(),
 }));
 
-describe('Configure Page', () => {
-  const mockConfigContent: OverviewContent = {
-    target: 'TEST_TARGET',
-    descriptor: {
-      title: 'Test Title',
-      description: 'Test Description',
-      textSize: 2,
-    },
-    button: {
-      text: 'Finish',
-    },
-  };
+describe('Overview Page', () => {
+  const mockPrimaryButtonClick = jest.fn();
+  const mockOverviewCreateClick = jest.fn();
+  const mockOverviewReviewContentClick = jest.fn();
+
   beforeEach(() => {
-    (useAppSelector as jest.Mock).mockReturnValue(mockConfigContent);
+    jest.clearAllMocks();
     (useFunctionContext as jest.Mock).mockReturnValue({
-      primaryButtonClick: jest.fn(),
+      primaryButtonClick: mockPrimaryButtonClick,
+      overviewCreateClick: mockOverviewCreateClick,
+      overviewReviewContentClick: mockOverviewReviewContentClick,
     });
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  test('renders the Overview page with correct content', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+              'data-testid': 'test-title-descriptor',
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'complete', value: 'value1' },
+                { label: 'Section 2', state: 'not-ready', value: 'value2' },
+              ],
+              'data-testid': 'overview-list-1',
+              'aria-label': 'Overview list 1',
+            },
+          ],
+        },
+      })
+    );
 
-  test.skip('renders the Outline Component with correct content', () => {
     render(<Overview />);
-    expect(screen.getByText('TEST TARGET')).toBeInTheDocument();
+
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
     expect(screen.getByText('Finish')).toBeInTheDocument();
+    expect(screen.getByText('Test Heading')).toBeInTheDocument();
+    expect(screen.getByText('Section 1')).toBeInTheDocument();
+    expect(screen.getByText("Can't start yet")).toBeInTheDocument();
   });
 
-  test.skip('display an error message and does not call primaryButtonClick when no radio option is selected and the button is clicked', () => {
+  test('calls primaryButtonClick when the button is clicked', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [{ label: 'Section 1', state: 'complete', value: 'value1' }],
+            },
+          ],
+        },
+      })
+    );
+
     render(<Overview />);
-    const { primaryButtonClick } = useFunctionContext();
-    fireEvent.click(screen.getByText('Continue'));
-    expect(primaryButtonClick).toHaveBeenCalled();
+    const finishButton = screen.getByText('Finish');
+
+    fireEvent.click(finishButton);
+    expect(mockPrimaryButtonClick).toHaveBeenCalledWith('TEST_TARGET');
+  });
+
+  test('disables button when sections are incomplete', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'in-progress', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const finishButton = screen.getByText('Finish');
+    expect(finishButton).toBeDisabled();
+  });
+
+  test('triggers overviewCreateClick when OverviewList create button is clicked', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'ready', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const createButton = screen.getByText('Create');
+    fireEvent.click(createButton);
+
+    expect(mockOverviewCreateClick).toHaveBeenCalledWith('value1');
+  });
+
+  test('triggers overviewReviewContentClick when overview review link is clicked', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'complete', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const reviewLink = screen.getByText('Section 1');
+    fireEvent.click(reviewLink);
+
+    expect(mockOverviewReviewContentClick).toHaveBeenCalledWith('value1');
+  });
+
+  test('does not render button if all sections are incomplete', () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'not-ready', value: 'value1' },
+                { label: 'Section 2', state: 'not-ready', value: 'value2' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    expect(screen.queryByText('Finish')).not.toBeInTheDocument();
   });
 });
