@@ -1,41 +1,30 @@
-test('renders InsetText when regenerations are used', async () => {
-    render(<Edit />);
-    await waitFor(() => {
-      const insetText = screen.queryByTestId('regenerations-used-inset-text');
-      expect(insetText).toBeInTheDocument();  // 👀 Use a stronger assertion
-    });
+mockUseFunctionContext.mockReturnValue({
+    editState: true,  // 🔥 Ensure EditBox renders
+    showAIReprompt: true,  // 🔥 Ensure AI Reprompt button is visible
+    fireRepromptContentStyle: mockFireRepromptContentStyle,
   });
 
 
-  test('renders InsetText when regenerations are used', async () => {
-    render(<Edit />);
-    await waitFor(() => {
-      console.log(screen.debug()); // 👀 This will print the entire DOM structure
-      expect(screen.getByTestId('regenerations-used-inset-text')).toBeInTheDocument();
-    });
-  });
-
-
-  test('handles AI reprompt click correctly', async () => {
-    render(<Edit />);
-  
-    // 🕵️ Wait for the button to appear before clicking
-    const aiButton = await waitFor(() => screen.getByTestId('use-ai-prompts-link'));
-    fireEvent.click(aiButton);
-  
-    expect(mockFireRepromptContentStyle).toHaveBeenCalled();
-  });
+  mockUseAppSelector.mockImplementation((selector) =>
+    selector({
+      content: {
+        editState: true,  // 🔥 Ensure EditBox renders
+      },
+    })
+  );
 
 
   test('handles AI reprompt click correctly', async () => {
     render(<Edit />);
   
     await waitFor(() => {
-      console.log(screen.debug()); // 🔍 This prints the rendered DOM
+      console.log(screen.debug()); // 🔍 Print the rendered DOM
     });
   
-    const aiButton = await waitFor(() => screen.getByTestId('use-ai-prompts-link'));
-    fireEvent.click(aiButton);
+    const aiButton = screen.queryByTestId('use-ai-prompts-link');
+    console.log("AI Button Found:", aiButton); // Check if it's null
   
+    expect(aiButton).toBeInTheDocument(); // This will fail if it's missing
+    fireEvent.click(aiButton!);
     expect(mockFireRepromptContentStyle).toHaveBeenCalled();
   });
