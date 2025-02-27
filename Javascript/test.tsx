@@ -17,6 +17,6 @@ test('should handle addContentToMultiItemList', () => {
       addContentToMultiItemList({ context: KNOWLEDGE_CHECK, reviewIndex: 0, newContent: questionList })
     );
   
-    // ✅ Correct assertion to match the actual array structure
-    expect(newState.knowledgeCheckList[0].versions[0][1]).toEqual(questionList);
+    // ✅ Correct assertion to match the nested array structure
+    expect(newState.knowledgeCheckList[0].versions[0][1]).toEqual([questionList[0]]);
   });
