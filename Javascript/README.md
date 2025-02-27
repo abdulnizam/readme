@@ -53,7 +53,7 @@ Role name: eks-pdu-dev-aii-namespace-admin-role
 
 
 export AWS_PROFILE=future-dev
-export AWS_ROLE_ARN="arn:aws:iam::741448915328:role/eks-pdu-dev-aii-namespace-admin-role"
+export AWS_ROLE_ARN="arn:aws:iam::943009210227:role/eks-pdu-dev-aii-namespace-admin-role"
 export AWS_REGION="eu-west-2"
 export CLUSTER=pdu-dev-eks-cluster
 
