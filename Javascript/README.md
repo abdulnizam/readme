@@ -1,9 +1,9 @@
 aws sso login --profile future-dev
 aws sts get-caller-identity --profile future-dev
-aws eks list-clusters --region <your-region> --profile future-dev
+aws eks list-clusters --region eu-west-2 --profile future-dev
 
 
-
+arn:aws:iam::741448915328:role/aii-gail-dev-doc-manager-role
 
 aws eks update-kubeconfig --name <your-cluster-name> --region <your-region> --profile future-dev
 
