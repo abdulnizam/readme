@@ -1,7 +1,13 @@
 test('should handle removeRestyleFromList with an unknown context', () => {
     const initial = {
       ...initialState,
-      elearningList: [{ review: 'pending', selectedVersion: 0, versions: [[[{ heading: 'Slide', bullet_points: 'Point' }]]]] },
+      elearningList: [
+        {
+          review: 'pending',
+          selectedVersion: 0,
+          versions: [[[{ heading: 'Slide', bullet_points: 'Point' }]]],
+        },
+      ],
     };
   
     const newState = generatedContentReducer(
@@ -17,7 +23,13 @@ test('should handle removeRestyleFromList with an unknown context', () => {
   
     const initial = {
       ...initialState,
-      elearningList: [{ review: 'pending', selectedVersion: 0, versions: [[[{ heading: 'Old Slide', bullet_points: 'Old Point' }]]]] },
+      elearningList: [
+        {
+          review: 'pending',
+          selectedVersion: 0,
+          versions: [[[{ heading: 'Old Slide', bullet_points: 'Old Point' }]]],
+        },
+      ],
     };
   
     const newState = generatedContentReducer(
