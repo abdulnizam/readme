@@ -2,96 +2,56 @@
   generatedContentSlice Reducers
     ✓ should return the initial state (2 ms)
     ✓ should handle setList (1 ms)
-    ✓ should handle setCitations (1 ms)
+    ✓ should handle setCitations
     ✓ should handle addVersionToList
-    ✕ should handle addContentToMultiItemList (2 ms)
+    ✕ should handle addContentToMultiItemList (1 ms)
     ✕ should handle removeContentFromMultiItemList (1 ms)
     ✓ should handle addRestyleToList (1 ms)
-    ✕ should handle removeRestyleFromList
-    ✕ should handle setEditedContent
+    ✓ should handle removeRestyleFromList
+    ✓ should handle setEditedContent (1 ms)
     ✓ should handle setEditContextListSelectedVersion (1 ms)
     ✓ should handle addNewListItem
-    ✓ should handle setReviewIndex (1 ms)
-    ✓ should handle resetReviewIndex
+    ✓ should handle setReviewIndex
+    ✓ should handle resetReviewIndex (1 ms)
     ✓ should handle resetAllGeneratedContent
-    ✓ should handle setReviewHeader
+    ✓ should handle setReviewHeader (1 ms)
 
   ● generatedContentSlice Reducers › should handle addContentToMultiItemList
 
     expect(received).toEqual(expected) // deep equality
 
-    - Expected  - 7
-    + Received  + 1
+    Expected: ArrayContaining [{"answer": "A", "choices": "A,B,C", "question": "Q1"}]
+    Received: []
 
-    - Array [
-    -   Object {
-    -     "answer": "A",
-    -     "choices": "A,B,C",
-    -     "question": "Q1",
-    -   },
-    - ]
-    + Array []
+      102 |     );
+      103 |   
+    > 104 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(expect.arrayContaining(questionList));
+          |                                                           ^
+      105 |   });
+      106 |
+      107 |   test('should handle removeContentFromMultiItemList', () => {
 
-      91 |     );
-      92 |
-    > 93 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(questionList);
-         |                                                           ^
-      94 |   });
-      95 |
-      96 |   test('should handle removeContentFromMultiItemList', () => {
-
-      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:93:59)
+      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:104:59)
 
   ● generatedContentSlice Reducers › should handle removeContentFromMultiItemList
 
-    TypeError: Cannot read properties of undefined (reading 'length')
+    expect(received).toHaveLength(expected)
 
-      108 |     const newState = generatedContentReducer(initial, removeContentFromMultiItemList({ context: KNOWLEDGE_CHECK, reviewIndex: 0, multiItemIndex: 0 }));
-      109 |
-    > 110 |     expect(newState.knowledgeCheckList[0].versions[0][0].length).toBe(0);
-          |                                                          ^
-      111 |   });
-      112 |
-      113 |   test('should handle addRestyleToList', () => {
+    Matcher error: received value must have a length property whose value must be a number
 
-      at Object.length (redux/feature/generatedContent/generatedContent.test.ts:110:58)
+    Received has value: undefined
 
-  ● generatedContentSlice Reducers › should handle removeRestyleFromList
+      122 |     );
+      123 |   
+    > 124 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toHaveLength(0);
+          |                                                           ^
+      125 |   });
+      126 |
+      127 |   test('should handle addRestyleToList', () => {
 
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: 0
-    Received: 1
-
-      136 |     const newState = generatedContentReducer(initial, removeRestyleFromList({ context: POWERPOINT_SCRIPT, reviewIndex: 0, multipleItemsIndex: 0 }));
-      137 |
-    > 138 |     expect(newState.elearningList[0].versions[0][0].length).toBe(0);
-          |                                                             ^
-      139 |   });
-      140 |
-      141 |   test('should handle setEditedContent', () => {
-
-      at Object.toBe (redux/feature/generatedContent/generatedContent.test.ts:138:61)
-
-  ● generatedContentSlice Reducers › should handle setEditedContent
-
-    expect(received).toEqual(expected) // deep equality
-
-    Expected: {"bullet_points": "Updated Point", "heading": "Updated Slide"}
-    Received: undefined
-
-      147 |     );
-      148 |
-    > 149 |     expect(newState.elearningList[0].versions[0][0][0]).toEqual(newContent);
-          |                                                         ^
-      150 |   });
-      151 |
-      152 |   test('should handle setEditContextListSelectedVersion', () => {
-
-      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:149:57)
+      at Object.toHaveLength (redux/feature/generatedContent/generatedContent.test.ts:124:59)
 
 Test Suites: 1 failed, 1 total
-Tests:       4 failed, 11 passed, 15 total
+Tests:       2 failed, 13 passed, 15 total
 Snapshots:   0 total
-Time:        3.482 s
-Ran all test suites matching /generatedContent.test/i.
+Time:        3.579 s
