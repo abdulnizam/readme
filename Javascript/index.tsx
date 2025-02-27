@@ -21,3 +21,22 @@ async def test():
 
 
     curl -w "\nTotal time: %{time_total}s\n" -o /dev/null -s http://127.0.0.1:8000/test
+
+
+    import requests
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+    
+    URL = "http://127.0.0.1:8000/test"
+    
+    def send_request():
+        response = requests.get(URL)
+        print(response.json())
+    
+    start_time = time.time()
+    
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        executor.map(send_request, range(3))
+    
+    end_time = time.time()
+    print(f"Total execution time: {round(end_time - start_time, 2)}s")
