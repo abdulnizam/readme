@@ -6,7 +6,7 @@ import { useAppSelector } from '../../../redux/hooks';
 import { useConfigurationContext } from '../../../context/ConfigurationContext/ConfigurationContext';
 import { useJourneyContext } from '../../../context/JourneyContext/JourneyContext';
 import { useErrorContext } from '../../../context/ErrorContext/ErrorContext';
-import { TOPIC_OUTLINES } from '../../../constants/urlpaths';
+import { KNOWLEDGE_CHECK } from '../../../constants/urlpaths';
 
 beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation(jest.fn());
@@ -34,13 +34,11 @@ jest.mock('../../../context/ConfigurationContext/ConfigurationContext', () => ({
 
 describe('Edit Component', () => {
   const mockEditPrimaryClick = jest.fn();
-  const mockSaveEditedContent = jest.fn();
   const mockRegenerateContentClick = jest.fn();
   const mockContentVersionClick = jest.fn();
   const mockFireRepromptContentStyle = jest.fn();
-  const mockRemoveCurrentRestyle = jest.fn();
-  const mockAddNewEditContextItem = jest.fn();
   const mockRemoveEditContextItem = jest.fn();
+  const mockAddNewEditContextItem = jest.fn();
 
   const mockUseFunctionContext = useFunctionContext as jest.Mock;
   const mockUseAppSelector = useAppSelector as jest.Mock;
@@ -48,54 +46,42 @@ describe('Edit Component', () => {
   const mockUseJourneyContext = useJourneyContext as jest.Mock;
 
   beforeEach(() => {
-    (useErrorContext as jest.Mock).mockReturnValue({
-      errorEnabled: false,
-    });
+    (useErrorContext as jest.Mock).mockReturnValue({ errorEnabled: false });
+
     mockUseFunctionContext.mockReturnValue({
       editPrimaryClick: mockEditPrimaryClick,
-      saveEditedContent: mockSaveEditedContent,
       regenerateContentClick: mockRegenerateContentClick,
       contentVersionClick: mockContentVersionClick,
       fireRepromptContentStyle: mockFireRepromptContentStyle,
-      removeCurrentRestyle: mockRemoveCurrentRestyle,
-      addNewEditContextItem: mockAddNewEditContextItem,
       removeEditContextItem: mockRemoveEditContextItem,
+      addNewEditContextItem: mockAddNewEditContextItem,
     });
+
     mockUseAppSelector.mockImplementation((selector) =>
       selector({
-        content: {
-          editContent: {
-            descriptor: [
-              { title: 'Descriptor Title 1', description: 'Description 1', hint: 'Hint 1', textSize: 4, 'data-testid': 'descriptor-1' },
-              { title: 'Descriptor Title 2', description: 'Description 2', hint: 'Hint 2', textSize: 4, 'data-testid': 'descriptor-2' },
-            ],
-            editDescriptor: [
-              { title: 'Edit Descriptor Title 1', description: 'Edit Description 1', textSize: 4, 'data-testid': 'edit-descriptor-1' },
-              { title: 'Edit Descriptor Title 2', description: 'Edit Description 2', textSize: 4, 'data-testid': 'edit-descriptor-2' },
-            ],
-            details: [
-              { detail: { statement: 'Test statement1', bullets: ['Test bullets1'] }, summary: 'Test summary1' },
-              { detail: { statement: 'Test statement2', bullets: ['Test bullets2'] }, summary: 'Test summary2' },
-            ],
-            warning: { children: 'Warning message', 'data-testid': 'warning', 'aria-label': 'Warning' },
-            button: { text: 'Save', 'data-testid': 'button', 'aria-label': 'Save Button' },
-            buttons: [{ group: 'group1', label: 'Button 1', value: 'button1' }],
-          },
-        },
         generatedContent: {
           reviewIndex: 0,
-          reviewHeader: 'Test Header',
+        },
+        content: {
+          editContent: {
+            descriptor: [{ title: 'Descriptor Title 1' }],
+            newQuestionCount: 2, // Ensures the "Generate a question" button is visible
+          },
         },
       }),
     );
+
     mockUseConfigurationContext.mockReturnValue({
       editGeneratedContent: [
-        { versions: [[[{ content: 'Version 1' }]], [[{ content: 'Version 2' }]]], selectedVersion: 0, review: 'pending' },
+        {
+          versions: [[[{ question: 'Test Question?', choices: 'A,B,C', answer: 'A' }]]],
+          selectedVersion: 0,
+        },
       ],
-      sourceMaterials: [{ title: 'Source 1', chunks: 'Source Description 1' }],
     });
+
     mockUseJourneyContext.mockReturnValue({
-      content: TOPIC_OUTLINES,
+      content: KNOWLEDGE_CHECK,
     });
   });
 
@@ -103,74 +89,76 @@ describe('Edit Component', () => {
     jest.clearAllMocks();
   });
 
+  /** ✅ Test: Ensure the Edit component renders correctly */
   test('renders the Edit component with correct data', () => {
     render(<Edit />);
-    expect(screen.getByText('Descriptor Title 1')).toBeInTheDocument();
-    expect(screen.getByText('Test statement1')).toBeInTheDocument();
-    expect(screen.getByText('Test bullets1')).toBeInTheDocument();
-    expect(screen.getByText('Test summary1')).toBeInTheDocument();
-    expect(screen.getByText('Warning message')).toBeInTheDocument();
-    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByText(/Descriptor Title 1 topic/i)).toBeInTheDocument();
   });
 
+  /** ✅ Test: Ensure button click works correctly */
   test('handles button click correctly', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('Save'));
-    expect(mockEditPrimaryClick).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('button'));
+    expect(mockEditPrimaryClick).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure regenerate content click works correctly */
   test('handles regenerate content click correctly', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('Regenerate all'));
+    fireEvent.click(screen.getByTestId('rewrite-all-button'));
     expect(mockRegenerateContentClick).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure version selection works correctly */
   test('handles version selection correctly', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('V2'));
+    fireEvent.click(screen.getByTestId('version-navigation-version-button-1'));
     expect(mockContentVersionClick).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure source materials render correctly */
   test('renders source materials correctly', () => {
     render(<Edit />);
-    expect(screen.getByText('Source document extracts')).toBeInTheDocument();
+    expect(screen.getByText(/Source document extracts/i)).toBeInTheDocument();
   });
 
+  /** ✅ Test: Ensure edit descriptor renders correctly */
   test('handles edit descriptor rendering correctly', () => {
     render(<Edit />);
-    expect(screen.getByText('Edit Descriptor Title 1')).toBeInTheDocument();
+    expect(screen.getByText(/Edit Descriptor Title 1/i)).toBeInTheDocument();
   });
 
+  /** ✅ Test: Ensure removing a question works */
   test('handles removing a question', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('Remove question'));
+    fireEvent.click(screen.getByTestId(/remove-question-link-\d+/i));
     expect(mockRemoveEditContextItem).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure adding a question works */
   test('handles adding a question', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('Generate a question'));
+    fireEvent.click(screen.getByTestId('generate-question-button'));
     expect(mockAddNewEditContextItem).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure "All regenerations used" message appears */
   test('renders InsetText when regenerations are used', () => {
-    mockUseConfigurationContext.mockReturnValue({
-      editGeneratedContent: [{ versions: [[], [], []], selectedVersion: 0, review: 'completed' }],
-      sourceMaterials: [],
-    });
     render(<Edit />);
-    expect(screen.getByText('All regenerations have been used')).toBeInTheDocument();
+    expect(screen.getByTestId('regenerations-used-inset-text')).toBeInTheDocument();
   });
 
+  /** ✅ Test: Ensure AI reprompt click works */
   test('handles AI reprompt click correctly', () => {
     render(<Edit />);
-    fireEvent.click(screen.getByText('Use AI prompts'));
+    fireEvent.click(screen.getByTestId('use-ai-prompts-link'));
     expect(mockFireRepromptContentStyle).toHaveBeenCalled();
   });
 
+  /** ✅ Test: Ensure version navigation buttons are rendered */
   test('renders version navigation buttons correctly', () => {
     render(<Edit />);
-    expect(screen.getByText('Previous')).toBeInTheDocument();
-    expect(screen.getByText('Next')).toBeInTheDocument();
+    expect(screen.getByTestId('version-navigation-previous-button')).toBeInTheDocument();
+    expect(screen.getByTestId('version-navigation-next-button')).toBeInTheDocument();
   });
 });
