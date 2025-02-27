@@ -1,9 +1,70 @@
-test('should handle setList for all contexts', () => {
-    const newList: EditContext[] = [
-      { review: 'pending', selectedVersion: 0, versions: [[[{ title: 'Topic 1', objectives: 'Objectives 1' }]]] },
-    ];
+test('should handle addRestyleToList for all contexts', () => {
+    const newContent = { heading: 'Updated Slide', bullet_points: 'Updated Point' };
   
     const contexts = [
+      { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerPointList' },
+      { type: CONTINUOUS_KNOWLEDGE, key: 'knowledgeCheckList' },
+      { type: KNOWLEDGE_CHECK, key: 'knowledgeCheckList' },
+    ];
+  
+    contexts.forEach(({ type, key }) => {
+      const initial = {
+        ...initialState,
+        [key]: [
+          {
+            review: 'pending',
+            selectedVersion: 0,
+            versions: [[[{ heading: 'Old Slide', bullet_points: 'Old Point' }]]],
+          },
+        ],
+      };
+  
+      const newState = generatedContentReducer(
+        initial,
+        addRestyleToList({ context: type, reviewIndex: 0, newContent, multipleItemsIndex: 0 })
+      );
+  
+      expect(newState[key][0].versions[0][0]).toContainEqual(newContent);
+    });
+  });
+
+
+  test('should handle removeRestyleFromList for all contexts', () => {
+    const contexts = [
+      { type: POWERPOINT_SCRIPT, key: 'elearningList' },
+      { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerPointList' },
+      { type: CONTINUOUS_KNOWLEDGE, key: 'knowledgeCheckList' },
+      { type: KNOWLEDGE_CHECK, key: 'knowledgeCheckList' },
+    ];
+  
+    contexts.forEach(({ type, key }) => {
+      const initial = {
+        ...initialState,
+        [key]: [
+          {
+            review: 'pending',
+            selectedVersion: 0,
+            versions: [[[{ heading: 'Slide', bullet_points: 'Point' }, { heading: 'Extra Slide', bullet_points: 'Extra' }]]],
+          },
+        ],
+      };
+  
+      const newState = generatedContentReducer(
+        initial,
+        removeRestyleFromList({ context: type, reviewIndex: 0, multipleItemsIndex: 0 })
+      );
+  
+      expect(newState[key][0].versions[0][0].length).toBe(1);
+    });
+  });
+
+
+  test('should handle setEditedContent for all contexts', () => {
+    const newContent = { heading: 'Edited Slide', bullet_points: 'Edited Point' };
+  
+    const contexts = [
+      { type: CONTINUOUS_TOPICS, key: 'topicList' },
+      { type: TOPIC_OUTLINES, key: 'topicList' },
       { type: POWERPOINT_SCRIPT, key: 'elearningList' },
       { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerPointList' },
       { type: CONTINUOUS_KNOWLEDGE, key: 'knowledgeCheckList' },
@@ -12,36 +73,30 @@ test('should handle setList for all contexts', () => {
     ];
   
     contexts.forEach(({ type, key }) => {
-      const newState = generatedContentReducer(initialState, setList({ context: type, list: newList }));
-      expect(newState[key]).toEqual(newList);
+      const initial = {
+        ...initialState,
+        [key]: [
+          {
+            review: 'pending',
+            selectedVersion: 0,
+            versions: [[[{ heading: 'Old Slide', bullet_points: 'Old Point' }]]],
+          },
+        ],
+      };
+  
+      const newState = generatedContentReducer(
+        initial,
+        setEditedContent({ context: type, reviewIndex: 0, newContent, multipleItemsIndex: 0 })
+      );
+  
+      expect(newState[key][0].versions[0][0][0]).toEqual(newContent);
     });
   });
 
-
-  test('should handle setCitations for all contexts', () => {
-    const citations: Citations[][] = [[{ id: '1', title: 'Citation 1', chunks: 'Text' }]];
-  
-    const contexts = [
-      { type: POWERPOINT_SCRIPT, key: 'elearningCitations' },
-      { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerpointCitations' },
-      { type: CONTINUOUS_KNOWLEDGE, key: 'knowledgeCheckCitations' },
-      { type: KNOWLEDGE_CHECK, key: 'knowledgeCheckCitations' },
-      { type: CONTINUOUS_CORE_CONTENT, key: 'continuousCitations' },
-    ];
-  
-    contexts.forEach(({ type, key }) => {
-      const newState = generatedContentReducer(initialState, setCitations({ context: type, citations }));
-      expect(newState[key]).toEqual(citations);
-    });
-  });
-
-  test('should handle addVersionToList for all contexts', () => {
-    const list: ContentSlide[] = [{ heading: 'Slide 1', bullet_points: 'Point 1' }];
-  
+  test('should handle setEditContextListReviewComplete for all contexts', () => {
     const contexts = [
       { type: POWERPOINT_SCRIPT, key: 'elearningList' },
       { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerPointList' },
-      { type: CONTINUOUS_KNOWLEDGE, key: 'knowledgeCheckList' },
       { type: KNOWLEDGE_CHECK, key: 'knowledgeCheckList' },
       { type: CONTINUOUS_CORE_CONTENT, key: 'continuousList' },
     ];
@@ -54,14 +109,17 @@ test('should handle setList for all contexts', () => {
   
       const newState = generatedContentReducer(
         initial,
-        addVersionToList({ context: type, reviewIndex: 0, list })
+        setEditContextListReviewComplete({ context: type, reviewIndex: 0 })
       );
   
-      expect(newState[key][0].versions.length).toBeGreaterThan(1);
+      expect(newState[key][0].review).toBe('completed');
     });
   });
 
-  test('should handle setEditContextListSelectedVersion for all contexts', () => {
+
+  test('should handle addNewListItem for all contexts', () => {
+    const newItem = [{ heading: 'New Slide', bullet_points: 'New Point' }];
+  
     const contexts = [
       { type: POWERPOINT_SCRIPT, key: 'elearningList' },
       { type: FACILITATOR_POWERPOINT_SCRIPT, key: 'powerPointList' },
@@ -73,14 +131,14 @@ test('should handle setList for all contexts', () => {
     contexts.forEach(({ type, key }) => {
       const initial = {
         ...initialState,
-        [key]: [{ review: 'pending', selectedVersion: 0, versions: [[[]]] }],
+        [key]: [],
       };
   
       const newState = generatedContentReducer(
         initial,
-        setEditContextListSelectedVersion({ context: type, reviewIndex: 0, newVersionSelected: 1 })
+        addNewListItem({ context: type, list: newItem })
       );
   
-      expect(newState[key][0].selectedVersion).toBe(1);
+      expect(newState[key]).toEqual(newItem);
     });
   });
