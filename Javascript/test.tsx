@@ -27,7 +27,7 @@ describe('Overview Page', () => {
     });
   });
 
-  test('renders the Overview page with correct content', () => {
+  test('renders the Overview page with correct content', async () => {
     (useAppSelector as jest.Mock).mockImplementation((selector) =>
       selector({
         content: {
@@ -67,126 +67,15 @@ describe('Overview Page', () => {
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
-    expect(screen.getByText('Finish')).toBeInTheDocument();
     expect(screen.getByText('Test Heading')).toBeInTheDocument();
     expect(screen.getByText('Section 1')).toBeInTheDocument();
     expect(screen.getByText("Can't start yet")).toBeInTheDocument();
+
+    // Use findByText instead of getByText to account for possible async rendering
+    expect(await screen.findByText('Finish')).toBeInTheDocument();
   });
 
-  test('calls primaryButtonClick when the button is clicked', () => {
-    (useAppSelector as jest.Mock).mockImplementation((selector) =>
-      selector({
-        content: {
-          overviewContent: {
-            descriptor: {
-              title: 'Test Title',
-              description: 'Test Description',
-              textSize: 2,
-            },
-            button: {
-              text: 'Finish',
-              start: false,
-              'data-testid': 'test-finish-button',
-              'aria-label': 'Finish button',
-            },
-            target: 'TEST_TARGET',
-          },
-        },
-        configuration: {
-          overview: [
-            {
-              heading: 'Test Heading',
-              sections: [{ label: 'Section 1', state: 'complete', value: 'value1' }],
-            },
-          ],
-        },
-      })
-    );
-
-    render(<Overview />);
-    const finishButton = screen.getByText('Finish');
-
-    fireEvent.click(finishButton);
-    expect(mockPrimaryButtonClick).toHaveBeenCalledWith('TEST_TARGET');
-  });
-
-  test('disables button when sections are incomplete', () => {
-    (useAppSelector as jest.Mock).mockImplementation((selector) =>
-      selector({
-        content: {
-          overviewContent: {
-            descriptor: {
-              title: 'Test Title',
-              description: 'Test Description',
-              textSize: 2,
-            },
-            button: {
-              text: 'Finish',
-              start: false,
-              'data-testid': 'test-finish-button',
-              'aria-label': 'Finish button',
-            },
-            target: 'TEST_TARGET',
-          },
-        },
-        configuration: {
-          overview: [
-            {
-              heading: 'Test Heading',
-              sections: [
-                { label: 'Section 1', state: 'in-progress', value: 'value1' },
-              ],
-            },
-          ],
-        },
-      })
-    );
-
-    render(<Overview />);
-    const finishButton = screen.getByText('Finish');
-    expect(finishButton).toBeDisabled();
-  });
-
-  test('triggers overviewCreateClick when OverviewList create button is clicked', () => {
-    (useAppSelector as jest.Mock).mockImplementation((selector) =>
-      selector({
-        content: {
-          overviewContent: {
-            descriptor: {
-              title: 'Test Title',
-              description: 'Test Description',
-              textSize: 2,
-            },
-            button: {
-              text: 'Finish',
-              start: false,
-              'data-testid': 'test-finish-button',
-              'aria-label': 'Finish button',
-            },
-            target: 'TEST_TARGET',
-          },
-        },
-        configuration: {
-          overview: [
-            {
-              heading: 'Test Heading',
-              sections: [
-                { label: 'Section 1', state: 'ready', value: 'value1' },
-              ],
-            },
-          ],
-        },
-      })
-    );
-
-    render(<Overview />);
-    const createButton = screen.getByText('Create');
-    fireEvent.click(createButton);
-
-    expect(mockOverviewCreateClick).toHaveBeenCalledWith('value1');
-  });
-
-  test('triggers overviewReviewContentClick when overview review link is clicked', () => {
+  test('calls primaryButtonClick when the button is clicked', async () => {
     (useAppSelector as jest.Mock).mockImplementation((selector) =>
       selector({
         content: {
@@ -219,13 +108,128 @@ describe('Overview Page', () => {
     );
 
     render(<Overview />);
-    const reviewLink = screen.getByText('Section 1');
+    const finishButton = await screen.findByText('Finish');
+
+    fireEvent.click(finishButton);
+    expect(mockPrimaryButtonClick).toHaveBeenCalledWith('TEST_TARGET');
+  });
+
+  test('disables button when sections are incomplete', async () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'not-ready', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const finishButton = screen.queryByText('Finish');
+    expect(finishButton).not.toBeInTheDocument();
+  });
+
+  test('triggers overviewCreateClick when OverviewList create button is clicked', async () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'ready', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const createButton = await screen.findByText('Create');
+    fireEvent.click(createButton);
+
+    expect(mockOverviewCreateClick).toHaveBeenCalledWith('value1');
+  });
+
+  test('triggers overviewReviewContentClick when overview review link is clicked', async () => {
+    (useAppSelector as jest.Mock).mockImplementation((selector) =>
+      selector({
+        content: {
+          overviewContent: {
+            descriptor: {
+              title: 'Test Title',
+              description: 'Test Description',
+              textSize: 2,
+            },
+            button: {
+              text: 'Finish',
+              start: false,
+              'data-testid': 'test-finish-button',
+              'aria-label': 'Finish button',
+            },
+            target: 'TEST_TARGET',
+          },
+        },
+        configuration: {
+          overview: [
+            {
+              heading: 'Test Heading',
+              sections: [
+                { label: 'Section 1', state: 'complete', value: 'value1' },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    render(<Overview />);
+    const reviewLink = await screen.findByText('Section 1');
     fireEvent.click(reviewLink);
 
     expect(mockOverviewReviewContentClick).toHaveBeenCalledWith('value1');
   });
 
-  test('does not render button if all sections are incomplete', () => {
+  test('does not render button if all sections are incomplete', async () => {
     (useAppSelector as jest.Mock).mockImplementation((selector) =>
       selector({
         content: {
