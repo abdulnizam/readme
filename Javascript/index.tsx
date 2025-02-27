@@ -25,18 +25,24 @@ async def test():
 
     import requests
     import time
-    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import ThreadPoolExecutor, as_completed
     
     URL = "http://127.0.0.1:8000/test"
     
     def send_request():
+        start_time = time.time()
         response = requests.get(URL)
+        end_time = time.time()
+        
         print(response.json())
+        return end_time - start_time  # Return processing time per request
     
     start_time = time.time()
     
     with ThreadPoolExecutor(max_workers=3) as executor:
-        executor.map(send_request, range(3))
+        futures = [executor.submit(send_request) for _ in range(3)]  # Launch 3 requests
+        for future in as_completed(futures):  # Wait for all requests to finish
+            print(f"Request finished in {round(future.result(), 2)}s")
     
     end_time = time.time()
     print(f"Total execution time: {round(end_time - start_time, 2)}s")
