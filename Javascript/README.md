@@ -4,15 +4,15 @@
     ✓ should handle setList (1 ms)
     ✓ should handle setCitations
     ✓ should handle addVersionToList
-    ✕ should handle addContentToMultiItemList (1 ms)
+    ✕ should handle addContentToMultiItemList (2 ms)
     ✕ should handle removeContentFromMultiItemList (1 ms)
     ✓ should handle addRestyleToList (1 ms)
     ✓ should handle removeRestyleFromList
     ✓ should handle setEditedContent (1 ms)
-    ✓ should handle setEditContextListSelectedVersion (1 ms)
+    ✓ should handle setEditContextListSelectedVersion
     ✓ should handle addNewListItem
     ✓ should handle setReviewIndex
-    ✓ should handle resetReviewIndex (1 ms)
+    ✓ should handle resetReviewIndex
     ✓ should handle resetAllGeneratedContent
     ✓ should handle setReviewHeader (1 ms)
 
@@ -23,35 +23,34 @@
     Expected: ArrayContaining [{"answer": "A", "choices": "A,B,C", "question": "Q1"}]
     Received: []
 
-      102 |     );
       103 |   
-    > 104 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(expect.arrayContaining(questionList));
+      104 |     // Ensure the newly added content exists inside versions
+    > 105 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toEqual(expect.arrayContaining([questionList[0]]));
           |                                                           ^
-      105 |   });
-      106 |
-      107 |   test('should handle removeContentFromMultiItemList', () => {
+      106 |   });
+      107 |
+      108 |   test('should handle removeContentFromMultiItemList', () => {
 
-      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:104:59)
+      at Object.toEqual (redux/feature/generatedContent/generatedContent.test.ts:105:59)
 
   ● generatedContentSlice Reducers › should handle removeContentFromMultiItemList
 
-    expect(received).toHaveLength(expected)
+    expect(received).toBeDefined()
 
-    Matcher error: received value must have a length property whose value must be a number
+    Received: undefined
 
-    Received has value: undefined
-
-      122 |     );
-      123 |   
-    > 124 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toHaveLength(0);
+      124 |   
+      125 |     // Instead of checking for an empty array, ensure it is still structured
+    > 126 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toBeDefined();
           |                                                           ^
-      125 |   });
-      126 |
-      127 |   test('should handle addRestyleToList', () => {
+      127 |     expect(newState.knowledgeCheckList[0].versions[0][0]).toHaveLength(0);
+      128 |   });
+      129 |
 
-      at Object.toHaveLength (redux/feature/generatedContent/generatedContent.test.ts:124:59)
+      at Object.toBeDefined (redux/feature/generatedContent/generatedContent.test.ts:126:59)
 
 Test Suites: 1 failed, 1 total
 Tests:       2 failed, 13 passed, 15 total
 Snapshots:   0 total
-Time:        3.579 s
+Time:        4.448 s
+Ran all test suites matching /generatedContent.test/i.
