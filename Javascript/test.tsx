@@ -7,3 +7,14 @@ test('handles AI reprompt click correctly', async () => {
   
     expect(mockFireRepromptContentStyle).toHaveBeenCalled();
   });
+
+
+
+  import { waitFor } from '@testing-library/react';
+
+test('renders InsetText when regenerations are used', async () => {
+  render(<Edit />);
+  await waitFor(() => {
+    expect(screen.queryByTestId('regenerations-used-inset-text')).not.toBeNull();
+  });
+});
