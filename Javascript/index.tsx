@@ -1,11 +1,23 @@
 from fastapi import FastAPI
+import time
 import asyncio
 
 app = FastAPI()
 
 @app.get("/test")
 async def test():
+    start_time = time.time()
+    
     print("Start processing request")
-    await asyncio.sleep(5)  # Simulates a slow operation (e.g., DB query)
+    await asyncio.sleep(5)  # Simulating delay
     print("Finished processing request")
-    return {"message": "Request processed"}
+
+    end_time = time.time()
+    processing_time = round(end_time - start_time, 2)
+
+    return {"message": "Request processed", "processing_time": f"{processing_time}s"}
+
+
+
+
+    curl -w "\nTotal time: %{time_total}s\n" -o /dev/null -s http://127.0.0.1:8000/test
