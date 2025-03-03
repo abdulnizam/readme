@@ -55,6 +55,29 @@ session-manager-plugin --version
 
 
 
+DEM-FF20RFW3CM :: ~/ssmplugin » tar -xvf Payload
+x .
+x ./usr
+x ./usr/local
+x ./usr/local/sessionmanagerplugin
+x ./usr/local/sessionmanagerplugin/LICENSE
+x ./usr/local/sessionmanagerplugin/bin
+x ./usr/local/sessionmanagerplugin/bin/session-manager-plugin
+x ./usr/local/sessionmanagerplugin/RELEASENOTES.md
+x ./usr/local/sessionmanagerplugin/NOTICE
+x ./usr/local/sessionmanagerplugin/README.md
+x ./usr/local/sessionmanagerplugin/seelog.xml.template
+x ./usr/local/sessionmanagerplugin/THIRD-PARTY
+x ./Library
+x ./Library/LaunchDaemons
+x ./Library/LaunchDaemons/SessionManagerPlugin.plist
+DEM-FF20RFW3CM :: ~/ssmplugin » ls
+Bom         Library     PackageInfo Payload     usr
+DEM-FF20RFW3CM :: ~/ssmplugin »
+
+
+
+
 
 
 
