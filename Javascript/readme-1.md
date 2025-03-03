@@ -74,3 +74,9 @@ aws iam attach-role-policy \
 
 
 sudo cat /var/log/amazon/ssm/amazon-ssm-agent.log
+
+
+
+aws iam attach-role-policy \
+    --role-name your-instance-role \
+    --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
