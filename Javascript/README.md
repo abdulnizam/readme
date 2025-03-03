@@ -95,3 +95,10 @@ source ~/.zshrc  # For zsh
 source ~/.bashrc  # For bash
 
 session-manager-plugin --version
+
+
+aws ssm send-command \
+    --document-name "AWS-RunShellScript" \
+    --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
+    --parameters 'commands=["mkdir -p /home/ec2-user/Gail && curl -o /home/ec2-user/Gail/yourfile.zip https://yourdomain.com/yourfile.zip"]' \
+    --region eu-west-2
