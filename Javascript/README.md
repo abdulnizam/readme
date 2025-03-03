@@ -146,7 +146,7 @@ An error occurred (AccessDeniedException) when calling the SendCommand operation
 DEM-FF20RFW3CM :: ~ »
 
 
-
+aws s3 cp /path/to/yourfile.zip s3://your-bucket-name/
 
 
     
