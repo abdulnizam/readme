@@ -51,3 +51,17 @@ echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 
 session-manager-plugin --version
+
+
+
+
+
+
+
+
+
+DEM-FF20RFW3CM :: ~/ssmplugin » mv session-manager-plugin ~/bin/                                                                                                                                                  130 ↵
+mv: rename session-manager-plugin to /Users/adbul.nizam1/bin/session-manager-plugin: No such file or directory
+DEM-FF20RFW3CM :: ~/ssmplugin » ls                                                                                                                                                                                  1 ↵
+Bom         Library     PackageInfo Payload     usr
+DEM-FF20RFW3CM :: ~/ssmplugin »
