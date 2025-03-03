@@ -220,3 +220,18 @@ DEM-FF20RFW3CM :: ~/Desktop » ssh i-07a7797becf4fdac4                          
 An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
 Connection closed by UNKNOWN port 65535
 DEM-FF20RFW3CM :: ~/Desktop »
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "ssm:StartSession",
+            "Resource": [
+                "arn:aws:ec2:eu-west-2:943009210227:instance/i-07a7797becf4fdac4",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession"
+            ]
+        }
+    ]
+}
