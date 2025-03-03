@@ -125,7 +125,6 @@ DEM-FF20RFW3CM :: ~/Desktop »
 
 
 
-
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -142,8 +141,60 @@ DEM-FF20RFW3CM :: ~/Desktop »
             "Resource": [
                 "arn:aws:ssm:eu-west-2:943009210227:session*/*",
                 "arn:aws:ssm:eu-west-2:943009210227:document/SSM-SessionManagerRunShell",
-                "arn:aws:ec2:eu-west-2:943009210227:instance*/*",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession"
+                "arn:aws:ec2:eu-west-2:943009210227:instance/*",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSessionToRemoteHost"
+            ]
+        },
+        {
+            "Action": [
+                "ssm:TerminateSession",
+                "ssm:ResumeSession"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:ssm:*:*:session/adbul.nizam-*"
+        },
+        {
+            "Action": [
+                "ssm:SendCommand",
+                "ssm:DescribeSessions",
+                "ssm:GetConnectionStatus",
+                "ssm:DescribeInstanceProperties",
+                "ssm:DescribeInstanceInformation",
+                "ec2:DescribeInstances"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Action": [
+                "kms:GenerateDataKey"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ssm:StartSession"
+            ],
+            "Condition": {
+                "BoolIfExists": {
+                    "ssm:SessionDocumentAccessCheck": "true"
+                }
+            },
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:ssm:eu-west-2:943009210227:session*/*",
+                "arn:aws:ssm:eu-west-2:943009210227:document/SSM-SessionManagerRunShell",
+                "arn:aws:ec2:eu-west-2:943009210227:instance/*",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession",
+                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSessionToRemoteHost"
             ]
         },
         {
