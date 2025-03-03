@@ -131,3 +131,15 @@ aws ssm start-session \
 
 
 scp -P 2222 gail-kong-web-sso-0.5.0.tar ssm-user@localhost:/home/ssm-user/Gail/
+
+
+
+DEM-FF20RFW3CM :: ~/Desktop » base64 gail-kong-web-sso-0.5.0.tar > gail_encoded.b64                                                                                                                                                  127 ↵
+base64: invalid argument gail-kong-web-sso-0.5.0.tar
+Usage:  base64 [-Ddh] [-b num] [-i in_file] [-o out_file]
+  -b, --break       break encoded output up into lines of length num
+  -D, -d, --decode  decode input
+  -h, --help        display this message
+  -i, --input       input file (default: "-" for stdin)
+  -o, --output      output file (default: "-" for stdout)
+DEM-FF20RFW3CM :: ~/Desktop »
