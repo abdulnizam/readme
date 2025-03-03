@@ -157,3 +157,9 @@ aws ssm send-command \
     --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
     --parameters 'commands=["aws s3 cp s3://my-s3-bucket/data.zip /home/ec2-user/"]' \
     --region eu-west-2
+
+
+aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["22"], "localPortNumber":["2222"]}'
+
+
+scp -P 2222 /local/path/to/file ec2-user@localhost:/home/ec2-user/
