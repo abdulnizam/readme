@@ -150,3 +150,10 @@ aws s3 cp /path/to/yourfile.zip s3://your-bucket-name/
 
 
     
+
+
+aws ssm send-command \
+    --document-name "AWS-RunShellScript" \
+    --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
+    --parameters 'commands=["aws s3 cp s3://my-s3-bucket/data.zip /home/ec2-user/"]' \
+    --region eu-west-2
