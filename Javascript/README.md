@@ -181,4 +181,20 @@ aws ssm send-command \
 
 
 
-rsync -e "aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" myfile.zip ssm-user@localhost:/home/ssm-user/
+rsync -e "aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" gail-kong-web-sso-0.5.0.tar ssm-user@localhost:/home/Gail/
+
+
+
+DEM-FF20RFW3CM :: ~/Desktop » rsync -e "aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" gail-kong-web-sso-0.5.0.tar ssm-user@localhost:/tmp/                      1 ↵
+
+usage: aws [options] <command> <subcommand> [<subcommand> ...] [parameters]
+To see help text, you can run:
+
+  aws help
+  aws <command> help
+  aws <command> <subcommand> help
+
+Unknown options: rsync, --server, ., /tmp/, ssm-user@localhost
+
+rsync: error: unexpected end of file
+DEM-FF20RFW3CM :: ~/Desktop »
