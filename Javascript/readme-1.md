@@ -108,121 +108,26 @@ aws iam attach-role-policy \
     --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 
-DEM-FF20RFW3CM :: ~/Desktop » scp -o ProxyCommand="aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" \
-    gail-kong-web-sso-0.5.0.tar ssm-user@i-07a7797becf4fdac4:/home/ssm-user/Gail/
+base64 gail-kong-web-sso-0.5.0.tar > gail_encoded.b64
 
-An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
-Connection closed by UNKNOWN port 65535
-scp: Connection closed
-DEM-FF20RFW3CM :: ~/Desktop » aws iam attach-role-policy \                                                                                                                                                                           255 ↵
-    --role-name ithc-kali-pdu-test-role \
-    --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
-
-An error occurred (AccessDenied) when calling the AttachRolePolicy operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: iam:AttachRolePolicy on resource: role ithc-kali-pdu-test-role because no identity-based policy allows the iam:AttachRolePolicy action
-DEM-FF20RFW3CM :: ~/Desktop »
+aws ssm send-command \
+    --document-name "AWS-RunShellScript" \
+    --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
+    --parameters 'commands=["echo BASE64_ENCODED_STRING > /tmp/gail_encoded.b64"]' \
+    --region eu-west-2
 
 
+aws ssm send-command \
+    --document-name "AWS-RunShellScript" \
+    --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
+    --parameters 'commands=["mkdir -p /home/ssm-user/Gail && curl -o /home/ssm-user/Gail/gail-kong-web-sso-0.5.0.tar https://yourdomain.com/gail-kong-web-sso-0.5.0.tar"]' \
+    --region eu-west-2
 
 
+aws ssm start-session \
+    --target i-07a7797becf4fdac4 \
+    --document-name AWS-StartPortForwardingSession \
+    --parameters 'localPortNumber=2222,remotePortNumber=22'
 
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "ssm:StartSession"
-            ],
-            "Condition": {
-                "BoolIfExists": {
-                    "ssm:SessionDocumentAccessCheck": "true"
-                }
-            },
-            "Effect": "Allow",
-            "Resource": [
-                "arn:aws:ssm:eu-west-2:943009210227:session*/*",
-                "arn:aws:ssm:eu-west-2:943009210227:document/SSM-SessionManagerRunShell",
-                "arn:aws:ec2:eu-west-2:943009210227:instance/*",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSessionToRemoteHost"
-            ]
-        },
-        {
-            "Action": [
-                "ssm:TerminateSession",
-                "ssm:ResumeSession"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:ssm:*:*:session/adbul.nizam-*"
-        },
-        {
-            "Action": [
-                "ssm:SendCommand",
-                "ssm:DescribeSessions",
-                "ssm:GetConnectionStatus",
-                "ssm:DescribeInstanceProperties",
-                "ssm:DescribeInstanceInformation",
-                "ec2:DescribeInstances"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-        },
-        {
-            "Action": [
-                "kms:GenerateDataKey"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-        }
-    ]
-}{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "ssm:StartSession"
-            ],
-            "Condition": {
-                "BoolIfExists": {
-                    "ssm:SessionDocumentAccessCheck": "true"
-                }
-            },
-            "Effect": "Allow",
-            "Resource": [
-                "arn:aws:ssm:eu-west-2:943009210227:session*/*",
-                "arn:aws:ssm:eu-west-2:943009210227:document/SSM-SessionManagerRunShell",
-                "arn:aws:ec2:eu-west-2:943009210227:instance/*",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession",
-                "arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSessionToRemoteHost"
-            ]
-        },
-        {
-            "Action": [
-                "ssm:TerminateSession",
-                "ssm:ResumeSession"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:ssm:*:*:session/adbul.nizam-*"
-        },
-        {
-            "Action": [
-                "ssm:SendCommand",
-                "ssm:DescribeSessions",
-                "ssm:GetConnectionStatus",
-                "ssm:DescribeInstanceProperties",
-                "ssm:DescribeInstanceInformation",
-                "ec2:DescribeInstances"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-        },
-        {
-            "Action": [
-                "kms:GenerateDataKey"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-        }
-    ]
-}
+
+scp -P 2222 gail-kong-web-sso-0.5.0.tar ssm-user@localhost:/home/ssm-user/Gail/
