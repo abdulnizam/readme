@@ -82,9 +82,16 @@ DEM-FF20RFW3CM :: ~/ssmplugin »
 
 
 
+mv ~/ssmplugin/usr/local/sessionmanagerplugin/bin/session-manager-plugin ~/bin/
 
-DEM-FF20RFW3CM :: ~/ssmplugin » mv session-manager-plugin ~/bin/                                                                                                                                                  130 ↵
-mv: rename session-manager-plugin to /Users/adbul.nizam1/bin/session-manager-plugin: No such file or directory
-DEM-FF20RFW3CM :: ~/ssmplugin » ls                                                                                                                                                                                  1 ↵
-Bom         Library     PackageInfo Payload     usr
-DEM-FF20RFW3CM :: ~/ssmplugin »
+chmod +x ~/bin/session-manager-plugin
+
+export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.zshrc  # If using zsh
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc  # If using bash
+
+
+source ~/.zshrc  # For zsh
+source ~/.bashrc  # For bash
+
+session-manager-plugin --version
