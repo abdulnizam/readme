@@ -59,3 +59,18 @@ DEM-FF20RFW3CM :: ~/Desktop » aws ec2 describe-instances \
         }
     ]
 ]
+
+
+aws iam get-instance-profile --instance-profile-name kali-iam-profile-pdu-test
+
+aws iam list-attached-role-policies --role-name kali-ssm-role
+
+aws iam get-role-policy --role-name kali-ssm-role --policy-name <policy-name>
+
+
+aws iam attach-role-policy \
+    --role-name kali-ssm-role \
+    --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+
+sudo cat /var/log/amazon/ssm/amazon-ssm-agent.log
