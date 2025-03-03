@@ -28,3 +28,22 @@ aws sts get-session-token --duration-seconds 3600
 DEM-FF20RFW3CM :: ~ » aws ssm start-session --target i-07a7797becf4fdac4
 
 SessionManagerPlugin is not found. Please refer to SessionManager Documentation here: http://docs.aws.amazon.com/console/systems-manager/session-manager-plugin-not-found
+
+
+curl -o "/tmp/session-manager-plugin.pkg" "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/session-manager-plugin.pkg"
+sudo installer -pkg "/tmp/session-manager-plugin.pkg" -target /
+
+session-manager-plugin --version
+
+aws sts get-caller-identity
+
+aws ssm start-session --target i-07a7797becf4fdac4
+
+
+aws ec2 describe-instances --instance-ids i-07a7797becf4fdac4 --query "Reservations[*].Instances[*].IamInstanceProfile"
+
+
+
+sudo systemctl status amazon-ssm-agent
+
+sudo systemctl restart amazon-ssm-agent
