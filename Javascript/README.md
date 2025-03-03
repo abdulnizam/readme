@@ -178,3 +178,9 @@ aws ssm send-command \
     --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
     --parameters 'commands=["mkdir -p /home/Gail && echo \"<BASE64_CONTENT>\" | base64 -d > /home/Gail/gail-kong-web-sso-0.5.0.tar"]' \
     --region eu-west-2
+
+
+
+An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
+Connection closed by UNKNOWN port 65535
+DEM-FF20RFW3CM :: ~/Downloads »
