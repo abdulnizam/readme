@@ -91,3 +91,18 @@ DEM-FF20RFW3CM :: ~/Desktop » aws iam list-attached-role-policies --role-name i
         }
     ]
 }
+
+
+sudo cat /var/log/amazon/ssm/amazon-ssm-agent.log | tail -n 50
+
+
+scp -o ProxyCommand="aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" \
+    gail-kong-web-sso-0.5.0.tar ssm-user@i-07a7797becf4fdac4:/home/ssm-user/Gail/
+
+
+aws ssm list-command-invocations --details
+
+
+aws iam attach-role-policy \
+    --role-name ithc-kali-pdu-test-role \
+    --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
