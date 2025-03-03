@@ -205,3 +205,18 @@ scp -o ProxyCommand="aws ssm start-session --target i-07a7797becf4fdac4 --docume
 
 
 rsync -e "aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" gail-kong-web-sso-0.5.0.tar ssm-user@localhost:/home/ssm-user/Gail/
+
+
+DEM-FF20RFW3CM :: ~/Desktop » cat ~/.ssh/config                                                                                                                                                                                      255 ↵
+Host i-* mi-*
+    ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
+    User ssm-user
+DEM-FF20RFW3CM :: ~/Desktop » ssh i-07a7797becf4fdac4 22
+
+An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
+Connection closed by UNKNOWN port 65535
+DEM-FF20RFW3CM :: ~/Desktop » ssh i-07a7797becf4fdac4                                                                                                                                                                                255 ↵
+
+An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
+Connection closed by UNKNOWN port 65535
+DEM-FF20RFW3CM :: ~/Desktop »
