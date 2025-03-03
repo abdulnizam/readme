@@ -122,8 +122,31 @@ base64 -d /home/ec2-user/Gail/encoded_file.txt > /home/ec2-user/Gail/yourfile.zi
 
 
 
+
+
 aws ssm send-command \
     --document-name "AWS-RunShellScript" \
     --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
     --parameters 'commands=["mkdir -p /home/ec2-user/Gail && cd /home/ec2-user/Gail && curl -L -o README.md https://raw.githubusercontent.com/abdulnizam/readme/main/README.md"]' \
     --region eu-west-2
+
+
+
+
+
+
+
+
+
+
+
+DEM-FF20RFW3CM :: ~ » aws ssm send-command --document-name "AWS-RunShellScript" --targets "Key=instanceids,Values=i-07a7797becf4fdac4" --parameters 'commands=["mkdir -p /home/Gail && cd /home/Gail && curl -L -o README.md https://raw.githubusercontent.com/abdulnizam/readme/main/README.md"]' --region eu-west-2
+
+An error occurred (AccessDeniedException) when calling the SendCommand operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:SendCommand on resource: arn:aws:ec2:eu-west-2:943009210227:instance/i-07a7797becf4fdac4 because no identity-based policy allows the ssm:SendCommand action
+DEM-FF20RFW3CM :: ~ »
+
+
+
+
+
+    
