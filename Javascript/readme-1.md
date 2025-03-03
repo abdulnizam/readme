@@ -106,3 +106,17 @@ aws ssm list-command-invocations --details
 aws iam attach-role-policy \
     --role-name ithc-kali-pdu-test-role \
     --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+
+DEM-FF20RFW3CM :: ~/Desktop » scp -o ProxyCommand="aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" \
+    gail-kong-web-sso-0.5.0.tar ssm-user@i-07a7797becf4fdac4:/home/ssm-user/Gail/
+
+An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
+Connection closed by UNKNOWN port 65535
+scp: Connection closed
+DEM-FF20RFW3CM :: ~/Desktop » aws iam attach-role-policy \                                                                                                                                                                           255 ↵
+    --role-name ithc-kali-pdu-test-role \
+    --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+An error occurred (AccessDenied) when calling the AttachRolePolicy operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: iam:AttachRolePolicy on resource: role ithc-kali-pdu-test-role because no identity-based policy allows the iam:AttachRolePolicy action
+DEM-FF20RFW3CM :: ~/Desktop »
