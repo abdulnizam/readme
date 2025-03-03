@@ -46,3 +46,16 @@ aws ssm send-command \
 aws ec2 describe-instances \
     --instance-ids i-07a7797becf4fdac4 \
     --query "Reservations[*].Instances[*].IamInstanceProfile"
+
+
+DEM-FF20RFW3CM :: ~/Desktop » aws ec2 describe-instances \
+    --instance-ids i-07a7797becf4fdac4 \
+    --query "Reservations[*].Instances[*].IamInstanceProfile"
+[
+    [
+        {
+            "Arn": "arn:aws:iam::943009210227:instance-profile/kali-iam-profile-pdu-test",
+            "Id": "AIPA5XD52T5ZWDTCUYWYE"
+        }
+    ]
+]
