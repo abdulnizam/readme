@@ -102,3 +102,28 @@ aws ssm send-command \
     --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
     --parameters 'commands=["mkdir -p /home/ec2-user/Gail && curl -o /home/ec2-user/Gail/yourfile.zip https://yourdomain.com/yourfile.zip"]' \
     --region eu-west-2
+
+
+
+aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["22"], "localPortNumber":["10022"]}'
+
+
+scp -o ProxyCommand='aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession' /path/to/yourfile.zip ec2-user@localhost:/home/ec2-user/Gail/
+
+
+
+base64 yourfile.zip > encoded_file.txt
+
+
+aws ssm start-session --target i-07a7797becf4fdac4
+
+
+base64 -d /home/ec2-user/Gail/encoded_file.txt > /home/ec2-user/Gail/yourfile.zip
+
+
+
+aws ssm send-command \
+    --document-name "AWS-RunShellScript" \
+    --targets "Key=instanceids,Values=i-07a7797becf4fdac4" \
+    --parameters 'commands=["mkdir -p /home/ec2-user/Gail && cd /home/ec2-user/Gail && curl -L -o README.md https://raw.githubusercontent.com/abdulnizam/readme/main/README.md"]' \
+    --region eu-west-2
