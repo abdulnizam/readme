@@ -181,6 +181,4 @@ aws ssm send-command \
 
 
 
-An error occurred (AccessDeniedException) when calling the StartSession operation: User: arn:aws:iam::943009210227:user/adbul.nizam is not authorized to perform: ssm:StartSession on resource: arn:aws:ssm:eu-west-2::document/AWS-StartSSHSession because no identity-based policy allows the ssm:StartSession action
-Connection closed by UNKNOWN port 65535
-DEM-FF20RFW3CM :: ~/Downloads »
+rsync -e "aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartSSHSession --parameters 'portNumber=22'" myfile.zip ssm-user@localhost:/home/ssm-user/
