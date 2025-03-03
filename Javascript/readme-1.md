@@ -63,7 +63,7 @@ DEM-FF20RFW3CM :: ~/Desktop » aws ec2 describe-instances \
 
 aws iam get-instance-profile --instance-profile-name kali-iam-profile-pdu-test
 
-aws iam list-attached-role-policies --role-name kali-ssm-role
+aws iam list-attached-role-policies --role-name ithc-kali-pdu-test-role
 
 aws iam get-role-policy --role-name kali-ssm-role --policy-name <policy-name>
 
@@ -80,3 +80,14 @@ sudo cat /var/log/amazon/ssm/amazon-ssm-agent.log
 aws iam attach-role-policy \
     --role-name your-instance-role \
     --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+
+DEM-FF20RFW3CM :: ~/Desktop » aws iam list-attached-role-policies --role-name ithc-kali-pdu-test-role                                                                                                                                130 ↵
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "AmazonSSMManagedInstanceCore",
+            "PolicyArn": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        }
+    ]
+}
