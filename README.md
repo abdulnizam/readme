@@ -5,3 +5,19 @@ DEM-FF20RFW3CM :: ~ » aws configure list
 access_key     ****************2ROB              env
 secret_key     ****************OztS              env
     region                eu-west-2      config-file    ~/.aws/config
+
+
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+
+
+[default]
+aws_access_key_id = YOUR_NEW_ACCESS_KEY
+aws_secret_access_key = YOUR_NEW_SECRET_KEY
+aws_session_token = # Leave blank unless using STS/MFA
+
+
+aws sts get-caller-identity
+
+aws sts get-session-token --duration-seconds 3600
