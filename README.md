@@ -21,3 +21,10 @@ aws_session_token = # Leave blank unless using STS/MFA
 aws sts get-caller-identity
 
 aws sts get-session-token --duration-seconds 3600
+
+
+
+
+DEM-FF20RFW3CM :: ~ » aws ssm start-session --target i-07a7797becf4fdac4
+
+SessionManagerPlugin is not found. Please refer to SessionManager Documentation here: http://docs.aws.amazon.com/console/systems-manager/session-manager-plugin-not-found
