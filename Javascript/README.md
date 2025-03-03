@@ -198,3 +198,34 @@ Unknown options: rsync, --server, ., /tmp/, ssm-user@localhost
 
 rsync: error: unexpected end of file
 DEM-FF20RFW3CM :: ~/Desktop »
+
+
+
+
+● amazon-ssm-agent.service - amazon-ssm-agent
+     Loaded: loaded (/usr/lib/systemd/system/amazon-ssm-agent.service; enabled; preset: disabled)
+     Active: active (running) since Mon 2025-03-03 08:32:22 UTC; 10h ago
+ Invocation: c87eb0208e1b436ea1417b4a517f7e24
+   Main PID: 862 (amazon-ssm-agen)
+      Tasks: 44 (limit: 4680)
+     Memory: 138.6M (peak: 213.7M)
+        CPU: 1min 14.816s
+     CGroup: /system.slice/amazon-ssm-agent.service
+             ├─   862 /usr/bin/amazon-ssm-agent
+             ├─  1023 /usr/bin/ssm-agent-worker
+             ├─137282 /usr/bin/ssm-session-worker adbul.nizam-zlfidq38hrc79etjzxpzng36uy
+             ├─137299 sh
+             ├─137301 systemctl status amazon-ssm-agent
+             └─137302 less
+
+Mar 03 16:05:04 kali sudo[133527]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1001)
+Mar 03 16:05:04 kali sudo[133527]: pam_unix(sudo:session): session closed for user root
+Mar 03 16:29:56 kali sudo[135610]: ssm-user : TTY=pts/0 ; PWD=/root ; USER=root ; COMMAND=/usr/bin/zsh
+Mar 03 16:29:56 kali sudo[135610]: pam_unix(sudo-i:session): session opened for user root(uid=0) by (uid=1001)
+Mar 03 16:58:03 kali sudo[136001]: ssm-user : TTY=pts/0 ; PWD=/home ; USER=root ; COMMAND=/usr/bin/mkdir Gail
+Mar 03 16:58:03 kali sudo[136001]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1001)
+Mar 03 16:58:03 kali sudo[136001]: pam_unix(sudo:session): session closed for user root
+Mar 03 18:39:47 kali sudo[137035]: ssm-user : TTY=pts/0 ; PWD=/usr/bin ; USER=root ; COMMAND=/usr/bin/su
+Mar 03 18:39:47 kali sudo[137035]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1001)
+Mar 03 18:39:58 kali sudo[137035]: pam_unix(sudo:session): session closed for user root
+$
