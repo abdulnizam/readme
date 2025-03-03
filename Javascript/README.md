@@ -163,3 +163,7 @@ aws ssm start-session --target i-07a7797becf4fdac4 --document-name AWS-StartPort
 
 
 scp -P 2222 /local/path/to/file ec2-user@localhost:/home/ec2-user/
+
+DEM-FF20RFW3CM :: ~/Downloads » scp -P 2222 gail-kong-web-sso-0.5.0.tar ec2-user@localhost:/home/Gail                                                                                              255 ↵
+ec2-user@localhost: Permission denied (publickey).
+scp: Connection closed
