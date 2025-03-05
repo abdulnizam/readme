@@ -48,3 +48,7 @@ spec:
 
 
 kubectl delete ingress kong-ingress -n aii-gail-kong-api-gateway
+
+
+echo 'export BROWSER="/Applications/Safari.app/Contents/MacOS/Safari"' >> ~/.zshrc
+source ~/.zshrc  # Apply changes
