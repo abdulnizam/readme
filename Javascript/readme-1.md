@@ -1,21 +1,6 @@
-FYI these are the IPs from the public web.
-
-nslookup 26jma4daa5.execute-api.eu-west-2.amazonaws.com
-Server:           127.0.0.53
-Address:    127.0.0.53#53
-
-Non-authoritative answer:
-Name: 26jma4daa5.execute-api.eu-west-2.amazonaws.com
-Address: 3.166.65.59
-Name: 26jma4daa5.execute-api.eu-west-2.amazonaws.com
-Address: 3.166.65.108
-Name: 26jma4daa5.execute-api.eu-west-2.amazonaws.com
-Address: 3.166.65.20
-Name: 26jma4daa5.execute-api.eu-west-2.amazonaws.com
-Address: 3.166.65.112
-
-So it looks like the resolution is going to a NAT? Then out to AWS?
-
-@Marc Allen when you did a TCP telnet on port 443 for the domain, which IP did it resolve to?
-
-Thanks,
+curl --location 'https://26jma4daa5.execute-api.eu-west-2.amazonaws.com//live/graphql' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer eyJraWQiOiI5WUR0XC9SQXBtOUdlU2RBcW8xUkVkQjk5c09wS3pPRzNZekltM3FQTm5Xbz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyZDhiYTQ5Yy05YWM3LTQ4MjQtOWZhNy01YTMxOThkNjc0NDciLCJjb2duaXRvOmdyb3VwcyI6WyJhcGkiXSwiZW1haWxfdmVyaWZpZWQiOnRydWUsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS13ZXN0LTIuYW1hem9uYXdzLmNvbVwvZXUtd2VzdC0yXzc2UFRKV3poRSIsInBob25lX251bWJlcl92ZXJpZmllZCI6dHJ1ZSwiY29nbml0bzp1c2VybmFtZSI6ImFwaV91c2VyIiwib3JpZ2luX2p0aSI6IjY3ZjE0NzQxLTlhMGYtNGRhZi1hNjBkLTMwZjczOTNhNWMwNyIsImF1ZCI6IjI1MWcybXI3OXJvdWVlMW5rYzE5N2ZvMWZ0IiwiZXZlbnRfaWQiOiI4NWZmNzFmNC05YmM3LTQ2ZjQtOWE3Ny0xZGRiNDdkN2EyYWUiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTczMzMyNzE5NSwicGhvbmVfbnVtYmVyIjoiKzQ0Nzc3MjI4MzQxOSIsImV4cCI6MTc0MTE5MTI0MywidXNlciI6IjJkOGJhNDljLTlhYzctNDgyNC05ZmE3LTVhMzE5OGQ2NzQ0NyIsImlhdCI6MTc0MTE5MDA0MywidGVuYW50IjoiZGRlZjE5NWYtOTYzZS01M2M4LWFmYjAtYjg1NmY4NzIxZGVjIiwianRpIjoiNTc1MjMxNDgtNWU0Mi00YzI3LTk3ODgtYmI2YWI3NWVjMDU4IiwiZW1haWwiOiJFRFdBUkQuSVJFU09OQERXUC5HT1YuVUsifQ.apxXmSd7IQYk5FH64EZ1rUCRL_d-VFtXa1lGmHDjw-9OqWeHpXv52hFqBWYvFE6k2vR66-Ir65zPf_2Dv1Qy6YxedhLWLP0HQ7RM5lUBrRSnEMVeAE1ssKW3m-fp_Yu3QJqvONmU7yYkeECsOIgqtRjiE94of0swyA7YFu84yEQzZgk88fumr0omP4vlmI3yh_6NtjV2s3G28JLrUAwPqt3A_NLqJ1r62WAU-Q6ynlR6wznrAEGgLCEarczoobVwyW8lSQZ9oW7QJD9eQUuo3dyG4Aa2LR5OEQNmZaa8WYm571yqxmo20a6ozFQk3ORTjJAapQMhTegGlCEE3NtsYQ' \
+--data '{
+    "query": ""
+}'
