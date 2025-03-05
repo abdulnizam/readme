@@ -15,7 +15,13 @@ kubectl port-forward svc/api-gateway-kong-proxy -n aii-gail-kong-api-gateway 808
 kubectl get svc -n aii-gail-kong-api-gateway
 
 
-curl -X POST http://localhost:8100/routes \
-    --data "name=doc-manager-route" \
-    --data "paths[]=/doc-manager" \
-    --data "service.name=doc-manager-service"
+kubectl patch svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway -p '{"spec": {"type": "NodePort"}}'
+
+
+
+kubectl patch svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway -p '{"spec": {"type": "ClusterIP", "ports": [{"port": 80, "protocol": "TCP", "targetPort": 80}]}}'
+
+
+curl -v http://localhost:31234
+
+kubectl get svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway
