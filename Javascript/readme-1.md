@@ -25,3 +25,26 @@ kubectl patch svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway -p '{"spec
 curl -v http://localhost:31234
 
 kubectl get svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway
+
+
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kong-ingress
+  namespace: aii-gail-kong-api-gateway
+spec:
+  rules:
+  - host: 127.0.0.1
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-kong-proxy
+            port:
+              number: 80
+
+
+kubectl delete ingress kong-ingress -n aii-gail-kong-api-gateway
