@@ -100,5 +100,6 @@ server {
     }
 }
 
-
- 2025/03/06 17:03:36 [error] 22#22: *3 client intended to send too large body: 2246400 bytes, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", host: "localhost:8081"
+nginx-1  | 2025/03/06 17:11:53 [warn] 21#21: *3 a client request body is buffered to a temporary file /var/cache/nginx/client_temp/0000000001, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", host: "localhost:8081"
+nginx-1  | 2025/03/06 17:11:53 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", upstream: "http://192.168.65.254:8100/api/doc-manager/v1/uploadfile", host: "localhost:8081"
+nginx-1  | 172.20.0.1 - - [06/Mar/2025:17:11:53 +0000] "POST /api/doc-manager/v1/uploadfile HTTP/1.1" 502 157 "-" "node" "-"
