@@ -86,3 +86,11 @@ services:
 
 
 docker-compose up -d
+
+
+
+nginx-1  | 172.20.0.1 - - [06/Mar/2025:16:42:49 +0000] "POST /api/doc-manager/v1/uploadnameandpurpose HTTP/1.1" 502 559 "http://localhost:8080/learning-and-development/input?page=3&content=continuous-aim-subject" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" "::1"
+nginx-1  | 2025/03/06 16:42:49 [error] 27#27: *10 connect() failed (111: Connection refused) while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadnameandpurpose HTTP/1.1", upstream: "http://127.0.0.1:8100/api/doc-manager/v1/uploadnameandpurpose", host: "localhost:8081", referrer: "http://localhost:8080/learning-and-development/input?page=3&content=continuous-aim-subject"
+nginx-1  | 2025/03/06 16:42:49 [warn] 27#27: *10 upstream server temporarily disabled while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadnameandpurpose HTTP/1.1", upstream: "http://127.0.0.1:8100/api/doc-manager/v1/uploadnameandpurpose", host: "localhost:8081", referrer: "http://localhost:8080/learning-and-development/input?page=3&content=continuous-aim-subject"
+nginx-1  | 2025/03/06 16:42:49 [error] 27#27: *10 connect() failed (111: Connection refused) while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadnameandpurpose HTTP/1.1", upstream: "http://127.0.0.1:8100/api/doc-manager/v1/uploadnameandpurpose", host: "localhost:8081", referrer: "http://localhost:8080/learning-and-development/input?page=3&content=continuous-aim-subject"
+nginx-1  | 2025/03/06 16:42:49 [warn] 27#27: *10 upstream server temporarily disabled while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadnameandpurpose HTTP/1.1", upstream: "http://127.0.0.1:8100/api/doc-manager/v1/uploadnameandpurpose", host: "localhost:8081", referrer: "http://localhost:8080/learning-and-development/input?page=3&content=continuous-aim-subject"
