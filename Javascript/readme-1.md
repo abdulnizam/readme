@@ -99,3 +99,6 @@ server {
         proxy_set_header Connection "";
     }
 }
+
+
+ 2025/03/06 17:03:36 [error] 22#22: *3 client intended to send too large body: 2246400 bytes, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", host: "localhost:8081"
