@@ -1,105 +1,143 @@
-api-gateway-kong-proxy.aii-gail-kong-api-gateway.svc.cluster.local
+Alert #
+
+Component
+
+Incident Severity
+
+Alert Name (SLI)
+
+Alert Condition (SLO)
+
+Metric Namespace
+
+Actions/Steps to Take
+
+1
+
+GAIL Microservices
+
+4
+
+http 4xx errors
+
+Count of HTTP 4xx errors >= 1 over 5 minutes
+Exceptions: HTTP 401, 403, 404
+
+istio_requests_total
 
 
 
-curl http://localhost:8080/api/v1/namespaces/aii-gail-kong-api-gateway/services/api-gateway-kong-proxy
+2
 
+GAIL Microservices
 
-kubectl proxy --port=8080
+4
 
+http 5xx errors
 
-kubectl get pods -n aii-gail-kong-api-gateway
+Count of HTTP 5xx errors >= 1 over 5 minutes
 
-kubectl port-forward svc/api-gateway-kong-proxy -n aii-gail-kong-api-gateway 8080:80
-
-kubectl get svc -n aii-gail-kong-api-gateway
-
-
-kubectl patch svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway -p '{"spec": {"type": "NodePort"}}'
+istio_requests_total
 
 
 
-kubectl patch svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway -p '{"spec": {"type": "ClusterIP", "ports": [{"port": 80, "protocol": "TCP", "targetPort": 80}]}}'
+3
 
+GAIL Microservices
 
-curl -v http://localhost:31234
+4
 
-kubectl get svc api-gateway-kong-proxy -n aii-gail-kong-api-gateway
+Availability  
 
+Microservice availability  < 99.5% across 5 minutes across core business hours
 
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: kong-ingress
-  namespace: aii-gail-kong-api-gateway
-spec:
-  rules:
-  - host: api-gateway-kong-proxy.aii-gail-kong-api-gateway.svc.cluster.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: api-gateway-kong-proxy
-            port:
-              number: 80
-
-
-kubectl delete ingress kong-ingress -n aii-gail-kong-api-gateway
-
-
-echo 'export BROWSER="/Applications/Safari.app/Contents/MacOS/Safari"' >> ~/.zshrc
-source ~/.zshrc  # Apply changes
-
-
-curl -H "Host: api-gateway-kong-proxy.aii-gail-kong-api-gateway.svc.cluster.local" http://localhost:8080
-
-
-nginx.conf
-
-server {
-    listen 8081;
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host api-gateway-kong-proxy.aii-gail-kong-api-gateway.svc.cluster.local;
-    }
-}
+kube_pod_status_phase
 
 
 
-docker run --rm -d -p 8081:8081 -v ./nginx.conf:/etc/nginx/nginx.conf nginx
+4
 
-docker run -p 8081:8081 -v $(pwd)/default.conf:/etc/nginx/conf.d/default.conf:ro nginx
+Application Load Balancer (Bedrock Account)
 
+4
 
-version: '3'
-services:
-  nginx:
-    image: nginx
-    ports:
-      - "8081:8081"
-    volumes:
-      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+Health check 
 
+Target Group does not meet the routing healthy state requirements:
 
+One AZ is down
 
-docker-compose up -d
+UnhealthyStateRouting
 
 
-server {
-    listen 8081;
 
-    location / {
-        proxy_pass http://host.docker.internal:8080;  # Forward to Kong running via port-forward
-        proxy_set_header Host api-gateway-kong-proxy.aii-gail-kong-api-gateway.svc.cluster.local; # Force Host header
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Connection "";
-    }
-}
+5
 
-nginx-1  | 2025/03/06 17:11:53 [warn] 21#21: *3 a client request body is buffered to a temporary file /var/cache/nginx/client_temp/0000000001, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", host: "localhost:8081"
-nginx-1  | 2025/03/06 17:11:53 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.20.0.1, server: , request: "POST /api/doc-manager/v1/uploadfile HTTP/1.1", upstream: "http://192.168.65.254:8100/api/doc-manager/v1/uploadfile", host: "localhost:8081"
-nginx-1  | 172.20.0.1 - - [06/Mar/2025:17:11:53 +0000] "POST /api/doc-manager/v1/uploadfile HTTP/1.1" 502 157 "-" "node" "-"
+Application Load Balancer (Bedrock Account)
+
+4
+
+Health check 
+
+Target Group does not meet the routing healthy state requirements:
+
+Two or more AZ’s are down
+
+UnhealthyStateRouting
+
+
+
+6
+
+Data Storage (DocumentDB)
+
+4
+
+CPU Utilisation
+
+CPU Utilisation > 80% for more than 5 minutes
+
+aws_docdb_cpuutilization_average
+
+
+
+7
+
+Data Storage (DocumentDB)
+
+4
+
+Availability
+
+Availability < 99.5% across 5 minutes across core business hours
+
+
+
+
+
+8
+
+Data Storage (DocumentDB)
+
+4
+
+Free Storage
+
+Available storage on the DocDB instance is < 4GB
+
+aws_docdb_free_local_storage_average
+
+
+
+9
+
+Data Storage (DocumentDB)
+
+4
+
+Free Storage
+
+Available storage on the DocDB instance is < 2GB
+
+aws_docdb_free_local_storage_average
+
