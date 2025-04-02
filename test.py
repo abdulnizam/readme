@@ -28,7 +28,6 @@ if __name__ == '__main__':
 
 
 
-
 DB_CONFIG = {
     "dbname": "postgres",
     "user": "citus",
@@ -38,18 +37,22 @@ DB_CONFIG = {
     "sslmode": "require"
 }
 
-
-
-def db_connection(): 
-    con = psycopg2.connect(DB_CONFIG)
+def db_connection():
+    con = psycopg2.connect(**DB_CONFIG)  # Fix: unpack with **
+    ssl_version = con.get_parameter_status("ssl_version")
+    ssl_cipher = con.get_parameter_status("ssl_cipher")
     con.close()
-    return con.get_parameter_status("ssl_version"), con.get_parameter_status("ssl_ciper")  
-
+    return ssl_version, ssl_cipher
 
 @app.route('/health/db')
 def check_db_connection():
     try:
-        ssl_version, ssl_ciper = db_connection()
-        return jsonify({'status': 'success', 'message': 'Connected to database', 'ssl_version': ssl_version, "ssl_ciper": ssl_ciper}), 200
+        ssl_version, ssl_cipher = db_connection()
+        return jsonify({
+            'status': 'success',
+            'message': 'Connected to database',
+            'ssl_version': ssl_version,
+            'ssl_cipher': ssl_cipher  # Fix: corrected key name
+        }), 200
     except OperationalError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
