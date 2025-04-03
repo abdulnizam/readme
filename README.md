@@ -29,3 +29,13 @@ Traceback (most recent call last):
 psycopg2.OperationalError: connection to server at "c-postgresqldb-uks-devt1-sd-sib-dwpask.ngi45w3dhlt6j7.privatelink.postgres.cosmos.azure.com" (52.151.67.106), port 5432 failed: server closed the connection unexpectedly
         This probably means the server terminated abnormally
         before or while processing the request.
+
+
+conn = psycopg2.connect(
+        dbname='postgres',
+        user='citus@c-postgresqldb-uks-devt1-sd-sib-dwpask',
+        password='AEIY0CPXYxUWGkva',
+        host='c-postgresqldb-uks-devt1-sd-sib-dwpask.ngi45w3dhlt6j7.privatelink.postgres.cosmos.azure.com',
+        port=5432,
+        sslmode='require'
+    )
