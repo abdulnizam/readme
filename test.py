@@ -1,20 +1,23 @@
-def db_connection():
-    con = psycopg2.connect(**DB_CONFIG)
-    cur = con.cursor()
-    cur.execute("SELECT ssl, version, cipher FROM pg_stat_ssl WHERE pid = pg_backend_pid()")
-    row = cur.fetchone()
-    cur.close()
-    con.close()
+stages:
+  - install
+  - build
+  - deploy
 
-    if row and row[0]:
-        return {
-            "ssl": row[0],
-            "ssl_version": row[1],
-            "ssl_cipher": row[2]
-        }
-    else:
-        return {
-            "ssl": False,
-            "ssl_version": None,
-            "ssl_cipher": None
-        }
+npm_install:
+  stage: install
+  tags: [non-prod-runner]   # Your non-prod GitLab runner
+  script:
+    - npm ci                 # Clean and reproducible install
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+build_or_deploy:
+  stage: deploy
+  tags: [prod-runner]        # Your production GitLab runner
+  dependencies:
+    - npm_install            # Pulls artifact from install job
+  script:
+    - echo "Using node_modules from previous job"
+    - npm run build          # or whatever you want to do
