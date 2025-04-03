@@ -1,12 +1,4 @@
-ImportError while loading conftest '/builds/dwp/a-cubed/a-cubed-backend/tests/conftest.py'.
-tests/conftest.py:17: in <module>
-    from app import app
-app.py:11: in <module>
-    from functions.searchresponse import generate_response
-functions/searchresponse.py:43: in <module>
-    AzureChatOpenAI.model_rebuild()
-/usr/local/lib/python3.13/site-packages/pydantic/main.py:642: in model_rebuild
-    raise exc from e
-E   pydantic.errors.PydanticUndefinedAnnotation: name 'BaseCache' is not defined
-E
-E   For further information visit https://errors.pydantic.dev/2.11/u/undefined-annotation
+{
+    "error": "connection to server at \"c-postgresqldb-uks-devt1-sd-sib-dwpask.ngi45w3dhlt6j7.privatelink.postgres.cosmos.azure.com\" (52.151.67.106), port 5432 failed: server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n",
+    "code": 500
+}
