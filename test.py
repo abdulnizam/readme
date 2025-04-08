@@ -1,1 +1,8 @@
-prisma.errors.FieldNotFoundError: Could not find field at `findUniqueUsers.where`
+return [
+    {
+        'id': msg.id,
+        'question': msg.question,
+        'citations': [c.url for c in msg.messageCitations]
+    }
+    for msg in messages
+]
