@@ -1,8 +1,10 @@
-const isEmptyObject = (obj: unknown): obj is Record<string, never> => {
-  return (
-    obj !== null &&
-    typeof obj === 'object' &&
-    !Array.isArray(obj) &&
-    Object.keys(obj).length === 0
-  )
-}
+import { DateField, Input } from 'govuk-react'
+
+<DateField
+  input={{
+    name: 'dob',
+    onChange: (e) => console.log('Date changed:', e.target.value),
+  }}
+>
+  Date of birth
+</DateField>
