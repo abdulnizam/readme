@@ -1,27 +1,10 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
-adjusted_end_date = end_date + timedelta(days=1)
+def normalize_date_range(start_date: datetime, end_date: datetime) -> tuple[datetime, datetime]:
+    # If start == end, add 1 day to end to cover the full day
+    if start_date == end_date:
+        end_date += timedelta(days=1)
+    return start_date, end_date
 
-message_links = await db.messageusers.find_many(
-    where={
-        'user_id': user.id,
-        'message': {
-            'created_at': {
-                'gte': start_date,
-                'lt': adjusted_end_date  # ✅ use 'lt' with +1 day
-            },
-            'requestType': {
-                'is_active': True
-            },
-            'messageType': {
-                'is_active': True
-            }
-        }
-    },
-    order={
-        'message': {
-            'created_at': 'desc'
-        }
-    },
-    include={ ... }
-)
+
+start_date, adjusted_end_date = normalize_date_range(start_date, end_date)
