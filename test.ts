@@ -1,144 +1,94 @@
-/**
- * @jest-environment jsdom
- */
+ ✓ should handle errors and call catchError (1 ms)
 
-import refineQueryMessage from "../refineQueryMessage";
-import { MOCK_RESPONSE } from "@/app/constants/ApiTests";
+  ● refineQueryMessage › should update chat history
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: {"citations": [], "generated": false, "question": "", "refined": true}
+
+    Number of calls: 0
+
+      112 |     await refineQueryMessage("summarise", "England");
+      113 |
+    > 114 |     expect(updateHistory).toHaveBeenCalledWith({
+          |                           ^
+      115 |       citations: [],
+      116 |       generated: false,
+      117 |       question: "",
+
+        getting the above error. here is the code
+
 import {
-  calculateIndex,
   loadHistory,
-  catchError,
+  addHistory,
+  calculateIndex,
   updateHistory,
-} from "../../../utils";
+  catchError,
+  capitalise,
+} from "@/app/utils";
+import { getSessionId } from "../storage/storage";
 
-// ✅ Polyfill AbortSignal.timeout
-beforeAll(() => {
-  if (!("timeout" in AbortSignal)) {
-    (AbortSignal as any).timeout = (ms: number) => {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), ms);
-      return controller.signal;
-    };
-  }
-});
+export default async function refineQueryMessage(
+  type: "summarise" | "elaborate",
+  location: string,
+) {
+  // Define chat history object
+  let chat_history = loadHistory();
+  const sessionId = getSessionId();
+  // Insert the question into session storage
+  addHistory({ question: capitalise(type) });
+  let index = calculateIndex("refine");
+  const historyObject = chat_history[index];
 
-// ✅ Mock NextResponse to prevent server-side error in jsdom
-jest.mock("next/server", () => ({
-  NextResponse: {
-    json: jest.fn((data) => ({
-      status: 200,
-      json: () => Promise.resolve(data),
-    })),
-  },
-}));
-
-// ✅ Mock utility functions
-jest.mock("../../../utils", () => ({
-  loadHistory: jest.fn(),
-  addHistory: jest.fn(),
-  calculateIndex: jest.fn(),
-  updateHistory: jest.fn(),
-  catchError: jest.fn(),
-  capitalise: jest.fn(),
-}));
-
-describe("refineQueryMessage", () => {
-  let fetchSpy: jest.SpyInstance;
-
-  beforeEach(() => {
-    // ✅ Mock sessionStorage
-    const sessionStorageMock = (() => {
-      let store: Record<string, string> = {
-        session_id: "mock-session-id-456",
-      };
-      return {
-        getItem: jest.fn((key: string) => store[key] || null),
-        setItem: jest.fn((key: string, value: string) => {
-          store[key] = value;
-        }),
-        removeItem: jest.fn((key: string) => {
-          delete store[key];
-        }),
-        clear: jest.fn(() => {
-          store = {};
-        }),
-      };
-    })();
-
-    Object.defineProperty(window, "sessionStorage", {
-      value: sessionStorageMock,
-      configurable: true,
-    });
-
-    // ✅ Mock fetch
-    fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
-      json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
-      ok: true,
-      status: 200,
-    } as any);
-  });
-
-  afterEach(() => {
-    fetchSpy.mockRestore();
-    jest.resetAllMocks();
-  });
-
-  it("should successfully call fetch with the correct params", async () => {
-    (loadHistory as jest.Mock).mockReturnValue([
-      { question: "", answer: "", citations: [] },
-    ]);
-    (calculateIndex as jest.Mock).mockReturnValue(0);
-
-    await refineQueryMessage("summarise", "England");
-
-    expect(fetch).toHaveBeenCalledWith("/api/summarise", {
+  try {
+    const data = await fetch(`/api/${type}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        session_id: "mock-session-id-456", // ✅ from sessionStorage
+        "session-id": sessionId,
       },
       body: JSON.stringify({
         prev_chat: {
-          question: "",
-          answer: "",
-          citations: [],
+          ...historyObject,
+          citations: historyObject.citations || [],
         },
-        location: "England",
+        location,
       }),
-      signal: expect.any(AbortSignal),
+      signal: AbortSignal.timeout(90000),
     });
-  });
+    const parsedResponse = await data.json();
 
-  it("should update chat history", async () => {
-    (loadHistory as jest.Mock).mockReturnValue([
-      { question: "", answer: "", citations: [] },
-    ]);
+    if (parsedResponse.error) {
+      // If the response object includes an error value, then a HTTP error has occured
+      // An error should be thrown which is caught by catchError and handled appropriately
+      throw new Error(parsedResponse.error, {
+        cause: { code: parsedResponse.code },
+      });
+    }
 
-    await refineQueryMessage("summarise", "England");
+    chat_history = loadHistory();
 
-    expect(updateHistory).toHaveBeenCalledWith({
-      citations: [],
-      generated: false,
-      question: "",
+    const response =
+      type === "elaborate"
+        ? parsedResponse.elaborated_answer
+        : parsedResponse.summarised_answer;
+
+    // Update session storage chat history
+    index = calculateIndex("query");
+    const lastItem = chat_history[index];
+    updateHistory({
+      ...lastItem,
+      answer: response,
       refined: true,
+      generated: false,
+      id: parsedResponse.id,
     });
-  });
+  } catch (error: any) {
+    // The HTTP error code should be passed to this function so an appropriate message can be displayed on the frontend and the metadata for the chat history object can be updated
+    catchError(error?.cause?.code || 500);
+  }
 
-  it("should handle errors and call catchError", async () => {
-    const mockErrorResponse = {
-      error: "Internal Server Error",
-      code: 500,
-    };
-
-    (loadHistory as jest.Mock).mockReturnValue([]);
-
-    fetchSpy.mockResolvedValueOnce({
-      ok: false,
-      json: jest.fn().mockResolvedValue(mockErrorResponse),
-    } as any);
-
-    await refineQueryMessage("summarise", "England");
-
-    expect(catchError).toHaveBeenCalledWith(500);
-  });
-});
+  // Reload chat_history to return it
+  chat_history = loadHistory();
+  return chat_history;
+}
