@@ -1,36 +1,117 @@
+/**
+ * @jest-environment jsdom
+ */
 
- FAIL  app/utils/api/__tests__/generateFollowUpQs.test.ts
-  Generating follow up questions
-    ✕ should successfully call fetch with the correct params (1 ms)
-    ✓ should handle errors and call catchError (1 ms)
+import generateFollowUpQs from "../generateFollowUpQs";
+import { FOLLOW_UP_TEST_PARAMS, MOCK_RESPONSE } from "@/app/constants/ApiTests";
+import { loadHistory, catchError } from "../../../utils";
 
-  ● Generating follow up questions › should successfully call fetch with the correct params
+// ✅ Patch AbortSignal.timeout for test environment
+beforeAll(() => {
+  if (!('timeout' in AbortSignal)) {
+    (AbortSignal as any).timeout = (ms: number) => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), ms);
+      return controller.signal;
+    };
+  }
+});
 
-    TypeError: AbortSignal.timeout is not a function
+// ✅ Mock NextResponse from next/server
+jest.mock("next/server", () => ({
+  NextResponse: {
+    json: jest.fn((data) => ({
+      status: 200,
+      json: () => Promise.resolve(data),
+    })),
+  },
+}));
 
-      87 |         location: "England",
-      88 |       }),
-    > 89 |       signal: AbortSignal.timeout(90000),
-         |                           ^
-      90 |     });
-      91 |   });
-      92 |
+// ✅ Mock utility functions
+jest.mock("../../../utils", () => ({
+  updateHistory: jest.fn(),
+  loadHistory: jest.fn(),
+  addHistory: jest.fn(),
+  calculateIndex: jest.fn(),
+  filterChatHistory: jest.fn(),
+  catchError: jest.fn(),
+}));
 
-      at Object.<anonymous> (app/utils/api/__tests__/generateFollowUpQs.test.ts:89:27)
+const { question, answer, citations } = FOLLOW_UP_TEST_PARAMS;
 
-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------
-File                    | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                   
-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------
-All files               |   63.87 |       40 |   16.66 |   63.87 |                                                                     
- constants              |     100 |      100 |     100 |     100 |                                                                     
-  ApiTests.ts           |     100 |      100 |     100 |     100 |                                                                     
- utils/api              |   67.56 |    33.33 |     100 |   67.56 |                                                                     
-  generateFollowUpQs.ts |   67.56 |    33.33 |     100 |   67.56 | 42-65                                                               
- utils/storage          |   53.28 |       50 |    9.09 |   53.28 |                                                                     
-  storage.ts            |   53.28 |       50 |    9.09 |   53.28 | 7-19,30-36,45-49,57-60,73-79,87-104,112-115,122-124,127-131,134-138 
-------------------------|---------|----------|---------|---------|---------------------------------------------------------------------
-Test Suites: 1 failed, 1 total
-Tests:       1 failed, 1 passed, 2 total
-Snapshots:   0 total
-Time:        0.763 s, estimated 1 s
-Ran all test suites matching /generateFollowUpQs.test/i.
+describe("Generating follow up questions", () => {
+  let fetchSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    // ✅ Mock sessionStorage
+    const sessionStorageMock = (() => {
+      let store: Record<string, string> = {
+        session_id: "mock-session-id-456",
+      };
+      return {
+        getItem: jest.fn((key: string) => store[key] || null),
+        setItem: jest.fn((key: string, value: string) => {
+          store[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete store[key];
+        }),
+        clear: jest.fn(() => {
+          store = {};
+        }),
+      };
+    })();
+
+    Object.defineProperty(window, "sessionStorage", {
+      value: sessionStorageMock,
+      configurable: true,
+    });
+
+    // ✅ Mock fetch
+    fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
+      json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+      ok: true,
+      status: 200,
+    } as any);
+  });
+
+  afterEach(() => {
+    fetchSpy?.mockRestore();
+    jest.resetAllMocks();
+  });
+
+  it("should successfully call fetch with the correct params", async () => {
+    await generateFollowUpQs(question, answer, citations, "England");
+
+    expect(fetchSpy).toHaveBeenCalledWith("/api/followup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        session_id: "mock-session-id-456",
+      },
+      body: JSON.stringify({
+        prev_chat: { question, answer, citations },
+        location: "England",
+      }),
+      signal: expect.any(AbortSignal),
+    });
+  });
+
+  it("should handle errors and call catchError", async () => {
+    const mockErrorResponse = {
+      error: "Internal Server Error",
+      code: 500,
+    };
+
+    (loadHistory as jest.Mock).mockReturnValue([]);
+
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      json: jest.fn().mockResolvedValue(mockErrorResponse),
+    } as any);
+
+    await generateFollowUpQs(question, answer, citations, "England");
+
+    expect(catchError).toHaveBeenCalledWith(500);
+  });
+});
