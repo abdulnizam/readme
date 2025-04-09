@@ -22,7 +22,7 @@ beforeAll(() => {
   }
 });
 
-// ✅ Mock NextResponse.json to avoid Request errors in test
+// ✅ Mock NextResponse to prevent server-side error in jsdom
 jest.mock("next/server", () => ({
   NextResponse: {
     json: jest.fn((data) => ({
@@ -32,7 +32,7 @@ jest.mock("next/server", () => ({
   },
 }));
 
-// ✅ Mock all utility functions
+// ✅ Mock utility functions
 jest.mock("../../../utils", () => ({
   loadHistory: jest.fn(),
   addHistory: jest.fn(),
@@ -46,6 +46,30 @@ describe("refineQueryMessage", () => {
   let fetchSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    // ✅ Mock sessionStorage
+    const sessionStorageMock = (() => {
+      let store: Record<string, string> = {
+        session_id: "mock-session-id-456",
+      };
+      return {
+        getItem: jest.fn((key: string) => store[key] || null),
+        setItem: jest.fn((key: string, value: string) => {
+          store[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete store[key];
+        }),
+        clear: jest.fn(() => {
+          store = {};
+        }),
+      };
+    })();
+
+    Object.defineProperty(window, "sessionStorage", {
+      value: sessionStorageMock,
+      configurable: true,
+    });
+
     // ✅ Mock fetch
     fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
       json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
@@ -71,6 +95,7 @@ describe("refineQueryMessage", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        session_id: "mock-session-id-456", // ✅ from sessionStorage
       },
       body: JSON.stringify({
         prev_chat: {
