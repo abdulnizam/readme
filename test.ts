@@ -1,1 +1,1 @@
-(global.crypto.randomUUID as jest.Mock) = jest.fn(() => 'mock-session-id-123');
+const getSessionId = () => sessionStorage.getItem("session_id") || '';
