@@ -1,29 +1,110 @@
-> a-cubed-new-frontend@0.1.0 test
-> jest generateFollowUpQs.test
+/**
+ * @jest-environment jsdom
+ */
 
- FAIL  app/utils/api/__tests__/generateFollowUpQs.test.ts
-  ● Test suite failed to run
+import generateFollowUpQs from "../generateFollowUpQs";
+import { FOLLOW_UP_TEST_PARAMS, MOCK_RESPONSE } from "@/app/constants/ApiTests";
+import { loadHistory, catchError } from "../../../utils";
 
-    ReferenceError: Request is not defined
+// ✅ Mock `NextResponse` to avoid ReferenceError from next/server
+jest.mock("next/server", () => ({
+  NextResponse: {
+    json: jest.fn((data) => ({
+      status: 200,
+      json: () => Promise.resolve(data),
+    })),
+  },
+}));
 
-      13 |   updateHistory: jest.fn(),
-      14 |   loadHistory: jest.fn(),
-    > 15 |   addHistory: jest.fn(),
-         |                 ^
-      16 |   calculateIndex: jest.fn(),
-      17 |   filterChatHistory: jest.fn(),
-      18 |   catchError: jest.fn(),
+// ✅ Mock utility functions
+jest.mock("../../../utils", () => ({
+  updateHistory: jest.fn(),
+  loadHistory: jest.fn(),
+  addHistory: jest.fn(),
+  calculateIndex: jest.fn(),
+  filterChatHistory: jest.fn(),
+  catchError: jest.fn(),
+}));
 
-      at Object.<anonymous> (node_modules/next/src/server/web/spec-extension/request.ts:15:34)
-      at Object.<anonymous> (node_modules/next/server.js:2:16)
-      at Object.<anonymous> (app/utils/api/__tests__/generateFollowUpQs.test.ts:15:17)
+const { question, answer, citations } = FOLLOW_UP_TEST_PARAMS;
 
-----------|---------|----------|---------|---------|-------------------
-File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
-----------|---------|----------|---------|---------|-------------------
-All files |       0 |        0 |       0 |       0 |                   
-----------|---------|----------|---------|---------|-------------------
-Test Suites: 1 failed, 1 total
-Tests:       0 total
-Snapshots:   0 total
-Time:        0.797 s, estimated 1 s
+describe("Generating follow up questions", () => {
+  let fetchSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    // ✅ Mock sessionStorage
+    const sessionStorageMock = (() => {
+      let store: Record<string, string> = {
+        session_id: 'mock-session-id-456',
+      };
+      return {
+        getItem: jest.fn((key: string) => store[key] || null),
+        setItem: jest.fn((key: string, value: string) => {
+          store[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete store[key];
+        }),
+        clear: jest.fn(() => {
+          store = {};
+        }),
+      };
+    })();
+
+    Object.defineProperty(window, 'sessionStorage', {
+      value: sessionStorageMock,
+      configurable: true,
+    });
+
+    // ✅ Mock fetch
+    fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
+      json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+      ok: true,
+      status: 200,
+    } as any);
+  });
+
+  afterEach(() => {
+    fetchSpy?.mockRestore();
+    jest.resetAllMocks();
+  });
+
+  it("should successfully call fetch with the correct params", async () => {
+    await generateFollowUpQs(question, answer, citations, "England");
+
+    expect(fetchSpy).toHaveBeenCalledWith("/api/followup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        session_id: "mock-session-id-456",
+      },
+      body: JSON.stringify({
+        prev_chat: {
+          question,
+          answer,
+          citations,
+        },
+        location: "England",
+      }),
+      signal: AbortSignal.timeout(90000),
+    });
+  });
+
+  it("should handle errors and call catchError", async () => {
+    const mockErrorResponse = {
+      error: "Internal Server Error",
+      code: 500,
+    };
+
+    (loadHistory as jest.Mock).mockReturnValue([]);
+
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      json: jest.fn().mockResolvedValue(mockErrorResponse),
+    } as any);
+
+    await generateFollowUpQs(question, answer, citations, "England");
+
+    expect(catchError).toHaveBeenCalledWith(500);
+  });
+});
