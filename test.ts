@@ -1,99 +1,81 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment node
  */
 
-import generateFollowUpQs from "../generateFollowUpQs";
-import { FOLLOW_UP_TEST_PARAMS, MOCK_RESPONSE } from "@/app/constants/ApiTests";
-import { loadHistory, catchError } from "../../../utils";
-
-// ✅ Patch AbortSignal.timeout for test environment
-beforeAll(() => {
-  if (!('timeout' in AbortSignal)) {
-    (AbortSignal as any).timeout = (ms: number) => {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(), ms);
-      return controller.signal;
-    };
-  }
-});
-
-// ✅ Mock NextResponse from next/server
-jest.mock("next/server", () => ({
-  NextResponse: {
-    json: jest.fn((data) => ({
-      status: 200,
-      json: () => Promise.resolve(data),
-    })),
-  },
-}));
-
-// ✅ Mock utility functions
 jest.mock("../../../utils", () => ({
-  updateHistory: jest.fn(),
   loadHistory: jest.fn(),
   addHistory: jest.fn(),
   calculateIndex: jest.fn(),
-  filterChatHistory: jest.fn(),
+  updateHistory: jest.fn(),
   catchError: jest.fn(),
+  capitalise: jest.fn(),
 }));
 
-const { question, answer, citations } = FOLLOW_UP_TEST_PARAMS;
+import { NextResponse } from "next/server";
+import refineQueryMessage from "../refineQueryMessage";
+import { MOCK_RESPONSE } from "@/app/constants/ApiTests";
+import {
+  calculateIndex,
+  loadHistory,
+  catchError,
+  updateHistory,
+} from "../../../utils";
 
-describe("Generating follow up questions", () => {
+describe("refineQueryMessage", () => {
   let fetchSpy: jest.SpyInstance;
+  let jsonMock: jest.SpyInstance;
 
   beforeEach(() => {
-    // ✅ Mock sessionStorage
-    const sessionStorageMock = (() => {
-      let store: Record<string, string> = {
-        session_id: "mock-session-id-456",
-      };
-      return {
-        getItem: jest.fn((key: string) => store[key] || null),
-        setItem: jest.fn((key: string, value: string) => {
-          store[key] = value;
-        }),
-        removeItem: jest.fn((key: string) => {
-          delete store[key];
-        }),
-        clear: jest.fn(() => {
-          store = {};
-        }),
-      };
-    })();
-
-    Object.defineProperty(window, "sessionStorage", {
-      value: sessionStorageMock,
-      configurable: true,
-    });
-
-    // ✅ Mock fetch
     fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
       json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
       ok: true,
       status: 200,
     } as any);
+
+    // Mock NextResponse.json to return a valid JSON response
+    jsonMock = jest.spyOn(NextResponse, "json").mockReturnValue({
+      status: 200,
+      json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+    } as any);
   });
 
   afterEach(() => {
-    fetchSpy?.mockRestore();
-    jest.resetAllMocks();
+    fetchSpy.mockRestore();
+    jsonMock.mockRestore(); // Restore the original NextResponse.json method after each test
   });
-
   it("should successfully call fetch with the correct params", async () => {
-    await generateFollowUpQs(question, answer, citations, "England");
-
-    expect(fetchSpy).toHaveBeenCalledWith("/api/followup", {
+    (loadHistory as jest.Mock).mockReturnValue([
+      { question: "", answer: "", citations: [] },
+    ]);
+    (calculateIndex as jest.Mock).mockReturnValue(0);
+    await refineQueryMessage("summarise", "England");
+    expect(fetch).toHaveBeenCalledWith("/api/summarise", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        session_id: "mock-session-id-456",
       },
       body: JSON.stringify({
-        prev_chat: { question, answer, citations },
+        prev_chat: {
+          question: "",
+          answer: "",
+          citations: [],
+        },
         location: "England",
       }),
-      signal: expect.any(AbortSignal),
+      signal: AbortSignal.timeout(90000),
+    });
+  });
+
+  it("should update chat history", async () => {
+    (loadHistory as jest.Mock).mockReturnValue([
+      { question: "", answer: "", citations: [] },
+    ]);
+    await refineQueryMessage("summarise", "England");
+    expect(updateHistory).toHaveBeenCalledWith({
+      citations: [],
+      generated: false,
+      question: "",
+      refined: true,
     });
   });
 
@@ -104,14 +86,12 @@ describe("Generating follow up questions", () => {
     };
 
     (loadHistory as jest.Mock).mockReturnValue([]);
-
-    fetchSpy.mockResolvedValueOnce({
+    global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       json: jest.fn().mockResolvedValue(mockErrorResponse),
-    } as any);
+    });
 
-    await generateFollowUpQs(question, answer, citations, "England");
-
+    await refineQueryMessage("summarise", "England");
     expect(catchError).toHaveBeenCalledWith(500);
   });
 });
