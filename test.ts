@@ -1,17 +1,7 @@
 /**
- * @jest-environment node
+ * @jest-environment jsdom
  */
 
-jest.mock("../../../utils", () => ({
-  loadHistory: jest.fn(),
-  addHistory: jest.fn(),
-  calculateIndex: jest.fn(),
-  updateHistory: jest.fn(),
-  catchError: jest.fn(),
-  capitalise: jest.fn(),
-}));
-
-import { NextResponse } from "next/server";
 import refineQueryMessage from "../refineQueryMessage";
 import { MOCK_RESPONSE } from "@/app/constants/ApiTests";
 import {
@@ -21,34 +11,62 @@ import {
   updateHistory,
 } from "../../../utils";
 
+// ✅ Polyfill AbortSignal.timeout
+beforeAll(() => {
+  if (!("timeout" in AbortSignal)) {
+    (AbortSignal as any).timeout = (ms: number) => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), ms);
+      return controller.signal;
+    };
+  }
+});
+
+// ✅ Mock NextResponse.json to avoid Request errors in test
+jest.mock("next/server", () => ({
+  NextResponse: {
+    json: jest.fn((data) => ({
+      status: 200,
+      json: () => Promise.resolve(data),
+    })),
+  },
+}));
+
+// ✅ Mock all utility functions
+jest.mock("../../../utils", () => ({
+  loadHistory: jest.fn(),
+  addHistory: jest.fn(),
+  calculateIndex: jest.fn(),
+  updateHistory: jest.fn(),
+  catchError: jest.fn(),
+  capitalise: jest.fn(),
+}));
+
 describe("refineQueryMessage", () => {
   let fetchSpy: jest.SpyInstance;
-  let jsonMock: jest.SpyInstance;
 
   beforeEach(() => {
+    // ✅ Mock fetch
     fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({
       json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
       ok: true,
       status: 200,
     } as any);
-
-    // Mock NextResponse.json to return a valid JSON response
-    jsonMock = jest.spyOn(NextResponse, "json").mockReturnValue({
-      status: 200,
-      json: jest.fn().mockResolvedValue(MOCK_RESPONSE),
-    } as any);
   });
 
   afterEach(() => {
     fetchSpy.mockRestore();
-    jsonMock.mockRestore(); // Restore the original NextResponse.json method after each test
+    jest.resetAllMocks();
   });
+
   it("should successfully call fetch with the correct params", async () => {
     (loadHistory as jest.Mock).mockReturnValue([
       { question: "", answer: "", citations: [] },
     ]);
     (calculateIndex as jest.Mock).mockReturnValue(0);
+
     await refineQueryMessage("summarise", "England");
+
     expect(fetch).toHaveBeenCalledWith("/api/summarise", {
       method: "POST",
       headers: {
@@ -62,7 +80,7 @@ describe("refineQueryMessage", () => {
         },
         location: "England",
       }),
-      signal: AbortSignal.timeout(90000),
+      signal: expect.any(AbortSignal),
     });
   });
 
@@ -70,7 +88,9 @@ describe("refineQueryMessage", () => {
     (loadHistory as jest.Mock).mockReturnValue([
       { question: "", answer: "", citations: [] },
     ]);
+
     await refineQueryMessage("summarise", "England");
+
     expect(updateHistory).toHaveBeenCalledWith({
       citations: [],
       generated: false,
@@ -86,12 +106,14 @@ describe("refineQueryMessage", () => {
     };
 
     (loadHistory as jest.Mock).mockReturnValue([]);
-    global.fetch = jest.fn().mockResolvedValue({
+
+    fetchSpy.mockResolvedValueOnce({
       ok: false,
       json: jest.fn().mockResolvedValue(mockErrorResponse),
-    });
+    } as any);
 
     await refineQueryMessage("summarise", "England");
+
     expect(catchError).toHaveBeenCalledWith(500);
   });
 });
