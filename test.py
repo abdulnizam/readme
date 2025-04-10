@@ -1,6 +1,3 @@
-response = client.post(
-    "/query",
-    data=json.dumps(test_data),
-    content_type="application/json",
-    headers={"x-access-token": "mock-token"}
-)
+unique_identifier, job_centre, given_name, family_name = await decode_token(
+            access_token
+        )
