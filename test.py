@@ -32,3 +32,14 @@ def decrypt_email(encrypted_email: str) -> str:
     cipher = AES.new(KEY, AES.MODE_CBC, IV)
     decrypted_data = cipher.decrypt(b64decode(encrypted_email))
     return unpad(decrypted_data, AES.block_size).decode("utf-8")
+
+
+
+import base64
+import os
+
+# 32 bytes = 256 bits
+key_bytes = os.urandom(32)
+encoded_key = base64.urlsafe_b64encode(key_bytes).decode()
+
+print("EMAIL_ENCRYPTION_KEY =", encoded_key)
