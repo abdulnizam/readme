@@ -1,68 +1,34 @@
-"use client";
+import os
+import hashlib
+from base64 import b64encode, b64decode
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
 
-import React from "react";
-import styles from "./Pagination.module.css";
+# 🔐 Load 256-bit MOK key from environment (injected by Azure Key Vault during deployment)
+SECRET_KEY = os.environ.get("EMAIL_ENCRYPTION_KEY")
 
-export default function Pagination() {
+if not SECRET_KEY:
+    raise ValueError("EMAIL_ENCRYPTION_KEY environment variable is not set")
 
-  return (
-    <div className={styles.Pagination}>
-      <div className={styles.InnerPagination}>
-        <nav className="govuk-pagination" aria-label="Pagination">
-          <ul className="govuk-pagination__list">
-            <li className={`govuk-pagination__item govuk-pagination__item--current ${styles.navActivate}`}>
-              <a
-                className="govuk-link govuk-pagination__link"
-                href="#"
-                aria-label="Page 1"
-                aria-current="page"
-              >
-                1
-              </a>
-            </li>
-            <li className="govuk-pagination__item">
-              <a
-                className="govuk-link govuk-pagination__link"
-                href="#"
-                aria-label="Page 2"
-              >
-                2
-              </a>
-            </li>
-            <li className="govuk-pagination__item">
-              <a
-                className="govuk-link govuk-pagination__link"
-                href="#"
-                aria-label="Page 3"
-              >
-                3
-              </a>
-            </li>
-          </ul>
-          <div className="govuk-pagination__next">
-            <a
-              className="govuk-link govuk-pagination__link"
-              href="#"
-              rel="next"
-            >
-              <span className="govuk-pagination__link-title">
-                Next<span className="govuk-visually-hidden"> page</span>
-              </span>
-              <svg
-                className="govuk-pagination__icon govuk-pagination__icon--next"
-                xmlns="http://www.w3.org/2000/svg"
-                height="13"
-                width="15"
-                aria-hidden="true"
-                focusable="false"
-                viewBox="0 0 15 13"
-              >
-                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-              </svg>
-            </a>
-          </div>
-        </nav>
-      </div>
-    </div>
-  );
-}
+# ✅ Derive 32-byte AES-256 key from the secret using SHA-256
+KEY = hashlib.sha256(SECRET_KEY.encode()).digest()
+
+# ⚠️ Fixed IV (initialization vector) – you can switch to random IVs for better security
+IV = b"0123456789abcdef"  # 16 bytes (AES block size)
+
+def encrypt_email(email: str) -> str:
+    """
+    Encrypt an email using AES-256-CBC and return base64-encoded string.
+    """
+    cipher = AES.new(KEY, AES.MODE_CBC, IV)
+    padded_data = pad(email.encode(), AES.block_size)
+    encrypted = cipher.encrypt(padded_data)
+    return b64encode(encrypted).decode("utf-8")
+
+def decrypt_email(encrypted_email: str) -> str:
+    """
+    Decrypt a base64-encoded encrypted email string.
+    """
+    cipher = AES.new(KEY, AES.MODE_CBC, IV)
+    decrypted_data = cipher.decrypt(b64decode(encrypted_email))
+    return unpad(decrypted_data, AES.block_size).decode("utf-8")
