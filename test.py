@@ -1,32 +1,50 @@
-from unittest.mock import patch
-from utils.auth import decode_token
+import os
+import hashlib
+from base64 import b64encode, b64decode
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.backends import default_backend
 
-@patch("app.decode_token")
-def test_query_endpoint(mock_decode_token, mock_generate_response, client, mock_config):
-    """Test the query endpoint."""
+# 🔐 Load 256-bit MOK key from environment (injected by Azure Key Vault during deployment)
+SECRET_KEY = os.environ.get("EMAIL_ENCRYPTION_KEY")
 
-    # 🔐 Mock decoded token values
-    mock_decode_token.return_value = (
-        "mock-user-id-123", "MockCentre", "Alice", "Smith"
-    )
+if not SECRET_KEY:
+    raise ValueError("EMAIL_ENCRYPTION_KEY environment variable is not set")
 
-    # Set up mock return value
-    mock_generate_response.return_value = (
-        "This is a test answer",
-        [{"title": "Source 1"}],
-    )
+# ✅ Derive a 32-byte AES key (256-bit)
+KEY = hashlib.sha256(SECRET_KEY.encode()).digest()
 
-    test_data = {
-        "query": "What is a test?",
-        "chat_history": [],
-        "location": "england"
-    }
+# ⚠️ Fixed IV (initialization vector)
+IV = b"0123456789abcdef"  # 16 bytes (AES block size)
 
-    response = client.post(
-        "/query",
-        data=json.dumps(test_data),
-        content_type="application/json",
-        headers={"x-access-token": "mock-token"}
-    )
+def encrypt_email(email: str) -> str:
+    """
+    Encrypts the email using AES-256-CBC and returns a base64-encoded string.
+    """
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(KEY), modes.CBC(IV), backend=backend)
+    encryptor = cipher.encryptor()
 
-    assert response.status_code == 200
+    # Pad data to AES block size
+    padder = padding.PKCS7(128).padder()  # 128-bit block size for AES
+    padded_data = padder.update(email.encode()) + padder.finalize()
+
+    encrypted = encryptor.update(padded_data) + encryptor.finalize()
+    return b64encode(encrypted).decode("utf-8")
+
+def decrypt_email(encrypted_email: str) -> str:
+    """
+    Decrypts a base64-encoded encrypted email back to plain text.
+    """
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(KEY), modes.CBC(IV), backend=backend)
+    decryptor = cipher.decryptor()
+
+    decoded_data = b64decode(encrypted_email)
+    decrypted_padded = decryptor.update(decoded_data) + decryptor.finalize()
+
+    # Unpad data
+    unpadder = padding.PKCS7(128).unpadder()
+    decrypted = unpadder.update(decrypted_padded) + unpadder.finalize()
+
+    return decrypted.decode("utf-8")
