@@ -1,1 +1,41 @@
-eyJraWQiOiI5WUR0XC9SQXBtOUdlU2RBcW8xUkVkQjk5c09wS3pPRzNZekltM3FQTm5Xbz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyZDhiYTQ5Yy05YWM3LTQ4MjQtOWZhNy01YTMxOThkNjc0NDciLCJjb2duaXRvOmdyb3VwcyI6WyJhcGkiXSwiZW1haWxfdmVyaWZpZWQiOnRydWUsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5ldS13ZXN0LTIuYW1hem9uYXdzLmNvbVwvZXUtd2VzdC0yXzc2UFRKV3poRSIsInBob25lX251bWJlcl92ZXJpZmllZCI6dHJ1ZSwiY29nbml0bzp1c2VybmFtZSI6ImFwaV91c2VyIiwib3JpZ2luX2p0aSI6IjY3ZjE0NzQxLTlhMGYtNGRhZi1hNjBkLTMwZjczOTNhNWMwNyIsImF1ZCI6IjI1MWcybXI3OXJvdWVlMW5rYzE5N2ZvMWZ0IiwiZXZlbnRfaWQiOiI4NWZmNzFmNC05YmM3LTQ2ZjQtOWE3Ny0xZGRiNDdkN2EyYWUiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTczMzMyNzE5NSwicGhvbmVfbnVtYmVyIjoiKzQ0Nzc3MjI4MzQxOSIsImV4cCI6MTc0NDM2ODczMSwidXNlciI6IjJkOGJhNDljLTlhYzctNDgyNC05ZmE3LTVhMzE5OGQ2NzQ0NyIsImlhdCI6MTc0NDM2NzUzMiwidGVuYW50IjoiZGRlZjE5NWYtOTYzZS01M2M4LWFmYjAtYjg1NmY4NzIxZGVjIiwianRpIjoiYzE0YzBmM2QtM2ZmNi00ZTc1LTg3YTktZDdmYWRiNGIxMDJlIiwiZW1haWwiOiJFRFdBUkQuSVJFU09OQERXUC5HT1YuVUsifQ.Ym6HtrVzX1n8GdmUOro1uWEQW-tBSDcEKb-2V39V_gi3VZ0gOzhAqA-ONzZk9QBOccQo2yjEEJwph996E29iLNd6jBFG7NFYhGQ3YuefkdmvqyA6bY8r0c71kakGHhZ9bbXrHlTaw3XavwG_fpY-MKXuaN4R0VX71arPTLUbWn8aTnssHa6ph7CXkk1JoDonz4nLaYrU1bdDE-WFa4mzDHttzBjUsnKKkxd_0mgpKGITBoe67mMucohz43hoDJq58e47H3EJVSKADSVH0bOyIfybyQCkz4lAI7oszCHro67GNuBsN84UiZmHc0_ggnRTTPFw2wt1pfXCi-PjGIQaiQ
+import logging
+from flask import jsonify
+from werkzeug.exceptions import HTTPException
+from prisma.errors import PrismaError
+from modules.errors import AzureOpenAIError
+
+logger = logging.getLogger(__name__)
+
+
+def handle_http_exception(error):
+    return jsonify({
+        "error": error.name,
+        "message": error.description,
+    }), error.code
+
+
+def handle_prisma_error(error):
+    logger.error("Prisma error occurred: %s", error)
+    return jsonify({
+        "error": "Database Error",
+        "message": str(error),
+    }), 500
+
+
+def handle_azure_openai_error(error: AzureOpenAIError):
+    return jsonify(error.to_dict()), error.status_code
+
+
+def handle_generic_exception(error):
+    logger.error("Unexpected error: %s", error)
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": str(error),
+    }), 500
+
+
+def register_error_handlers(app):
+    app.register_error_handler(HTTPException, handle_http_exception)
+    app.register_error_handler(PrismaError, handle_prisma_error)
+    app.register_error_handler(AzureOpenAIError, handle_azure_openai_error)
+    app.register_error_handler(Exception, handle_generic_exception)
