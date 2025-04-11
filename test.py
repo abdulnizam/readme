@@ -1,6 +1,7 @@
-# prisma_error_handler.py
+# error_handler.py
 
 from flask import jsonify
+from werkzeug.exceptions import HTTPException
 from prisma.errors import (
     PrismaClientKnownRequestError,
     PrismaClientUnknownRequestError,
@@ -9,61 +10,76 @@ from prisma.errors import (
     PrismaError,
 )
 
-def handle_prisma_exception(error: Exception):
-    if isinstance(error, PrismaClientKnownRequestError):
-        # You can inspect error.code here to return more specific messages
-        return jsonify({
-            "error": "Bad Request",
-            "message": str(error)
-        }), 400
+# ✅ Optional: Define your custom app-level exceptions
+class InvalidInputError(Exception):
+    pass
 
-    elif isinstance(error, PrismaClientUnknownRequestError):
-        return jsonify({
-            "error": "Unknown Prisma Error",
-            "message": str(error)
-        }), 500
+class MissingAuthTokenError(Exception):
+    pass
 
-    elif isinstance(error, PrismaClientRustPanicError):
-        return jsonify({
-            "error": "Prisma engine crashed",
-            "message": str(error)
-        }), 500
 
-    elif isinstance(error, PrismaClientInitializationError):
-        return jsonify({
-            "error": "Database initialization error",
-            "message": str(error)
-        }), 500
+def handle_prisma_exception(e: Exception):
+    if isinstance(e, PrismaClientKnownRequestError):
+        return jsonify({"error": "Bad Request", "message": str(e)}), 400
+    elif isinstance(e, PrismaClientInitializationError):
+        return jsonify({"error": "DB Init Error", "message": str(e)}), 500
+    elif isinstance(e, PrismaClientRustPanicError):
+        return jsonify({"error": "Prisma Engine Crashed", "message": str(e)}), 500
+    elif isinstance(e, PrismaClientUnknownRequestError):
+        return jsonify({"error": "Unknown Prisma Error", "message": str(e)}), 500
+    elif isinstance(e, PrismaError):
+        return jsonify({"error": "Prisma Error", "message": str(e)}), 500
+    return None
 
-    elif isinstance(error, PrismaError):
-        return jsonify({
-            "error": "Generic Prisma error",
-            "message": str(error)
-        }), 500
 
-    else:
-        return jsonify({
-            "error": "Internal Server Error",
-            "message": str(error)
-        }), 500
-    
+def global_error_handler(e: Exception):
+    # 🔹 Prisma DB error
+    prisma_response = handle_prisma_exception(e)
+    if prisma_response:
+        return prisma_response
 
-from flask import Flask, request, jsonify
-from prisma import Prisma
-from prisma_error_handler import handle_prisma_exception
+    # 🔹 HTTP built-in errors (e.g. 404, 403)
+    if isinstance(e, HTTPException):
+        return jsonify({
+            "error": e.name,
+            "message": e.description
+        }), e.code
+
+    # 🔹 Custom app errors
+    if isinstance(e, InvalidInputError):
+        return jsonify({"error": "Invalid Input", "message": str(e)}), 400
+
+    if isinstance(e, MissingAuthTokenError):
+        return jsonify({"error": "Authentication Error", "message": str(e)}), 401
+
+    # 🔹 All other exceptions
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": str(e)
+    }), 500
+
+
+from flask import Flask
+from error_handler import global_error_handler
 
 app = Flask(__name__)
-db = Prisma()
 
-@app.route("/user", methods=["POST"])
-async def create_user():
-    try:
-        data = request.get_json()
-        user = await db.users.create({
-            "email": data["email"],
-            "name": data["name"],
-        })
-        return jsonify(user), 201
+# Register the global exception handler
+app.register_error_handler(Exception, global_error_handler)
 
-    except Exception as e:
-        return handle_prisma_exception(e)
+
+
+from error_handler import InvalidInputError, MissingAuthTokenError
+from flask import request
+
+@app.route("/demo")
+async def demo_route():
+    token = request.headers.get("x-access-token")
+    if not token:
+        raise MissingAuthTokenError("x-access-token is missing in headers")
+
+    if len(token) < 10:
+        raise InvalidInputError("Provided token is too short")
+
+    # Simulate Prisma error
+    raise PrismaClientKnownRequestError("This is a Prisma error", code="P2002", meta={})
