@@ -1,4 +1,5 @@
 # error_handler.py
+# error_handler.py
 
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
@@ -10,12 +11,11 @@ from prisma.errors import (
     PrismaError,
 )
 
-# ✅ Optional: Define your custom app-level exceptions
-class InvalidInputError(Exception):
-    pass
+from modules.errors import AzureOpenAIError  # ✅ your existing custom error
 
-class MissingAuthTokenError(Exception):
-    pass
+# Optional custom app errors
+class InvalidInputError(Exception): pass
+class MissingAuthTokenError(Exception): pass
 
 
 def handle_prisma_exception(e: Exception):
@@ -33,26 +33,30 @@ def handle_prisma_exception(e: Exception):
 
 
 def global_error_handler(e: Exception):
-    # 🔹 Prisma DB error
-    prisma_response = handle_prisma_exception(e)
-    if prisma_response:
-        return prisma_response
+    # Handle Prisma errors
+    prisma_error = handle_prisma_exception(e)
+    if prisma_error:
+        return prisma_error
 
-    # 🔹 HTTP built-in errors (e.g. 404, 403)
+    # Handle Azure/OpenAI custom error
+    if isinstance(e, AzureOpenAIError):
+        return jsonify(e.to_dict()), e.status_code
+
+    # Handle HTTP errors like 404, 403
     if isinstance(e, HTTPException):
         return jsonify({
             "error": e.name,
-            "message": e.description
+            "message": e.description,
         }), e.code
 
-    # 🔹 Custom app errors
+    # Custom app logic errors
     if isinstance(e, InvalidInputError):
         return jsonify({"error": "Invalid Input", "message": str(e)}), 400
 
     if isinstance(e, MissingAuthTokenError):
-        return jsonify({"error": "Authentication Error", "message": str(e)}), 401
+        return jsonify({"error": "Unauthorized", "message": str(e)}), 401
 
-    # 🔹 All other exceptions
+    # Catch-all fallback
     return jsonify({
         "error": "Internal Server Error",
         "message": str(e)
@@ -83,3 +87,14 @@ async def demo_route():
 
     # Simulate Prisma error
     raise PrismaClientKnownRequestError("This is a Prisma error", code="P2002", meta={})
+
+
+
+from modules.errors import handle_openai_error, handle_other_error
+
+@app.route("/ask")
+async def ask():
+    try:
+        raise Exception("something unexpected happened")
+    except Exception as e:
+        handle_other_error(e)  # This will raise AzureOpenAIError internally
