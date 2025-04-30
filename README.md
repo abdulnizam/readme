@@ -44,6 +44,8 @@ shared_preload_libraries = 'pg_cron'
 cron.database_name = 'dwpask'
 
 
+CREATE EXTENSION pg_cron;
 
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 docker-compose up --build -d
