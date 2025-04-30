@@ -1,82 +1,54 @@
-"use client";
+async def setup_pg_cron(db: Prisma):
+    # Create or replace cleanup function
+    await db.execute_raw('''
+    CREATE OR REPLACE FUNCTION cleanup_old_messages()
+    RETURNS void AS $$
+    BEGIN
+        DELETE FROM selectedfeedbackoptions
+        WHERE feedback_id IN (
+            SELECT id FROM feedback
+            WHERE message_id IN (
+                SELECT id FROM message WHERE created_at < NOW() - INTERVAL '2 years'
+            )
+        );
 
-import { useRouter } from "next/navigation";
-import React from "react";
-import { Table } from "govuk-react";
-import styles from "./HistoryTable.module.css";
-import { messagesResponseType } from "@/app/types";
-import Pagination from "../Pagination/Pagination";
-import { dateFormatForHistoryPage, truncate } from "@/app/utils/helpers";
-import { storeViewDetails } from "@/app/utils/storage/storage";
-import Link from "../Packages/Link/Link";
+        DELETE FROM feedback
+        WHERE message_id IN (
+            SELECT id FROM message WHERE created_at < NOW() - INTERVAL '2 years'
+        );
 
-type HistoryTableProps = Readonly<{
-  tableContent: messagesResponseType[];
-  currentPage: number;
-  // eslint-disable-next-line no-unused-vars
-  setCurrentPage: (page: number) => void;
-  totalPages: number;
-}>;
+        DELETE FROM messagecitations
+        WHERE message_id IN (
+            SELECT id FROM message WHERE created_at < NOW() - INTERVAL '2 years'
+        );
 
-export default function HistoryTable({
-  tableContent,
-  currentPage,
-  setCurrentPage,
-  totalPages,
-}: HistoryTableProps) {
-  const handleView = (items: messagesResponseType, parsedDate: any) => {
-    const data = {
-      parsedDate,
-      items,
-    };
-    storeViewDetails(data);
-    router.push("/chat/view-details");
-  };
+        DELETE FROM message
+        WHERE created_at < NOW() - INTERVAL '2 years';
+    END;
+    $$ LANGUAGE plpgsql;
+    ''')
 
-  const router = useRouter();
-  return (
-    <div className={styles.chatWindow}>
-      <Table
-        head={
-          <Table.Row>
-            <Table.CellHeader>Question asked</Table.CellHeader>
-            <Table.CellHeader>Date</Table.CellHeader>
-            <Table.CellHeader>Details</Table.CellHeader>
-          </Table.Row>
-        }
-      >
-        {tableContent?.map((item) => {
-          const parsedDate = dateFormatForHistoryPage(item.created_at);
-          const truncatedQuestion = truncate(item.question, 70);
+    # Schedule the cron job at 8pm daily
+    await db.execute_raw('''
+    SELECT cron.schedule(
+      'daily_message_cleanup',
+      '0 20 * * *',
+      $$CALL cleanup_old_messages();$$
+    );
+    ''')
 
-          return (
-            <Table.Row key={truncatedQuestion}>
-              <Table.Cell title={item.question}>{truncatedQuestion}</Table.Cell>
-              <Table.Cell>{parsedDate[0]}</Table.Cell>
-              <Table.Cell>
-                <Link
-                  tabIndex={0}
-                  onClick={(
-                    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-                  ) => {
-                    e.preventDefault();
-                    handleView(item, parsedDate);
-                  }}
-                >
-                  View details
-                </Link>
-              </Table.Cell>
-            </Table.Row>
-          );
-        })}
-      </Table>
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
-    </div>
-  );
-}
+    print("✅ pg_cron daily cleanup job scheduled for 8 PM.")
+
+
+async def main():
+    db = Prisma()
+    await db.connect()
+    
+    await seed_request_users(db)
+    await seed_request_users_session(db)
+    await seed(db)
+    
+    await setup_pg_cron(db)  # <-- Add this here
+    
+    await db.disconnect()
+    print("✅ All seeding and cron setup complete.")
