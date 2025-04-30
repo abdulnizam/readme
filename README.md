@@ -2,10 +2,10 @@ version: "3.8"
 
 services:
   postgres:
-    image: citusdata/pg_cron:latest
+    image: citusdata/citus:11.2.1
     container_name: local_pg_cron
+    platform: linux/amd64
     restart: always
-    platform: linux/amd64  # 👈 IMPORTANT for M1/M2 compatibility
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -14,11 +14,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
 
 volumes:
   postgres_data:
