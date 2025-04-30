@@ -1,3 +1,16 @@
-  File "/Users/adbul.nizam1/Developer/dwp-ask-test-data/.venv/lib/python3.12/site-packages/prisma/engine/utils.py", line 175, in handle_response_errors
-    raise exc(error)
-prisma.errors.RawQueryError: ERROR: schema "cron" does not exist
+services:
+  postgres:
+    image: postgres:16
+    container_name: local_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dwpask
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
