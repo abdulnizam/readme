@@ -1,2 +1,7 @@
-DELETE FROM public."Session"
-    WHERE id NOT IN (SELECT DISTINCT session_id FROM public."Message");
+from datetime import datetime, timedelta
+
+# 2 years ago from now
+two_years_ago = datetime.now() - timedelta(days=365 * 2)
+
+# Prisma expects ISO format string
+created_at = two_years_ago.isoformat()
