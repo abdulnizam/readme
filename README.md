@@ -32,3 +32,5 @@ pg_restore -U your_user -h localhost -p 5432 -d your_db -c backup.dump
 
 
 pg_dump -h localhost -p 5432 -U user -d dwpask -n public --data-only -F c -f public_data.dump
+
+pg_restore -h localhost -p 5432 -U user -d dwpask --data-only -n public public_data.dump
