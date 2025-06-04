@@ -113,3 +113,53 @@ async def generate_pdf():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
+
+import os
+import io
+import tempfile
+import textwrap
+import fitz  # PyMuPDF
+import mammoth
+from docxtpl import DocxTemplate
+
+
+def chunk_data(data, chunk_size=100):
+    """Yield successive chunks of data."""
+    for i in range(0, len(data), chunk_size):
+        yield data[i:i + chunk_size]
+
+
+def render_docx_to_html(data_chunk):
+    """Render a docx template with a chunk of data and return HTML."""
+    template_path = os.path.join("templates", "report-template.docx")
+    doc = DocxTemplate(template_path)
+    doc.render({"data": data_chunk})
+
+    with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_docx:
+        doc.save(tmp_docx.name)
+        with open(tmp_docx.name, "rb") as f:
+            result = mammoth.convert_to_html(f)
+            html = result.value
+        os.unlink(tmp_docx.name)
+
+    return html
+
+
+def generate_large_pdf(data, chunk_size=100):
+    """Generate a large PDF from data in chunks using a Word template."""
+    pdf_doc = fitz.open()
+
+    for chunk in chunk_data(data, chunk_size):
+        html = render_docx_to_html(chunk)
+        styled_html = f"<html><body>{html}</body></html>"
+        page = pdf_doc.new_page()
+        page.insert_htmlbox(fitz.Rect(50, 50, 550, 800), styled_html)
+
+    pdf_buffer = io.BytesIO()
+    pdf_doc.save(pdf_buffer)
+    pdf_doc.close()
+    pdf_buffer.seek(0)
+    return pdf_buffer
