@@ -97,3 +97,14 @@ async def generate_pdf():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+if __name__ == "__main__":
+    HOST_IP = "0.0.0.0"
+    PORT = 5001
+    THREADS = os.environ.get("THREADS", 100)
+    is_ready = True  # Set readiness to true once the application is started
+    # the version gets dynamically updated on gitlab-ci build
+    logger.info("DWP Ask backend version - <docker-image-tag>")
+    serve(app, host=HOST_IP, port=PORT, threads=THREADS)
+    logger.info("DWPASK-BE-APP-01")
