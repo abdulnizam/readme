@@ -1,365 +1,163 @@
-scenario 1
-
-<nav class="govuk-pagination" aria-label="Pagination">
-  <div class="govuk-pagination__prev">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
-      <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-      </svg>
-      <span class="govuk-pagination__link-title">
-        Previous<span class="govuk-visually-hidden"> page</span>
-      </span>
-    </a>
-  </div>
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-      &ctdot;
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 6">
-        6
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 7" aria-current="page">
-        7
-      </a>
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 8">
-        8
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-      &ctdot;
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 42">
-        42
-      </a>
-    </li>
-  </ul>
-  <div class="govuk-pagination__next">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="next">
-      <span class="govuk-pagination__link-title">
-        Next<span class="govuk-visually-hidden"> page</span>
-      </span>
-      <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-      </svg>
-    </a>
-  </div>
-</nav>
+from docxtpl import DocxTemplate
+import mammoth
+import fitz
+import io
+import tempfile
+import os
+import textwrap
 
 
-scenario 2
+def download_pdf(data):
+    template_path = os.path.join("templates", "report-template.docx")
+    doc = DocxTemplate(template_path)
+    context = {"data": data}
+    doc.render(context)
 
-<nav class="govuk-pagination" aria-label="Pagination">
-  <div class="govuk-pagination__prev">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
-      <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-      </svg>
-      <span class="govuk-pagination__link-title">
-        Previous<span class="govuk-visually-hidden"> page</span>
-      </span>
-    </a>
-  </div>
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-      &ctdot;
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 6">
-        41
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 7" aria-current="page">
-        42
-      </a>
-    </li>
-  </ul>
-</nav>
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Save rendered .docx
+        docx_path = os.path.join(tmpdir, "filled.docx")
+        doc.save(docx_path)
 
-scenario 3
+        # Convert DOCX to HTML using mammoth
+        with open(docx_path, "rb") as f:
+            result = mammoth.convert_to_html(f)
+            raw_html = result.value
 
-<nav class="govuk-pagination" aria-label="Pagination">
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 6">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 7" aria-current="page">
-        2
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-      &ctdot;
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 42">
-        42
-      </a>
-    </li>
-  </ul>
-  <div class="govuk-pagination__next">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="next">
-      <span class="govuk-pagination__link-title">
-        Next<span class="govuk-visually-hidden"> page</span>
-      </span>
-      <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-      </svg>
-    </a>
-  </div>
-</nav>
+        # Inject inline styles manually
+        # Simple replacement - apply style to <body>, <h2>, and <p>
+        styled_html = f"<body>{raw_html}</body>"
 
-scenario 4
+        # Split into chunks and paginate
+        MAX_CHARS = 2000
+        chunks = textwrap.wrap(styled_html, MAX_CHARS)
 
-<nav class="govuk-pagination" aria-label="Pagination">
-  <div class="govuk-pagination__prev">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
-      <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-      </svg>
-      <span class="govuk-pagination__link-title">
-        Previous<span class="govuk-visually-hidden"> page</span>
-      </span>
-    </a>
-  </div>
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2" aria-current="page">
-        2
-      </a>
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 3">
-        3
-      </a>
-    </li>
-  </ul>
-  <div class="govuk-pagination__next">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="next">
-      <span class="govuk-pagination__link-title">
-        Next<span class="govuk-visually-hidden"> page</span>
-      </span>
-      <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-      </svg>
-    </a>
-  </div>
-</nav>
+        pdf_doc = fitz.open()
+        for chunk in chunks:
+            html_chunk = f"<html>{chunk}</html>"
+            page = pdf_doc.new_page()
+            page.insert_htmlbox(fitz.Rect(50, 50, 550, 800), html_chunk)
 
-scenario 5
+        # Return as downloadable PDF
+        pdf_buffer = io.BytesIO()
+        pdf_doc.save(pdf_buffer)
+        pdf_doc.close()
+        pdf_buffer.seek(0)
 
-<nav class="govuk-pagination" aria-label="Pagination">
-  <div class="govuk-pagination__prev">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
-      <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-      </svg>
-      <span class="govuk-pagination__link-title">
-        Previous<span class="govuk-visually-hidden"> page</span>
-      </span>
-    </a>
-  </div>
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2">
-        2
-      </a>
-    </li>
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 3" aria-current="page">
-        3
-      </a>
-    </li>
-  </ul>
-</nav>
-
-scenario 6
-
-<nav class="govuk-pagination" aria-label="Pagination">
-  <ul class="govuk-pagination__list">
-    <li class="govuk-pagination__item govuk-pagination__item--current">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1" aria-current="page">
-        1
-      </a>
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2">
-        2
-      </a>
-    </li>
-    <li class="govuk-pagination__item">
-      <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 3">
-        3
-      </a>
-    </li>
-  </ul>
-  <div class="govuk-pagination__next">
-    <a class="govuk-link govuk-pagination__link" href="#" rel="next">
-      <span class="govuk-pagination__link-title">
-        Next<span class="govuk-visually-hidden"> page</span>
-      </span>
-      <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-      </svg>
-    </a>
-  </div>
-</nav>
+        return pdf_buffer
 
 
 
 
-existing code
 
-"use client";
 
-import React from "react";
-import styles from "./Pagination.module.css";
-import Link from "../Packages/Link/Link";
+@app.route("/generate-pdf", methods=["POST"])
+async def generate_pdf():
+    logger.info("DWPASK-BE-APP-16")
+    if request.method == "POST":
+        try:
+            access_token = request.headers.get("x-access-token", None)
+            hashed_email, *_ = await decode_token(access_token)
 
-type PaginationProps = Readonly<{
-  currentPage: number;
-  totalPages: number;
-  // eslint-disable-next-line no-unused-vars
-  onPageChange: (page: number) => void;
-}>;
+            message_data = request.get_json()
 
-export default function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: PaginationProps) {
-  const isFirstPage = currentPage === 1;
-  const isLastPage = currentPage === totalPages;
-  const isCurrentClass = (page: number) =>
-    currentPage === page
-      ? `govuk-pagination__item--current ${styles.navActivate}`
-      : "";
+            start_date = message_data["start_date"]
+            end_date = message_data["end_date"]
+            page = message_data["page"]
+            data = message_data["data"]
+            if data is None:
+                messages, _ = await get_messages(
+                    hashed_email, start_date, end_date, page
+                )
+                data = messages
+            pdf_buffer = download_pdf(data)
+            return send_file(
+                pdf_buffer,
+                mimetype="application/pdf",
+                as_attachment=True,
+                download_name="report.pdf",
+            )
 
-  return (
-    <div className={styles.Pagination}>
-      <div className={styles.InnerPagination}>
-        <nav className="govuk-pagination" aria-label="Pagination">
-          {/* Previous Button */}
-          <div
-            className={`govuk-pagination__prev ${isFirstPage ? styles.disabledLink : ""}`}
-          >
-            <Link
-              data-testid="chat-history-previous-link"
-              href="#"
-              className={`govuk-link govuk-pagination__link ${isFirstPage ? styles.disabledLink : ""}`}
-              aria-disabled={isFirstPage}
-              onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-                e.preventDefault();
-                if (!isFirstPage) {
-                  onPageChange(currentPage - 1);
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
+
+
+
+async def get_messages(
+    hashed_email: str,
+    start_date: datetime,
+    end_date: datetime,
+    page: int,
+):
+    """
+    get messages given a request from the frontend
+
+    Args:
+        hashed_email (str): Hashed email from access token
+        start_date (datetime): Starting date from frontend
+        end_date (datetime): Ending date from from frontend
+        page (int): Page number for pagination
+    """
+    db = Prisma()
+    await db.connect()
+    logger.info("DWPASK-BE-GM-01")
+    try:
+        user = await db.users.find_unique(where={"unique_identifier": hashed_email})
+        if not user:
+            return [], 0
+        logger.info("DWPASK-BE-GM-02")
+        page_size = 10
+        start_date, adjusted_end_date = normalize_date_range(start_date, end_date)
+
+        base_query = {
+            "session": {"user_id": user.id},
+            "created_at": {"gte": start_date, "lt": adjusted_end_date},
+            "requestType": {"is_active": True},
+            "messageType": {"is_active": True},
+        }
+
+        query_options = {
+            "where": base_query,
+            "order": {"created_at": "desc"},
+            "include": {
+                "messageCitations": True,
+            },
+        }
+        if page != -1:
+            skip = (page - 1) * page_size
+            query_options["take"] = page_size
+            query_options["skip"] = skip
+
+        message_links = await db.message.find_many(**query_options)
+        logger.info("DWPASK-BE-GM-03")
+
+        total_count = await db.message.count(
+            where=base_query,
+        )
+        logger.info("DWPASK-BE-GM-04")
+        total_pages = math.ceil(total_count / page_size)
+        results = []
+
+        for msg in message_links:
+
+            source_links = [
+                {"title": c.title, "url": c.url, "chunks": c.source_extracts}
+                for c in msg.messageCitations
+            ]
+
+            results.append(
+                {
+                    "id": msg.id,
+                    "question": msg.question,
+                    "answer": msg.response,
+                    "previous_chat_history": msg.previous_chat_history,
+                    "created_at": msg.created_at,
+                    "citations": source_links,
                 }
-              }}
-            >
-              <svg
-                className="govuk-pagination__icon govuk-pagination__icon--prev"
-                xmlns="http://www.w3.org/2000/svg"
-                height="13"
-                width="15"
-                aria-hidden="true"
-                focusable="false"
-                viewBox="0 0 15 13"
-              >
-                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-              </svg>
-              <span className="govuk-pagination__link-title">
-                Previous<span className="govuk-visually-hidden"> page</span>
-              </span>
-            </Link>
-          </div>
+            )
+        return results, total_pages
 
-          {/* Page List */}
-          <ul className="govuk-pagination__list">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <li
-                key={page}
-                className={`govuk-pagination__item ${isCurrentClass(page)}`}
-              >
-                <Link
-                  data-testid="chat-history-page-number-link"
-                  href="#"
-                  className="govuk-link govuk-pagination__link"
-                  aria-label={`Page ${page}`}
-                  aria-current={currentPage === page ? "page" : undefined}
-                  onClick={(
-                    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-                  ) => {
-                    e.preventDefault();
-                    onPageChange(page);
-                  }}
-                >
-                  {page}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          {/* Next Button */}
-          <div
-            className={`govuk-pagination__next ${isLastPage ? styles.disabledLink : ""}`}
-          >
-            <Link
-              data-testid="chat-history-next-link"
-              href="#"
-              className={`govuk-link govuk-pagination__link ${isLastPage ? styles.disabledLink : ""}`}
-              aria-disabled={isLastPage}
-              onClick={(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-                e.preventDefault();
-                if (!isLastPage) {
-                  onPageChange(currentPage + 1);
-                }
-              }}
-            >
-              <span className="govuk-pagination__link-title">
-                Next<span className="govuk-visually-hidden"> page</span>
-              </span>
-              <svg
-                className="govuk-pagination__icon govuk-pagination__icon--next"
-                xmlns="http://www.w3.org/2000/svg"
-                height="13"
-                width="15"
-                aria-hidden="true"
-                focusable="false"
-                viewBox="0 0 15 13"
-              >
-                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-              </svg>
-            </Link>
-          </div>
-        </nav>
-      </div>
-    </div>
-  );
-}
+    finally:
+        logger.info("DWPASK-BE-GM-05")
+        await db.disconnect()
