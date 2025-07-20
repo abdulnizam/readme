@@ -1,8 +1,31 @@
-gary.addison@DEM-GXKXGGQY99 helm % kubectl port-forward middleware-6d7cf9bcb6-ks7sj 3000 8080 -n icca
-Forwarding from 127.0.0.1:3000 -> 3000
-Forwarding from [::1]:3000 -> 3000
-Forwarding from 127.0.0.1:8080 -> 8080
-Forwarding from [::1]:8080 -> 8080
-Handling connection for 3000
-E0718 12:38:29.452664   43050 portforward.go:424] "Unhandled Error" err="an error occurred forwarding 3000 -> 3000: error forwarding port 3000 to pod 5c46b9a128dd2bbccc02cd96cc91d6354739e49ef3d5e7531b54b40c5d92b344, uid : failed to execute portforward in network namespace \"/var/run/netns/cni-d0c4965f-80e9-d317-058a-d9730da54e61\": failed to connect to localhost:3000 inside namespace \"5c46b9a128dd2bbccc02cd96cc91d6354739e49ef3d5e7531b54b40c5d92b344\", IPv4: dial tcp4 127.0.0.1:3000: connect: connection refused IPv6 dial tcp6: address localhost: no suitable address found "
-error: lost connection to pod
+ Purpose
+
+This page outlines how the GAIL team collaborates day-to-day. It includes our ways of working in JIRA, how we hand over work between disciplines (design, dev, test) and a schedule of our regular meetings in sprint.
+
+
+
+  Ways of Working (Jira Process)
+
+Proposed method of an idea moving from design - done:
+
+Design ticketing
+
+Each new feature or topic will start with a design task ticket to investigate and explore a potential new area for development. 
+
+These tickets will include user needs/wireframes/user journeys etc
+
+Once the design is completed and signed off by the team and the PO, then the ticket is linked to a related dev ticket which will be created
+
+Development ticketing
+
+A new development story will be created (after the design if required). The BA will write the new story in collaboration with the tech team (and design presence) to attach the signed off designs, acceptance criteria and any dependencies
+
+Once the ticket has been refined and meets the definition of ready, the ticket is ready to be prioritised to go into sprint
+
+Once development has been completed, the ticket moves to ‘ready for QA’ on the board to be tested
+
+QA process of dev tickets
+
+Development tickets will move across the board into QA. QA will then review the ‘ready for QA’ items, validate against the acceptance criteria and log any bugs or issues
+
+Once tested successfully, the ticket will move to done.
