@@ -7,16 +7,17 @@ WORKDIR /app
 
 COPY . /app
 
-# Set environment variables for Prisma cache and tmp dir
+# Set environment variables for Prisma and temp dirs
 ENV PRISMA_PYTHON_CACHE_DIR=/app/.prisma_cache \
     PRISMA_BINARY_CACHE_DIR=/app/.prisma_cache \
+    PRISMA_CLI_QUERY_ENGINE_TYPE=binary \
     TMPDIR=/app/tmp
 
 # Prepare cache directories with open permissions
 RUN mkdir -p "$PRISMA_PYTHON_CACHE_DIR" "$TMPDIR" \
     && chmod -R 777 "$PRISMA_PYTHON_CACHE_DIR" "$TMPDIR"
 
-# Install base packages, dependencies, Node.js, and Prisma CLI
+# Install base packages and dependencies
 RUN apk update \
     && apk add --no-cache \
         ca-certificates \
@@ -30,14 +31,15 @@ RUN apk update \
         npm \
     && update-ca-certificates \
     && pip install --upgrade pip \
-    && pip install --default-timeout=100 -r requirements.txt \
-    && npm install -g npm \
-    && npm config set registry https://registry.npmmirror.com/ \
-    && npm install prisma@5.17.0 \
-    && ln -s /usr/lib/libssl.so.1.1 /usr/lib/libssl.so || true \
-    && ln -s /usr/lib/libcrypto.so.1.1 /usr/lib/libcrypto.so || true
+    && pip install --default-timeout=100 -r requirements.txt
 
-# Patch Azure AI Search Retriever (LangChain bugfix)
+# Configure npm to use internal registry and install Prisma
+RUN npm config set registry https://nexus.nonprod.dwpcloud.uk/repository/npm/ \
+    && echo "prefer-offline=true" >> ~/.npmrc \
+    && echo "fetch-retries=1" >> ~/.npmrc \
+    && npm install prisma@5.17.0
+
+# Patch AzureAISearchRetriever to fix HTTP protocol handling
 RUN echo 'import re; \
 file_path = next(p for p in __import__("pathlib").Path("/usr/local/lib/python3.12/site-packages").glob("**/azure_ai_search.py") if "langchain_community/retrievers" in str(p)); \
 content = file_path.read_text(); \
@@ -45,12 +47,13 @@ new_function = """    def _build_search_url(self, query: str) -> str:\n        u
 pattern = r"    def _build_search_url\(self, query: str\) -> str:[\s\S]*?(?=\n    @property|\n    def _search)"; \
 file_path.write_text(re.sub(pattern, new_function, content))' | python
 
-# Run Prisma generate & Spacy model download
+# Generate Prisma client and install Spacy model
 RUN chown -R appuser:appuser /app \
-    && npx prisma generate \
+    && ./node_modules/.bin/prisma generate \
     && python -m spacy download en_core_web_lg \
     && python -c "import spacy; nlp = spacy.load('en_core_web_lg'); print('✅ SpaCy model loaded.')"
 
+# Switch to non-root user
 USER appuser
 
 EXPOSE 5001
